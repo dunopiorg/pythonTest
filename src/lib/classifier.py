@@ -1,6 +1,4 @@
 import math
-from lib import DBConnection as db
-import math
 
 from lib import DBConnection as db
 
