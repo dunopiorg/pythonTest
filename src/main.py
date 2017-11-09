@@ -9,12 +9,13 @@ from lib import classifier, tcpSocket
 from lib import gameHelper as gh
 
 # Message Queue 생성
-__recvBroadCastQ = queue.Queue()
+recv_broadcast_queue = queue.Queue()
+sentence_queue = queue.Queue()
 
 # Program Start
 """
 if __name__ == "__main__":
-    server = tcpSocket.serverTcp(socket.gethostname(), 12222, __recvBroadCastQ)
+    server = tcpSocket.serverTcp(socket.gethostname(), 12222, recv_broadcast_queue)
     analyser = classifier.StringAnalyser()
     conn = analyser.dbConnector(False)
 
@@ -24,9 +25,9 @@ if __name__ == "__main__":
         print('[thread1 Started] socket server')
 
         while True:
-            if __recvBroadCastQ.qsize() > 0:
+            if recv_broadcast_queue.qsize() > 0:
 
-                result = analyser.runRecord(conn, __recvBroadCastQ.get())
+                result = analyser.runRecord(conn, recv_broadcast_queue.get())
                 if result is not None and len(result) > 0:
                     server.sender("캐스터: " + result)
 
@@ -35,7 +36,7 @@ if __name__ == "__main__":
 """
 
 if __name__ == "__main__":
-    server = tcpSocket.serverTcp(socket.gethostname(), 12222, __recvBroadCastQ)
+    server = tcpSocket.serverTcp(socket.gethostname(), 12222, recv_broadcast_queue)
 
     try:
         thread1 = threading.Thread(target=server.open)
@@ -48,15 +49,20 @@ if __name__ == "__main__":
     currInfoDict = None
     prevInfoDict = None
     gmHelper = gh.GameHelper()
-    currInfoDict = gmHelper.getLiveData()
+    currInfoDict = gmHelper.get_live_data()
 
     # Test Start ------------------------------------
-    testTuple = gmHelper.testLiveData()
+    testTuple = gmHelper.test_live_data('20170912OBNC0')
     for i, testDict in enumerate(testTuple):
-        print(testDict['LiveText'])
+        print("문자: " + testDict['LiveText'])
         gmHelper.currRowNum = i
-        gmHelper.getHowInfo(testDict['HOW'])
-        time.sleep(1)
+        result = gmHelper.get_what_info(testDict['LiveText'])
+
+        if result:
+            print(result)
+            msg_list = gmHelper.make_sentence(result)
+            print("캐스터: ", msg_list)
+        #time.sleep(0.1)
 
     # Test End -------------------------------------
     """
