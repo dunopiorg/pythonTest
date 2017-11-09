@@ -1,6 +1,8 @@
 from lib import DBConnection as db
+from  lib import casterq
 from enum import Enum
 import  random
+import threading
 
 class GameHelper():
     # Setting Mysql Connector
@@ -17,6 +19,7 @@ class GameHelper():
         self.prev_away_score = 0  # 원정팀 현재 점수
         self.prev_home_score = 0  # 홈팀 현재 점수
         self.game_event = None
+        self.caster_queue = casterq.CasterQueue()
         # TEST 를 위한 변수
         self.currRowNum = 0
 
@@ -92,11 +95,20 @@ class GameHelper():
                         msg_value += (data[v],)
 
                     msg = template['MSG'] % (msg_value)
-                    msg_list.append(msg)
-            return msg_list
+                    msg_list.append((random.randrange(0, 11), msg))
+            self.put_queue(msg_list)
 
         elif data['kindOfScore'] == '홈인':
             print("캐스터: " + '홈인!')
+
+    def put_queue(self, data):
+        self.caster_queue.put(data)
+        self.caster_queue.sort()
+
+    def get_queue(self):
+        while True:
+            if self.caster_queue.size() > 0:
+                print("캐스터: " + self.caster_queue.get()[1])
 
     """ 이하 Activation Functions """
     # [HR]점수차 변화 : 도망(1), 추격(1), 동점(2), 리드(3), 역전(4)

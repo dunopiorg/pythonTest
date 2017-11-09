@@ -3,14 +3,11 @@ import time
 import socket
 import threading
 
-from pymysql.connections import MysqlPacket
-from lib import classifier, tcpSocket
-
-from lib import gameHelper as gh
+from lib import tcpSocket
+from lib import gameHelper
 
 # Message Queue 생성
 recv_broadcast_queue = queue.Queue()
-sentence_queue = queue.Queue()
 
 # Program Start
 """
@@ -48,9 +45,10 @@ if __name__ == "__main__":
 
     currInfoDict = None
     prevInfoDict = None
-    gmHelper = gh.GameHelper()
+    gmHelper = gameHelper.GameHelper()
     currInfoDict = gmHelper.get_live_data()
-
+    caster_thread = threading.Thread(target=gmHelper.get_queue)
+    caster_thread.start()
     # Test Start ------------------------------------
     testTuple = gmHelper.test_live_data('20170912OBNC0')
     for i, testDict in enumerate(testTuple):
@@ -60,16 +58,10 @@ if __name__ == "__main__":
 
         if result:
             print(result)
-            msg_list = gmHelper.make_sentence(result)
-            print("캐스터: ", msg_list)
-        #time.sleep(0.1)
+            gmHelper.make_sentence(result)
+        time.sleep(0.1)
 
     # Test End -------------------------------------
-    """
-    if currInfoDict['HOW'] in ['BH', 'HR']:
-        gmHelper.getHowInfo(currInfoDict['HOW'])
-        print('Home Run')
-    """
     prevInfoDict = currInfoDict
 
 
