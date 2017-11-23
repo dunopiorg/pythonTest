@@ -44,16 +44,17 @@ class MySqlConnector():
     __password = None
     __db = None
 
-    def __init__(self, host, user, pw, db):
+    def __init__(self, host, port, user, pw, db):
         self.__host = host
         self.__user = user
         self.__password = pw
         self.__db = db
+        self.__port = port
 
     def select(self, query, dict=False, *args):
         result = None
         option = pymysql.cursors.DictCursor if dict is True else None
-        conn = pymysql.connect(host=self.__host, user=self.__user, password=self.__password, db=self.__db, charset='utf8mb4')
+        conn = pymysql.connect(host=self.__host, port=self.__port, user=self.__user, password=self.__password, db=self.__db, charset='utf8mb4')
         try:
             with conn.cursor(option) as cursor:
                 if args.__len__() > 0:
@@ -82,7 +83,7 @@ class MySqlConnector():
         result = None
 
         try:
-            conn = pymysql.connect(host=self.__host, user=self.__user, password=self.__password, db=self.__db, charset='utf8mb4')
+            conn = pymysql.connect(host=self.__host, port=self.__port, user=self.__user, password=self.__password, db=self.__db, charset='utf8mb4')
 
             with conn.cursor() as cursor:
                 result = cursor.execute(query, args)

@@ -33,15 +33,19 @@ if __name__ == "__main__":
 """
 
 if __name__ == "__main__":
-    server = tcpSocket.serverTcp(socket.gethostname(), 12222, recv_broadcast_queue)
 
+    """
+    server = tcpSocket.serverTcp(socket.gethostname(), 12222, recv_broadcast_queue)
+    
     try:
+        
         thread1 = threading.Thread(target=server.open)
         thread1.start()
         print('[thread1 Started] socket server')
-
+        
     except Exception as e:
         server.close()
+    """
 
     currInfoDict = None
     prevInfoDict = None
@@ -57,9 +61,8 @@ if __name__ == "__main__":
         result = gmHelper.get_what_info(testDict['LiveText'])
 
         if result:
-            print(result)
             gmHelper.make_sentence(result)
-        time.sleep(0.1)
+        time.sleep(1)
 
     # Test End -------------------------------------
     prevInfoDict = currInfoDict
