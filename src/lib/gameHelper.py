@@ -1,14 +1,13 @@
 from lib import DBConnection as db
-from  lib import casterq
+from lib import casterq
 from lib import record
 from enum import Enum
+from math import exp
 import korean
-import pandas as pd
-import  random
+import random
 import time
-import threading
 
-class GameHelper():
+class GameHelper(object):
     # Setting Mysql Connector
     def __init__(self):
         self.MySqlHost = 'localhost'
@@ -18,7 +17,6 @@ class GameHelper():
         self.MySqlPort = 3307
         self.LiveData = None
         self.CondTuple = None
-        self.set_cond_dict()
         self.curr_away_score = 0 # 원정팀 현재 점수
         self.curr_home_score = 0 # 홈팀 현재 점수
         self.prev_away_score = 0  # 원정팀 현재 점수
@@ -27,13 +25,24 @@ class GameHelper():
         self.caster_queue = casterq.CasterQueue()
         self.prev_pitcher = None
         self.prev_hitter = None
+        self.catg_score ={}
+        self.get_cond_dict()
+        self.get_catg_score()
         # TEST 를 위한 변수
         self.currRowNum = 0
 
-    def set_cond_dict(self):
+    def get_cond_dict(self):
         db_my_conn = db.MySqlConnector(host=self.MySqlHost, port=self.MySqlPort, user=self.MySqlUser, pw=self.MySqlPw, db=self.MySqlDB)
         query = "select EVENT, CONDITIONS from baseball.event_cond"
         self.CondTuple = db_my_conn.select(query, True)
+
+    # 이벤트 카테고리 별 점수
+    def get_catg_score(self):
+        db_my_conn = db.MySqlConnector(host=self.MySqlHost, port=self.MySqlPort, user=self.MySqlUser, pw=self.MySqlPw,
+                                       db=self.MySqlDB)
+        query = "select category, score from baseball.catg_score"
+        rows = db_my_conn.select(query, True)
+        self.catg_score = {row["category"]: row["score"] for row in rows}
 
     # 이번 시즌 투수 기록
     def get_df_season_pitcher_record(self, pitcher):
@@ -81,7 +90,7 @@ class GameHelper():
     # Live가 아닌 Local Test를 위한 함수. getLiveData()로 대체될 것.
     def test_live_data(self, gameid):
         db_my_conn = db.MySqlConnector(host=self.MySqlHost, port=self.MySqlPort, user=self.MySqlUser, pw=self.MySqlPw, db=self.MySqlDB)
-        query = "SELECT (SELECT NAME FROM baseball.person WHERE A.pitcher = PCODE) AS pitcher_name "\
+        query = "SELECT (SELECT NAME FROM baseball.person WHERE A.pitcher = PCODE) AS PITCHER_NAME "\
                        ", (SELECT NAME FROM baseball.person WHERE A.batter = PCODE) AS batter_name "\
                        ", (SELECT NAME FROM baseball.person WHERE A.catcher = PCODE) AS catcher_name "\
                        ", (SELECT NAME FROM baseball.person WHERE A.runner = PCODE) AS runner_name "\
@@ -118,14 +127,17 @@ class GameHelper():
         if self.prev_hitter != curr_hitter:
             if len(curr_hitter) > 0:
                 self.prev_hitter = curr_hitter
-                hitter_dict = self.get_df_season_hitter_record(curr_hitter)  # 이번 시즌 타자 기록
+                # 이번 시즌 타자 기록
+                hitter_dict = self.get_df_season_hitter_record(curr_hitter)
                 if hitter_dict:
                     result_hitter.update({'event_type': 'hitter_on_mound'})
                     result_hitter.update(hitter_dict)
-                hitter_dict = self.get_df_season_bitter_vs_pitcher(curr_hitter, curr_pitcher)  # 이번 시즌 타자 vs 투수 기록
-                if hitter_dict:
+
+                # 이번 시즌 타자 vs 투수 기록
+                hitter_vs_pitcher_dict = self.get_df_season_bitter_vs_pitcher(curr_hitter, curr_pitcher)
+                if hitter_vs_pitcher_dict:
                     result_hitter_vs_pitcehr.update({'event_type': 'hitter_on_mound'})
-                    result_hitter_vs_pitcehr.update(hitter_dict)
+                    result_hitter_vs_pitcehr.update(hitter_vs_pitcher_dict)
 
         word_list = livetext.split()
 
@@ -153,7 +165,7 @@ class GameHelper():
 
     def make_sentence(self, data):
         class HREnum(Enum):
-            base_state, score_state, HR_CN, HR, RUN = range(1, 6)
+            BASE_STATE, score_state, HR_CN, HR, RUN = range(1, 6)
 
         class HMEnum(Enum):
             RBI, BB, SB, H2, HIT, HR, KK, HRA  = range(1, 9)
@@ -161,7 +173,7 @@ class GameHelper():
         class HVSPEnum(Enum):
             HR_CN, HIT_CN, H2_CN, BB_CN = range(1, 5)
 
-        hr_dict = {'base_state': ['name', 'base_state'], 'HR_CN': ['pitcher_name', 'HR_CN'], 'HR': ['name','HR'], 'RUN': ['RUN']}
+        hr_dict = {'BASE_STATE': ['NAME', 'BASE_STATE'], 'HR_CN': ['PITCHER_NAME', 'HR_CN'], 'HR': ['NAME','HR'], 'RUN': ['RUN']}
 
         for key, value_dict in data.items():
             msg_list = []
@@ -185,7 +197,7 @@ class GameHelper():
                             msg_value.update({v: value_dict[v]})
 
                         msg = korean.l10n.Template(template['MSG']).format(**msg_value)
-                        msg_list.append((0.5, msg))
+                        msg_list.append([0.5, msg])
                 self.put_queue(msg_list)
 
             elif event_type == '홈인':
@@ -200,7 +212,7 @@ class GameHelper():
                 # 타자 정보
                 if key is 'hitter_info':
                     for hm_key, hm_value in value_dict.items():
-                        if hm_value is 0:
+                        if hm_value == 0:
                             continue
 
                         if hm_key in HMEnum.__members__:
@@ -214,7 +226,7 @@ class GameHelper():
 
                             msg = korean.l10n.Template(template['MSG']).format(**value_dict)
                             value = self.score_generator(hm_key, value_dict)
-                            msg_list.append((value, msg))
+                            msg_list.append([value, msg])
 
                     if len(msg_list) > 0:
                         self.put_queue(msg_list)
@@ -222,7 +234,7 @@ class GameHelper():
                 # 타자와 투수 대결 정보
                 elif key is 'hitter_vs_pitcher_info':
                     for hvsp_key, hvsp_value in value_dict.items():
-                        if hvsp_value is 0:
+                        if hvsp_value == 0:
                             continue
 
                         if hvsp_key in HVSPEnum.__members__:
@@ -236,7 +248,7 @@ class GameHelper():
 
                             msg = korean.l10n.Template(template['MSG']).format(**value_dict)
                             value = self.score_generator(hvsp_key, value_dict)
-                            msg_list.append((value, msg))
+                            msg_list.append([value, msg])
 
                     if len(msg_list) > 0:
                         self.put_queue(msg_list)
@@ -253,37 +265,6 @@ class GameHelper():
                 elif key is 'score_base_info':
                     print('점수차와 주자상황')
 
-        """
-        if 'currWPA' in data:
-            curr_wpa = data['currWPA']
-
-        if data['event_type'] == '홈런':
-            for hr_key, hr_values in hr_dict.items():
-                if hr_key in data:
-                    if data[hr_key] is None:
-                        continue
-                    msg_code = 'HR%02d%02d' % (getattr(HREnum, hr_key).value, random.randrange(0, 1))
-                    db_my_conn = db.MySqlConnector(host=self.MySqlHost, port=self.MySqlPort, user=self.MySqlUser, pw=self.MySqlPw,
-                                                   db=self.MySqlDB)
-                    query = "SELECT * FROM baseball.castermsg_mas WHERE CODE = '%s' limit 1" % msg_code
-                    template = db_my_conn.select(query, True)[0]
-
-                    msg_value = ()
-                    for v in hr_values:
-                        msg_value += (data[v],)
-
-                    msg = template['MSG'] % (msg_value)
-                    msg_list.append((random.randrange(0, 11), msg))
-            self.put_queue(msg_list)
-
-        elif data['event_type'] == '홈인':
-            print("캐스터: " + '홈인!')
-
-        elif data['event_type'] == '타자등판':
-            # TODO : 여기서 타자에 대한 점수계산과 문장을 만든다.
-            print("캐스터: " + live_data_dict['batter_name'])
-        """
-
     def put_queue(self, msg):
         data = msg
         self.caster_queue.put(data)
@@ -293,8 +274,11 @@ class GameHelper():
         while True:
             if self.caster_queue.size() > 0:
                 sentence = self.caster_queue.get()[1]
-                print("캐스터: " + sentence)
-                time.sleep(0.01*len(sentence))
+                if sentence:
+                    print("캐스터: " + sentence)
+                    time.sleep(0.01*len(sentence))
+                    self.caster_queue.decrease_q(0.01)
+
 
     """ 이하 Activation Functions """
     # [HR]점수차 변화 : 도망(1), 추격(1), 동점(2), 리드(3), 역전(4)
@@ -350,7 +334,7 @@ class GameHelper():
         for s in base_list:
             if live_data_dict[s] > 0:
                 count += 1
-        return {'base_state': count}
+        return {'BASE_STATE': count}
 
     # [HR]리그 종류와 시즌에 대한 선수 기록
     def get_player_league(self):
@@ -374,7 +358,7 @@ class GameHelper():
         query = query % (batter, live_data_dict['GYEAR'])
         data = db_my_conn.select(query, True)[0]
         result = {'RUN': data['RUN'], 'HR': data['HR'], 'HRA': data['HRA'], 'GAMENUM': data['GAMENUM'],
-                  'AB': data['AB'], 'HIT': data['HIT'], 'pitcher_name': live_data_dict['pitcher_name'], 'name': name}
+                  'AB': data['AB'], 'HIT': data['HIT'], 'PITCHER_NAME': live_data_dict['PITCHER_NAME'], 'NAME': name}
         return result
 
     # WPA 정보 - currWPA(후), prevWPA(전), varWAP(변화)
@@ -401,10 +385,20 @@ class GameHelper():
 
     # 메시지 점수 계산, list: 계산할 카테고리, dict: 해당 값
     def score_generator(self, mkey, dict):
-        score = 0.1
+        rank_score = 0.1
         m_key = mkey.split('_')[0]
-        for key, value in dict.items():
-            if key == (m_key+'_RNK'):
-                score = round(1 - (value / 100), 3)
 
-        return score
+        if (m_key+'_RNK') in dict:
+            rank_score = round(0.5 - (dict.get(m_key+'_RNK') / 200), 3)
+
+        if mkey in self.catg_score:
+            catg_score_val = self.catg_score.get(mkey)
+
+        result = round(self.get_new_sigmoid(rank_score + catg_score_val/2), 3)
+
+        return result
+
+    # 변경된 Sigmoid 함수 return -0.49 ~ 0.99
+    def get_new_sigmoid(self, x):
+        return 1 / (0.667 + exp(-10*x + 5)) - 0.5
+
