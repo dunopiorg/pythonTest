@@ -1,7 +1,8 @@
 from lib import DBConnection as db, tcpSocket
 
 # DB Setting
-database = "BASEBALL_NEW"
+baseball_new = "BASEBALL_NEW"
+baseball = "BASEBALL"
 serverInfo = '211.115.88.19'
 userId='LAB'
 pw='tmvhcm@ilAb10@$'
@@ -9,7 +10,7 @@ pw='tmvhcm@ilAb10@$'
 def getLiveText(gameId):
     try:
         # DB 연결
-        dbMsConn = db.MSSqlConnector(server=serverInfo, user=userId, password=pw, database=database)
+        dbMsConn = db.MSSqlConnector(server=serverInfo, user=userId, password=pw, database=baseball_new)
         dbMsConn.open(asDict=False)
 
         dbMyConn = db.MySqlConnector('localhost', 'root', '0000', 'baseball')
@@ -39,7 +40,7 @@ def getLiveText(gameId):
 def getGameContApp(gmkey=None):
     try:
         # DB 연결
-        dbMsConn = db.MSSqlConnector(server=serverInfo, user=userId, password=pw, database=database)
+        dbMsConn = db.MSSqlConnector(server=serverInfo, user=userId, password=pw, database=baseball_new)
         dbMsConn.open(asDict=False)
 
         dbMyConn = db.MySqlConnector('localhost', 3307, 'root', 'lab2ai64', 'baseball')
@@ -88,7 +89,7 @@ def getGameContApp_all(gmkey=None):
                   '  ORDER BY SERNO'
         msQuery = "SELECT *" \
                   "  FROM [BASEBALL].[dbo].[GameContApp]" \
-                  "  WHERE GYEAR IN ('2012', '2011')"
+                  "  WHERE GYEAR BETWEEN 1982 AND 1996"
 
         # TODO : value 입력
         myQuery = "INSERT INTO baseball.gamecontapp_all " \
@@ -109,17 +110,21 @@ def getGameContApp_all(gmkey=None):
 
 
 def getHitter():
+    baseball_all = "BASEBALL"
+    serverInfo_all = '211.115.88.17'
+    userId_all = 'LAB'
+    pw_all = 'tmvhcm@ilAb10@$'
     try:
         # DB 연결
-        dbMsConn = db.MSSqlConnector(server=serverInfo, user=userId, password=pw, database=database)
+        dbMsConn = db.MSSqlConnector(server=serverInfo_all, user=userId_all, password=pw_all, database=baseball_all)
         dbMsConn.open(asDict=False)
 
         dbMyConn = db.MySqlConnector('localhost', 3307, 'root', 'lab2ai64', 'baseball')
 
         # Query 설정
         msQuery = "SELECT * " \
-                  "FROM [BASEBALL_NEW].[dbo].[Hitter] " \
-                  "WHERE GDAY LIKE '2017%' "
+                  "FROM [{0}].[dbo].[Hitter] " \
+                  "WHERE GDAY LIKE '2016%' ".format(baseball_all)
 
         # TODO : value 입력
         myQuery = "INSERT INTO baseball.hitter " \
@@ -129,9 +134,11 @@ def getHitter():
         msItems = dbMsConn.select(msQuery, '')
         count = msItems.__len__()
 
+        result = 0
         for i in range(count):
             # Insert to MySql DB
-            dbMyConn.insert(myQuery, msItems[i])
+            result += dbMyConn.insert(myQuery, msItems[i])
+        print(result)
 
     finally:
         dbMsConn.close()
@@ -139,7 +146,7 @@ def getHitter():
 def getEntry():
     try:
         # DB 연결
-        dbMsConn = db.MSSqlConnector(server=serverInfo, user=userId, password=pw, database=database)
+        dbMsConn = db.MSSqlConnector(server=serverInfo, user=userId, password=pw, database=baseball_new)
         dbMsConn.open(asDict=False)
 
         dbMyConn = db.MySqlConnector('localhost', 3307, 'root', 'lab2ai64', 'baseball')
@@ -194,7 +201,6 @@ def getKbo_rank10_basic(gmkey=None):
             print(result)
     finally:
         dbMsConn.close
-
 
 if __name__ == "__main__":
     # getLiveText('20170912OBNC0')

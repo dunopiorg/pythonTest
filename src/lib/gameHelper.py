@@ -2,155 +2,118 @@ from lib import DBConnection as db
 from lib import casterq
 from lib import record
 from math import exp
+from datetime import datetime
 import korean
-import random
 import time
 
+
 class GameHelper(object):
-    # Setting Mysql Connector
+
+    # region Initialize 필요한 정보
     def __init__(self):
-        self.HOST = 'localhost'
-        self.USER = 'root'
-        self.PASSWORD = 'lab2ai64'
-        self.DB = 'baseball'
-        self.PORT = 3307
-        self.live_data = None
+        # database connection 상수 정보
+        self._HOST = 'localhost'
+        self._USER = 'root'
+        self._PASSWORD = 'lab2ai64'
+        self._DB = 'baseball'
+        self._PORT = 3307
+
+        # state 상수 정보
+        self._HIT = ['H1', 'H2', 'H3', 'HR', 'HI', 'HB']
+        self._HR = ['HR']
+        self._BB = ['BB', 'IB']
+        self._KK = ['KK']
+
+        # 기본 전역 변수
         self.event_cond_tuple = None
-        self.curr_away_score = 0 # 원정팀 현재 점수
-        self.curr_home_score = 0 # 홈팀 현재 점수
-        self.prev_away_score = 0  # 원정팀 현재 점수
-        self.prev_home_score = 0  # 홈팀 현재 점수
+        self.event_category_tuple = None
+        self.curr_away_score = 0  # 원정팀 현재 점수
+        self.curr_home_score = 0  # 홈팀 현재 점수
+        self.prev_away_score = 0  # 원정팀 이전 점수
+        self.prev_home_score = 0  # 홈팀 이전 점수
         self.game_event = None
-        self.caster_queue = casterq.CasterQueue()
         self.prev_pitcher = None
         self.prev_hitter = None
-        self.catg_score ={}
+        self.category_score = {}
+        self.curr_row_num = 0
+
+        # 기본 전역 객체 변수
+        self.caster_queue = casterq.CasterQueue()
+        self.recorder = record.Record()
+
+        # initialize data
         self.get_cond_dict()
-        self.get_catg_score()
-        # TEST 를 위한 변수
-        self.currRowNum = 0
-        self.get_event_catg()
+        self.get_category_score()
+        self.get_event_category()
 
-    # MSG Code 생성시 필요한 인자 정보 테이블
-    def get_event_catg(self):
-        db_my_conn = db.MySqlConnector(host=self.HOST, port=self.PORT, user=self.USER, pw=self.PASSWORD,
-                                       db=self.DB)
+    def get_event_category(self):
+        """
+        MSG Code 생성시 필요한 인자 정보 테이블
+        :return:
+        """
+        db_my_conn = db.MySqlConnector(host=self._HOST, port=self._PORT, user=self._USER, pw=self._PASSWORD,
+                                       db=self._DB)
         query = "select mcode, event, param from baseball.event_catg"
-        self.event_catg_tuple = db_my_conn.select(query, False)
+        self.event_category_tuple = db_my_conn.select(query, False)
 
-    # Text이벤트에 따른 함수 활성화 정의 테이블
     def get_cond_dict(self):
-        db_my_conn = db.MySqlConnector(host=self.HOST, port=self.PORT, user=self.USER, pw=self.PASSWORD, db=self.DB)
+        """
+        Text 이벤트에 따른 함수 활성화 정의 테이블
+        :return:
+        """
+        db_my_conn = db.MySqlConnector(host=self._HOST, port=self._PORT,
+                                       user=self._USER, pw=self._PASSWORD, db=self._DB)
         query = "select EVENT, CONDITIONS from baseball.event_cond"
         self.event_cond_tuple = db_my_conn.select(query, True)
 
-    # 이벤트 카테고리 별 점수
-    def get_catg_score(self):
-        db_my_conn = db.MySqlConnector(host=self.HOST, port=self.PORT, user=self.USER, pw=self.PASSWORD,
-                                       db=self.DB)
+    def get_category_score(self):
+        """
+        이벤트 카테고리 별 점수
+        :return:  category score dictionary
+        """
+        db_my_conn = db.MySqlConnector(host=self._HOST, port=self._PORT, user=self._USER, pw=self._PASSWORD,
+                                       db=self._DB)
         query = "select category, score from baseball.catg_score"
         rows = db_my_conn.select(query, True)
-        self.catg_score = {row["category"]: row["score"] for row in rows}
+        self.category_score = {row["category"]: row["score"] for row in rows}
+    # endregion
 
-    # 이번 시즌 투수 기록
-    def get_df_season_pitcher_record(self, pitcher):
-        result = {}
-        df_pitcher = record.get_df_season_pitcher_record(pitcher)
-        if len(df_pitcher) > 0:
-            pitcher_dict = df_pitcher.to_dict()
-            for key, value in pitcher_dict.items():
-                result.update({key: value[pitcher]})
-            return result
-        else:
-            return {}
-
-    # 이번 시즌 타자 기록
-    def get_df_season_hitter_record(self, hitter):
-        result = {}
-        df_hitter = record.get_df_season_hitter_record(hitter)
-        if len(df_hitter) > 0:
-            hitter_dict = df_hitter.to_dict()
-            for key, value in hitter_dict.items():
-                result.update({key: value[hitter]})
-            return result
-        else:
-            return {}
-
-    # 이번 시즌 투수상대 타자 기록
-    def get_df_season_bitter_vs_pitcher(self, hitter, pitcher):
-        result = {}
-        df_hitterVspitcher = record.get_df_season_hitter_vs_pitcher(hitter, pitcher)
-        if len(df_hitterVspitcher) > 0:
-            hitter_dict = df_hitterVspitcher.to_dict()
-            for key, value in hitter_dict.items():
-                result.update({key: value[hitter]})
-            return result
-        else:
-            return {}
-
-    # 실시간 데이터를 가져온다.
-    def get_live_data(self):
-        db_my_conn = db.MySqlConnector(host=self.HOST, port=self.PORT, user=self.USER, pw=self.PASSWORD, db=self.DB)
-        query = "select * from baseball.livetext_score_mix order by seqNo limit 1"
-        self.live_data = db_my_conn.select(query, True)[0]
-        return self.live_data
-
-    # Live가 아닌 Local Test를 위한 함수. getLiveData()로 대체될 것.
-    def test_live_data(self, gameid):
-        db_my_conn = db.MySqlConnector(host=self.HOST, port=self.PORT, user=self.USER, pw=self.PASSWORD, db=self.DB)
-        query = "SELECT (SELECT NAME FROM baseball.person WHERE A.pitcher = PCODE) AS PITCHER_NAME "\
-                       ", (SELECT NAME FROM baseball.person WHERE A.batter = PCODE) AS batter_name "\
-                       ", (SELECT NAME FROM baseball.person WHERE A.catcher = PCODE) AS catcher_name "\
-                       ", (SELECT NAME FROM baseball.person WHERE A.runner = PCODE) AS runner_name "\
-                       ", A.* "\
-                       "FROM baseball.livetext_score_mix A "\
-                       "WHERE A.gameID = '%s' "\
-                       "ORDER BY seqNo" % gameid
-
-        self.live_data = db_my_conn.select(query, True)
-        return self.live_data
-
-    # 무엇을 할 지 결정한다.
-    def get_what_info(self, livetext):
+    # region 게임진행 Functions
+    def get_what_info(self, live_text_dict):
+        """
+        무엇을 할 지 결정한다.
+        :param live_text_dict: live text dictionary data
+        :return: data parameters
+        """
         result = {}
         result_condition = {}
-        result_pitcher = {}
         result_hitter = {}
-        result_hitter_vs_pitcher = {}
 
-        live_data_dict = self.live_data[self.currRowNum]
-        curr_pitcher = live_data_dict['pitcher']
-        curr_hitter = live_data_dict['batter']
+        result_accum_hitter = {}
+        result_hit_event = {}
 
-        # 투수 정보 설정
-        if self.prev_pitcher != curr_pitcher :
-            if len(curr_pitcher) > 0:
-                self.prev_pitcher = curr_pitcher
-                # 이번 시즌 투수 기록
-                pitcher_dict = self.get_df_season_pitcher_record(curr_pitcher)
-                if pitcher_dict:
-                    result_pitcher.update({'event_type': 'pitcher_season_record'})
-                    result_pitcher.update(pitcher_dict)
+        text = live_text_dict['LiveText']
+        curr_hitter = live_text_dict['batter']
+        ball_count = live_text_dict['ballcount']
+        ball_type = live_text_dict['ball_type']
+        text_style = live_text_dict['textStyle']
+        how = live_text_dict['HOW']
+        game_id = live_text_dict['gameID']
 
         # 타자 설정
-        if self.prev_hitter != curr_hitter:
+        if self.prev_hitter != curr_hitter and text_style == 8:
             if len(curr_hitter) > 0:
                 self.prev_hitter = curr_hitter
-                # 이번 시즌 타자 기록
-                hitter_dict = self.get_df_season_hitter_record(curr_hitter)
-                if hitter_dict:
-                    result_hitter.update({'event_type': 'hitter_on_mound'})
-                    result_hitter.update(hitter_dict)
-
-                # 이번 시즌 타자 vs 투수 기록
-                hitter_vs_pitcher_dict = self.get_df_season_bitter_vs_pitcher(curr_hitter, curr_pitcher)
-                if hitter_vs_pitcher_dict:
-                    result_hitter_vs_pitcher.update({'event_type': 'hitter_vs_pitcher'})
-                    result_hitter_vs_pitcher.update(hitter_vs_pitcher_dict)
-
-        word_list = livetext.split()
+                # 타자의 기록을 가져온다.
+                start_time = time.time()
+                hitter_list = self.get_hitter_record(live_text_dict)
+                print('Second: %s' % (time.time() - start_time))
+                if hitter_list:
+                    result_accum_hitter.update({'hitter_on_mound': hitter_list})
 
         # 게임중 나타나는 이벤트 설정
+        """
+        word_list = text.split()
         for cond_dict in self.event_cond_tuple:
             if cond_dict.get('EVENT') in word_list:
                 self.game_event = cond_dict.get('EVENT')
@@ -160,217 +123,454 @@ class GameHelper(object):
                     t_dict = method()
                     if t_dict:
                         result_condition.update(t_dict)
+        """
 
-        if result_pitcher:
-            result.update({'pitcher_info': result_pitcher})
+        # 초구 정보
+        if ball_count == 1 and ball_type not in ('F', 'H') and text_style == 1:
+            print("캐스터: ", text)
+            self.get_first_ball_info(curr_hitter, ball_type)
+
+        # 타격 Event 발생
+        if ball_type == 'H' and text_style == 1:
+            print("캐스터: 쳤습니다.")
+        elif ball_type == 'H' and text_style == 13:
+            if how in self._HIT:
+                how_event = 'HIT'
+                if how == 'H2' or how == 'H3':
+                    how_event = how
+            elif how in self._HR:
+                how_event = 'HR'
+            elif how in self._BB:
+                how_event = 'BB'
+            elif how in self._KK:
+                how_event = 'KK'
+            else:
+                how_event = 'HIT'
+            self.set_hitter_record_with_state(how_event, live_text_dict)  # update 기록
+            hitter_record = self.get_hitter_record(live_text_dict)
+            if hitter_record:
+                result_hit_event.update({'hit_the_ball': hitter_record})
+
         if result_hitter:
             result.update({'hitter_info': result_hitter})
-        if result_hitter_vs_pitcher:
-            result.update({'hitter_vs_pitcher_info': result_hitter_vs_pitcher})
         if result_condition:
             result.update({'text_condition_info': result_condition})
+        if result_accum_hitter:
+            result.update(result_accum_hitter)
+        if result_hit_event:
+            result.update(result_hit_event)
 
         return result
+    # endregion
 
-    # 상황별 문장을 만든다.
-    def make_sentence(self, data):
-        for key, value_dict in data.items():
-            event_type = value_dict['event_type']
-
-            # 홈런 상황
-            if key == 'text_condition_info':
-                if event_type == '홈런':
-                    self.set_msg_value("HR", value_dict)
-                elif event_type == '홈인':
-                    print("캐스터: " + '홈인!')
-
-            # 투수 등판 시
-            elif key == 'pitcher_info':
-                print("캐스터: ",  value_dict)
-
-            # 타자 등판 시
-            elif key == 'hitter_info' or key == 'hitter_vs_pitcher_info':
-                if event_type == 'hitter_on_mound':
-                    self.set_msg_value("HM", value_dict)
-
-                # 타자와 투수 대결 정보
-                elif event_type is 'hitter_vs_pitcher':
-                    self.set_msg_value("VS", value_dict)
-
-                # 주자 상황에 따른 타자 정보
-                elif event_type is 'on_base_info':
-                    print('주자 상황')
-
-                # 점수차 상황에 따른 타자 정보
-                elif event_type is 'score_gap_info':
-                    print('점수차')
-
-                # 점수차와 주자 상황에 따른 타자 정보
-                elif event_type is 'score_base_info':
-                    print('점수차와 주자상황')
-
-    # Queue에 넣는다.
+    # region Queue Functions
     def put_queue(self, msg):
+        """
+        Queue 에 넣는다.
+        :param msg: 생성된 Message
+        :return:
+        """
         data = msg
         self.caster_queue.put(data)
         self.caster_queue.sort()
 
-    # Queue에서 뺀 후에 Decreasing한다. [Thread]
     def get_queue(self):
+        """
+        Queue 에서 뺀 후에 Decreasing 한다. [Thread]
+        :return:
+        """
         while True:
             if self.caster_queue.size() > 0:
                 sentence = self.caster_queue.get()[1]
+
                 if sentence:
-                    print("캐스터: " + sentence)
+                    # HIT_BASIC_A_A - STATE, STATE_SPLIT, OPPONENT, LEAGUE
+                    msg = self.print_msg(sentence)
+                    if msg:
+                        print("캐스터: ", msg)
                     time.sleep(0.01*len(sentence))
                     self.caster_queue.decrease_q(0.01)
+    # endregion
 
-    """ Start Activation Functions """
-    # [HR]점수차 변화 : 도망(1), 추격(1), 동점(2), 리드(3), 역전(4)
-    def get_score_status(self):
-        live_data_dict = self.live_data[self.currRowNum]
-        score_state = None
-        score_state_name = None
+    # region 기능 관련 Functions
+    def make_sentence(self, data):
+        """
+        상황별 문장을 만든다.
+        :param data:  query data parameters
+        :return:
+        """
+        for key, value_dict in data.items():
+            # 타자 등판 시
+            if key == 'hitter_on_mound':
+                self.set_score(value_dict)
+            elif key == 'hit_the_ball':
+                self.set_score(value_dict)
+            # 홈런 상황
+            # 투수 등판 시
+            # 타자 등판 시
 
-        if live_data_dict['bTop'] == 1:
-            self.prev_away_score = self.curr_away_score
-            self.curr_away_score += 1
+    def get_hitter_record(self, data):
+        """
+        hitter 의 기록을 가져와 dictionary 로 만든다.
+        :param data: live text dictionary data
+        :return:
+        """
+        live_dict = self.get_current_game_state(data)
+
+        game_id = live_dict['game_id']
+        hitter = live_dict['hitter']
+
+        result_list = []
+
+        today_record = self.get_today_hitter_data(game_id, hitter)  # HITTER 의 오늘 기록
+        if today_record:
+            result_list.extend(today_record)
+
+        total_record = self.recorder.get_total_hitter_record(live_dict)  # HITTER 의 전체 기록
+        if total_record:
+            result_list.extend(total_record)
+
+        if result_list:
+            self.set_nine_record(result_list)
+            ngame_record = self.get_ngame_continuous_data(hitter)  # N 경기 연속기록
+            if ngame_record:
+                result_list.extend(ngame_record)
+            npa_record = self.get_npa_continuous_data(hitter)  # N 타석 연속기록
+            if npa_record:
+                result_list.extend(npa_record)
+            return result_list
         else:
-            self.prev_home_score = self.curr_home_score
-            self.curr_home_score += 1
+            return None
 
-        if self.prev_away_score == 0 and self.prev_home_score == 0:
-            score_state = 3
-            score_state_name = '리드'
-        elif self.curr_away_score == self.curr_home_score:
-            score_state = 3
-            score_state_name = '동점'
-        elif self.prev_away_score == self.prev_home_score:
-            score_state = 5
-            score_state_name = '역전'
-        elif self.curr_away_score > self.curr_home_score:
-            if self.prev_away_score > self.prev_home_score and live_data_dict['bTop'] == 1:
-                score_state = 1
-                score_state_name = '도망'
-            else:
-                score_state = 1
-                score_state_name = '추격'
-        elif self.curr_away_score < self.curr_home_score:
-            if self.prev_away_score < self.prev_home_score and live_data_dict['bTop'] == 0:
-                score_state = 1
-                score_state_name = '도망'
-            else:
-                score_state = 1
-                score_state_name = '추격'
+    def get_first_ball_info(self, hitter, ball_type):
+        """
+        초구 정보
+        :param hitter:
+        :param ball_type: S: 헛스윙, T:기다리는 Strike
+        :return:
+        """
+        data_dict = {'SUBJECT': 'HITTER', 'OPPONENT': 'NA', 'LEAGUE': 'NA', 'PITCHER': 'NA', 'PITNAME': 'NA',
+                     'GYEAR': 'NA', 'PITTEAM': 'NA', 'STATE_SPLIT': 'FIRSTBALL', 'HITTER': hitter}
 
-        return {'score_state': score_state, 'score_state_name': score_state_name}
+        result = []
+        first_ball_info = self.recorder.get_first_ball_info(hitter)[0]
 
-    # [HR]득점 종류: 안타,홈런,희생FL,실책,내야 땅볼 등
-    def get_kind_score(self):
-        return {'event_type': self.game_event}
+        if ball_type == 'S':
+            if first_ball_info['T_CNT_RNK'] < 11:
+                first_ball_dict = data_dict.copy()
+                first_ball_dict['HITNAME'] = first_ball_info['HITNAME']
+                first_ball_dict['RNK'] = 1
+                first_ball_dict['STATE'] = '0S'
+                first_ball_dict['PA'] = first_ball_info['PA']
+                result.append(first_ball_dict)
 
-    # [HR]주자 상황 : no, 1, 1-2or2-3, 1-2-3
-    # return 1, 2, 3, 4
-    def get_base_state(self):
-        live_data_dict = self.live_data[self.currRowNum]
-        count = 1
-        base_list = ['base1', 'base2', 'base3']
+        elif ball_type == 'T':
+            if first_ball_info['S_CNT_RNK'] < 11:
+                first_ball_dict = data_dict.copy()
+                first_ball_dict['HITNAME'] = first_ball_info['HITNAME']
+                first_ball_dict['RNK'] = 1
+                first_ball_dict['STATE'] = '0T'
+                first_ball_dict['PA'] = first_ball_info['PA']
+                result.append(first_ball_dict)
 
-        for s in base_list:
-            if live_data_dict[s] > 0:
-                count += 1
-        return {'BASE_STATE': count}
+        if result:
+            self.set_score(result)
 
-    # [HR]리그 종류와 시즌에 대한 선수 기록
-    def get_player_league(self):
-        live_data_dict = self.live_data[self.currRowNum]
-        db_my_conn = db.MySqlConnector(host=self.HOST, port=self.PORT, user=self.USER, pw=self.PASSWORD, db=self.DB)
-        query = "select * " \
-                " from baseball.battotal " \
-                "where PCODE = '%s' " \
-                "and GYEAR = %s " \
-                "limit 1"
-        if self.game_event == '홈런':
-            batter = live_data_dict['batter']
-            name = live_data_dict['batter_name']
-        elif self.game_event == '홈인':
-            batter = live_data_dict['runner']
-            name = live_data_dict['runner_name']
-        else:
-            batter = live_data_dict['batter']
-            name = live_data_dict['batter_name']
-
-        query = query % (batter, live_data_dict['GYEAR'])
-        data = db_my_conn.select(query, True)[0]
-        result = {'RUN': data['RUN'], 'HR': data['HR'], 'HRA': data['HRA'], 'GAMENUM': data['GAMENUM'],
-                  'AB': data['AB'], 'HIT': data['HIT'], 'PITCHER_NAME': live_data_dict['PITCHER_NAME'], 'NAME': name}
-        return result
-
-    # WPA 정보 - currWPA(후), prevWPA(전), varWAP(변화)
-    def get_wpa(self):
-        live_data_dict = self.live_data[self.currRowNum]
-        db_my_conn = db.MySqlConnector(host=self.HOST, port=self.PORT, user=self.USER, pw=self.PASSWORD, db=self.DB)
-        query = "select BEFORE_WE_RT, AFTER_WE_RT, WPA_RT " \
-                " from baseball.ie_record_matrix " \
-                "where GAMEID = '%s' " \
-                "and GYEAR = %s " \
-                "and SEQNO = %s " \
-                "limit 1"
-        query = query % (live_data_dict['gameID'], live_data_dict['GYEAR'], live_data_dict['seqNO'])
-        result = db_my_conn.select(query, True)[0]
-        return {'currWPA': result['AFTER_WE_RT'], 'prevWPA': result['BEFORE_WE_RT'], 'varWAP': result['WPA_RT']}
-
-    # [HR]상대선수와의 기록
-    def get_vs_pitcher(self):
-        live_data_dict = self.live_data[self.currRowNum]
-        pitcher = live_data_dict['pitcher']
-        hitter = live_data_dict['batter']
-
-        return self.get_df_season_bitter_vs_pitcher(hitter, pitcher)
-    """ End Activation Functions """
-
-    """ Start Functions """
-    # 메시지 점수 계산, list: 계산할 카테고리, dict: 해당 값
-    def score_generator(self, key_list, value_dict):
-        rank_score = 0.1
-        catg_score_val = 0
-
-        for key in key_list:
-            if key.find("_RNK") > 0:
-                rank_score = round(0.5 - (value_dict.get(key) / 200), 3)
-            elif key in self.catg_score:
-                catg_score_val = self.catg_score.get(key)
-
-        result = round(self.get_new_sigmoid(rank_score + catg_score_val/2), 3)
-
-        return result
-
-    # 변경된 Sigmoid 함수 return -0.49 ~ 0.99
     def get_new_sigmoid(self, x):
+        """
+        변경된 Sigmoid 함수 return -0.49 ~ 0.99
+        :param x: 점수
+        :return:
+        """
         return 1 / (0.667 + exp(-10*x + 5)) - 0.5
 
-    # DB에서 메시지 가져오고, Value 계산한 후에 Queue에 넣는다.
-    def set_msg_value(self, event_type, value_dict):
-        msg_list = []
-        event_tuple_list = [item for item in self.event_catg_tuple if item[1] == event_type]
+    def score_generator(self, data):
+        """
+        scoring parameters
+        :param data:
+        :return:  계산된 score
+        """
+        result = None
+        state_score_val = None
+        state_split_score_val = None
+        rank_score = None
+        if 'STATE' in data:
+            state = data['STATE']
+            state_split = data['STATE_SPLIT']
 
-        for mcode, _, param in event_tuple_list:
-            p_list = param.split(',')
-            if all(item in value_dict for item in p_list):
-                if any(v for v in p_list if value_dict[v] == 0):
+            if state in self.category_score:
+                state_score_val = self.category_score.get(state)
+                rank_score = round(0.5 - (data.get('RNK') / 200), 3)
+            else:
+                state_score_val = 0.5
+                rank_score = 0.5
+
+            if state_split in self.category_score:
+                state_split_score_val = self.category_score.get(state_split)
+
+        if state_score_val is not None and rank_score is not None:
+            result = round(self.get_new_sigmoid(rank_score + (state_score_val + state_split_score_val) / 2), 3)
+
+        return result
+
+    def set_score(self, data):
+        """
+        DB 에서 메시지 가져오고, Value 계산한 후에 Score Table Queue 에 넣는다.
+        :param data:
+        :return:
+        """
+        score_data = []
+        for data_dict in data:
+            score = self.score_generator(data_dict)
+            if score:
+                score_data.append([score, data_dict])
+        if score_data:
+            self.put_queue(score_data)
+
+    def print_msg(self, value_dict):
+        """
+        Print Message
+        :param value_dict:
+        :return: None or Message string
+        """
+        # msg_code = "{}L0{:02d}".format(mcode, random.randrange(0, 2))
+        msg = None
+        msg_code = self.get_msg_code(value_dict)
+
+        db_my_conn = db.MySqlConnector(host=self._HOST, port=self._PORT,
+                                       user=self._USER,
+                                       pw=self._PASSWORD,
+                                       db=self._DB)
+
+        query = "SELECT MSG FROM baseball.castermsg_mas WHERE CODE = '%s' limit 1" % msg_code
+        template = db_my_conn.select(query, True)
+        if template:
+            try:
+                if value_dict['RESULT'] > 1:
+                    value_dict['RESULT'] = int(value_dict['RESULT'])
+
+                msg = korean.l10n.Template(template[0]['MSG']).format(**value_dict)
+            except Exception as ex:
+                print(ex)
+            return msg
+        else:
+            return None
+
+    def set_nine_record(self, data_list):
+        """
+        10단위, 100단위 생성
+        :param data_list: 기존 기록 결과
+        :return:  기존기록 결과에 추가로 단위수 결과 생성
+        """
+        categories = ['HIT', 'HR', 'RBI', 'BB']
+        for data_dict in data_list:
+            if data_dict['STATE'] in categories and data_dict['STATE_SPLIT'] == 'BASIC':
+                result_record = data_dict['RESULT']
+                league = data_dict['LEAGUE']
+
+                if league == 'SEASON':
+                    if result_record % 10 == 9:
+                        copy_dict = data_dict.copy()
+                        copy_dict['RESULT'] = copy_dict['RESULT'] + 1
+                        copy_dict['STATE_SPLIT'] = 'UNIT10'
+                        data_list.append(copy_dict)
+                else:
+                    if result_record % 100 == 99:
+                        copy_dict = data_dict.copy()
+                        copy_dict['RESULT'] = copy_dict['RESULT'] + 1
+                        copy_dict['STATE_SPLIT'] = 'UNIT100'
+                        data_list.append(copy_dict)
+
+    def get_ngame_continuous_data(self, hitter):
+        """
+        N경기 연속  데이터 생성
+        :param hitter:
+        :return:  dictionary parameter 결과
+        """
+        state_dict = {'HIT': ['H1', 'H2', 'H3', 'HR', 'HI', 'HB'], 'HR': ['HR'],
+                      'RBI': ['E', 'R', 'H'], 'BB': ['BB', 'IB'], 'KK': ['KK']}
+        data_dict = {'SUBJECT': 'HITTER', 'OPPONENT': 'ALL', 'LEAGUE': 'SEASON',
+                     'PITCHER': 'NA', 'PITNAME': 'NA', 'PITTEAM': 'NA'}
+
+        hitter_gm_list = self.recorder.get_hitter_continuous_record(hitter)
+        result = []
+
+        for state_k, state_v_list in state_dict.items():
+            counter = 0
+            gmkey = ''
+            for hitter_gm_dict in hitter_gm_list:
+                if gmkey != hitter_gm_dict['GMKEY']:
+                    gmkey = hitter_gm_dict['GMKEY']
+                    if state_k == 'RBI':
+                        how = hitter_gm_dict['PLACE']
+                    else:
+                        how = hitter_gm_dict['HOW']
+
+                    if how in state_v_list:
+                        counter += 1
+                        continue
+                    else:
+                        if counter > 1:
+                            data_dict['RESULT'] = counter
+                            data_dict['STATE'] = state_k
+                            data_dict['STATE_SPLIT'] = 'NGAME'
+                            result.append(data_dict)
+                        break
+        return result
+
+    def get_npa_continuous_data(self, hitter):
+        """
+        N타석 연속 데이터 생성
+        :param hitter:
+        :return: dictionary parameter 결과
+        """
+        state_dict = {'HIT': ['H1', 'H2', 'H3', 'HR', 'HI', 'HB'], 'HR': ['HR'], 'RBI': ['E', 'R', 'H'],
+                      'BB': ['BB', 'IB'], 'KK': ['KK']}
+        data_dict = {'SUBJECT': 'HITTER', 'OPPONENT': 'ALL', 'LEAGUE': 'SEASON', 'PITCHER': 'NA', 'PITNAME': 'NA',
+                     'PITTEAM': 'NA'}
+
+        hitter_gm_list = self.recorder.get_hitter_continuous_record(hitter)
+        result = []
+        for state_k, state_v_list in state_dict.items():
+            counter = 0
+            for hitter_gm_dict in hitter_gm_list:
+                if state_k == 'RBI':
+                    how = hitter_gm_dict['PLACE']
+                else:
+                    how = hitter_gm_dict['HOW']
+
+                if how in state_v_list:
+                    counter += 1
                     continue
-                msg_code = "{}L0{:02d}".format(mcode, random.randrange(0, 2))
-                db_my_conn = db.MySqlConnector(host=self.HOST, port=self.PORT,
-                                               user=self.USER,
-                                               pw=self.PASSWORD,
-                                               db=self.DB)
-                query = "SELECT MSG FROM baseball.castermsg_mas WHERE CODE = '%s' limit 1" % msg_code
-                template = db_my_conn.select(query, True)[0]
+                else:
+                    if counter > 1:
+                        data_dict['RESULT'] = counter
+                        data_dict['STATE'] = state_k
+                        data_dict['STATE_SPLIT'] = 'NPA'
+                        result.append(data_dict)
+                    break
+        return result
 
-                msg = korean.l10n.Template(template['MSG']).format(**value_dict)
-                value = self.score_generator(p_list, value_dict)
-                msg_list.append([value, msg])
+    def get_msg_code(self, data_dict):
+        """
+        Message Code 생성
+        :param data_dict:  data parameters
+        :return: message code
+        """
+        msg_code = '{0}_{1}_{2}_{3}'
+        state = data_dict['STATE']
+        if data_dict['STATE_SPLIT'] == 'VERSUS':
+            state_split = 'VS'
+        else:
+            state_split = data_dict['STATE_SPLIT']
+        opponent = data_dict['OPPONENT'][0]
+        league = data_dict['LEAGUE'][0]
 
-        if msg_list:
-            self.put_queue(msg_list)
-    """ End Functions"""
+        return msg_code.format(state, state_split, opponent, league)
+
+    def get_today_hitter_data(self, gmkey, hitter):
+        """
+        오늘 경기 기록
+        :param gmkey: game key
+        :param hitter:  hitter
+        :return: query에 들어갈 정보
+        """
+        result = []
+        today = self.recorder.get_today_hitter_record(gmkey, hitter)
+        if today:
+            data_dict = {'SUBJECT': 'HITTER', 'OPPONENT': 'NA', 'LEAGUE': 'NA', 'PITCHER': 'NA', 'PITNAME': 'NA',
+                         'GYEAR': 'NA', 'PITTEAM': 'NA', 'STATE_SPLIT': 'TODAY',
+                         'RNK': 1, 'HITTER': hitter, 'HITNAME': today[0]['HITNAME'], 'PA': int(today[0]['PA'])}
+
+            for k, v in today[0].items():
+                if k == 'PA' or k == 'HITNAME':
+                    continue
+                set_dict = data_dict.copy()
+                set_dict['STATE'] = k
+                set_dict['RESULT'] = int(v)
+                result.append(set_dict)
+        return result
+
+    def set_hitter_record_with_state(self, how, live_data):
+        """
+        타자 이벤트 발생시 기록 UPDATE
+        :param how:  HIT, HR, BB, KK, RBI
+        :param live_data:  live text data
+        :return:
+        """
+        live_dict = self.get_current_game_state(live_data)
+        pitcher = live_data['pitcher']
+        hitter = live_dict['hitter']
+        year = datetime.now().year
+        count_record_lists = [
+            {'hitter': hitter, 'state': how, 'state_split': 'BASIC', 'opponent': 'ALL', 'gyear': year,
+             'pitcher': 'NA', 'pitteam': 'NA'},  # 시즌 통산 기록
+            {'hitter': hitter, 'state': how, 'state_split': 'VERSUS', 'opponent': 'PITCHER', 'gyear': year,
+             'pitcher': pitcher, 'pitteam': 'NA'},  # 선수 대결 통산 기록
+            {'hitter': hitter, 'state': how, 'state_split': 'VERSUS', 'opponent': 'TEAM', 'gyear': year,
+             'pitcher': 'NA', 'pitteam': live_dict['pitteam']},  # 팀 대결 시즌 통산 기록
+            {'hitter': hitter, 'state': how, 'state_split': live_dict['score'], 'opponent': 'ALL', 'gyear': year,
+             'pitcher': 'NA', 'pitteam': 'NA'},  # 점수차 시즌 통산 기록
+            {'hitter': hitter, 'state': how, 'state_split': live_dict['base'],  'opponent': 'ALL', 'gyear': year,
+             'pitcher': 'NA', 'pitteam': 'NA'},  # 주자 상황 시즌 통산 기록
+        ]
+
+        for count_record_dict in count_record_lists:
+            self.recorder.update_hitter_count_record(count_record_dict)
+
+        param_dict = {'state': how, 'splits': "'{0}', '{1}', '{2}', '{3}'".format(
+            'BASIC', 'VERSUS', live_dict['score'], live_dict['base'])}
+        self.recorder.call_update_state_rank(param_dict)
+
+    def get_current_game_state(self, live_data):
+        """
+        현재 경기 상황 정보 return dict: hitter, hitteam, pitcher, pitteam, score, base, game_id
+        :param live_data:  live text data
+        :return: 가공된 dictionary 정보
+        """
+        game_id = live_data['gameID']
+        if live_data['bTop'] == 1:
+            hitteam = game_id[8:10]
+            pitteam = game_id[10:12]
+            t_score = live_data['H_Run'] - live_data['A_Run']
+        else:
+            t_score = live_data['A_Run'] - live_data['H_Run']
+            hitteam = game_id[10:12]
+            pitteam = game_id[8:10]
+
+        if t_score < 0:
+            t = 'L'
+        elif t_score == 0:
+            t = 'D'
+        else:
+            t = 'W'
+
+        if abs(t_score) == 1 or abs(t_score) == 0:
+            score = "{0}{1}".format(abs(t_score), t)
+        else:
+            score = "{0}{0}".format(t)
+
+        hitter = live_data['batter']
+        pitcher = live_data['pitcher']
+
+        if live_data['base1'] + live_data['base2'] + live_data['base3'] == 0:
+            base = 'NOB'
+        elif live_data['base1'] > 0 and live_data['base2'] + live_data['base3'] == 0:
+            base = '1B'
+        elif live_data['base2'] > 0 and live_data['base1'] + live_data['base3'] == 0:
+            base = '2B'
+        elif live_data['base3'] > 0 and live_data['base1'] + live_data['base1'] == 0:
+            base = '3B'
+        elif live_data['base1'] > 0 and live_data['base2'] > 0 and live_data['base3'] == 0:
+            base = '12B'
+        elif live_data['base1'] > 0 and live_data['base3'] > 0 and live_data['base2'] == 0:
+            base = '13B'
+        elif live_data['base2'] > 0 and live_data['base3'] > 0 and live_data['base1'] == 0:
+            base = '23B'
+        else:
+            base = '123B'
+
+        result_dict = {'hitter': hitter, 'hitteam': hitteam, 'pitcher': pitcher, 'pitteam': pitteam,
+                       'score': score, 'base': base, 'game_id': game_id}
+        return result_dict
+    # endregion

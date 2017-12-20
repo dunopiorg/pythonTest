@@ -2,8 +2,7 @@ class CasterQueue:
     q = []
 
     def put(self, data):
-        for item in data:
-            self.q.append(item)
+        self.q.extend(data)
 
     def get(self):
         if self.size() > 0:

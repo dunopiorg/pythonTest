@@ -67,18 +67,6 @@ class MySqlConnector():
         finally:
             conn.close()
 
-    """
-    data = (
-        ('홍진우', 1, '서울'),
-        ('강지수', 2, '부산'),
-        ('김청진', 1, '서울'),
-    )
-    sql = insert into customer(name,category,region)
-             values (%s, %s, %s)
-    curs.executemany(sql, data)
-    conn.commit()
-    복수개의 Insert
-    """
     def insert(self, query, args):
         result = None
 

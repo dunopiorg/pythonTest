@@ -47,6 +47,7 @@ if __name__ == "__main__":
         server.close()
     """
 
+    sleep_second = 5
     currInfoDict = None
     prevInfoDict = None
     gmHelper = gameHelper.GameHelper()
@@ -57,14 +58,12 @@ if __name__ == "__main__":
     testTuple = gmHelper.test_live_data('20170912OBNC0')
     for i, testDict in enumerate(testTuple):
         print("문자: " + testDict['LiveText'])
-        gmHelper.currRowNum = i
-        result = gmHelper.get_what_info(testDict['LiveText'])
+        gmHelper.curr_row_num = i
+        result = gmHelper.get_what_info(testDict)
 
         if result:
             gmHelper.make_sentence(result)
-        time.sleep(1)
+        time.sleep(sleep_second)
 
     # Test End -------------------------------------
     prevInfoDict = currInfoDict
-
-
