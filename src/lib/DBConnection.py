@@ -51,9 +51,9 @@ class MySqlConnector():
         self.__db = db
         self.__port = port
 
-    def select(self, query, dict=False, *args):
+    def select(self, query, use_dict=False, *args):
         result = None
-        option = pymysql.cursors.DictCursor if dict is True else None
+        option = pymysql.cursors.DictCursor if use_dict is True else None
         conn = pymysql.connect(host=self.__host, port=self.__port, user=self.__user, password=self.__password, db=self.__db, charset='utf8mb4')
         try:
             with conn.cursor(option) as cursor:

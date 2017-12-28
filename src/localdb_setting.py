@@ -54,7 +54,6 @@ def getGameContApp(gmkey=None):
                   '  FROM [BASEBALL_NEW].[dbo].[GameContApp]' \
                   '  WHERE GYEAR = 2016'
 
-        # TODO : value 입력
         myQuery = "INSERT INTO baseball.gamecontapp " \
                   "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 
@@ -91,7 +90,6 @@ def getGameContApp_all(gmkey=None):
                   "  FROM [BASEBALL].[dbo].[GameContApp]" \
                   "  WHERE GYEAR BETWEEN 1982 AND 1996"
 
-        # TODO : value 입력
         myQuery = "INSERT INTO baseball.gamecontapp_all " \
                   "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 
@@ -126,7 +124,6 @@ def getHitter():
                   "FROM [{0}].[dbo].[Hitter] " \
                   "WHERE GDAY LIKE '2016%' ".format(baseball_all)
 
-        # TODO : value 입력
         myQuery = "INSERT INTO baseball.hitter " \
                   "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 
@@ -187,7 +184,6 @@ def getKbo_rank10_basic(gmkey=None):
         msQuery = 'SELECT *' \
                   '  FROM [BBIS].[dbo].[kbo_rank10_basic]'
 
-        # TODO : value 입력
         myQuery = "INSERT INTO baseball.kbo_rank10_basic " \
                   "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 
@@ -202,11 +198,76 @@ def getKbo_rank10_basic(gmkey=None):
     finally:
         dbMsConn.close
 
+def get_gameinfo(gmkey=None):
+    database_all = "BASEBALL"
+    serverInfo_all = '211.115.88.19'
+    userId_all = 'LAB'
+    pw_all = 'tmvhcm@ilAb10@$'
+
+    try:
+        # DB 연결
+        dbMsConn = db.MSSqlConnector(server=serverInfo_all, user=userId_all, password=pw_all, database=database_all)
+        dbMsConn.open(asDict=False)
+
+        dbMyConn = db.MySqlConnector('localhost', 3307, 'root', 'lab2ai64', 'baseball')
+
+        # Query 설정
+        msQuery = 'SELECT *' \
+                  '  FROM [BASEBALL].[dbo].[Gameinfo]'
+
+        myQuery = "INSERT INTO baseball.gameinfo " \
+                  "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+
+        # MS Data Selection
+        msItems = dbMsConn.select(msQuery, gmkey)
+        count = msItems.__len__()
+
+        for i in range(count):
+            # Insert to MySql DB
+            result = dbMyConn.insert(myQuery, msItems[i])
+            print(result)
+    finally:
+        dbMsConn.close
+
+def get_pitzone(gmkey=None):
+    database_all = "BASEBALL_NEW"
+    serverInfo_all = '211.115.88.19'
+    userId_all = 'LAB'
+    pw_all = 'tmvhcm@ilAb10@$'
+
+    try:
+        # DB 연결
+        dbMsConn = db.MSSqlConnector(server=serverInfo_all, user=userId_all, password=pw_all, database=database_all)
+        dbMsConn.open(asDict=False)
+
+        dbMyConn = db.MySqlConnector('localhost', 3307, 'root', 'lab2ai64', 'baseball')
+
+        # Query 설정
+        msQuery = 'SELECT *' \
+                  "  FROM [BASEBALL_NEW].[dbo].[KBO_PitZone] WHERE GYEAR = '2017'"
+
+        myQuery = "INSERT INTO baseball.pitzone " \
+                  "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+
+        # MS Data Selection
+        msItems = dbMsConn.select(msQuery, gmkey)
+        count = msItems.__len__()
+
+        for i in range(count):
+            # Insert to MySql DB
+            result = dbMyConn.insert(myQuery, msItems[i])
+            print(result)
+    finally:
+        dbMsConn.close
+
+
 if __name__ == "__main__":
     # getLiveText('20170912OBNC0')
     # getGameContApp('20170912OBNC0')
     # getGameContApp()
-    getGameContApp_all()
+    # getGameContApp_all()
     # getHitter()
     # getEntry()
     # getKbo_rank10_basic()
+    # get_gameinfo()
+    get_pitzone()

@@ -2,7 +2,14 @@ import pandas as pd
 import pymysql.cursors
 from datetime import datetime
 
+
 class Record(object):
+
+    _HOST = 'localhost'
+    _USER = 'root'
+    _PASSWORD = 'lab2ai64'
+    _DB = 'baseball'
+    _PORT = 3307
 
     def __init__(self):
         self._HOST = 'localhost'
@@ -11,130 +18,16 @@ class Record(object):
         self._DB = 'baseball'
         self._PORT = 3307
 
-    def get_df_season_pitcher_record(self, pitcher):
-        result = pd.DataFrame()
-        return result
-
-    def get_df_season_hitter_vs_pitcher(self, hitter, pitcher):
-        conn = pymysql.connect(host=self._HOST, port=self._PORT, user=self._USER, password=self._PASSWORD, db=self._DB, charset='utf8mb4')
-        sql = "SELECT HITTER, HITNAME, PITCHER, PITNAME "\
-                "               , RBI AS RBI_CN "\
-                "               , DENSE_RANK() OVER(ORDER BY RBI DESC) AS RBI_RNK  "\
-                "               , BB AS BB_CN "\
-                "               , DENSE_RANK() OVER(ORDER BY BB DESC) AS BB_RNK "\
-                "               , SB AS SB_CN "\
-                "               , DENSE_RANK() OVER(ORDER BY SB DESC) AS SB_RNK "\
-                "               , H2 AS H2_CN "\
-                "               , DENSE_RANK() OVER(ORDER BY H2 DESC) AS H2_RNK "\
-                "               , HIT AS HIT_CN "\
-                "               , DENSE_RANK() OVER(ORDER BY HIT DESC) AS HIT_RNK "\
-                "               , HR AS HR_CN "\
-                "               , DENSE_RANK() OVER(ORDER BY HR DESC) AS HR_RNK "\
-                "FROM  "\
-                "( "\
-                "SELECT HITTER, HITNAME, PITCHER, PITNAME "\
-                "		, SUM(CASE WHEN HOW IN ('H1','H2','H3','HR','HI','HB','BB','IB','HP','KK','KN','KB' "\
-                "					,'KW','KP','IN','OB','IP','XX','SH','SF','FC','GD','TP','GR','BN','FL','LL','IF','FF') THEN 1 "\
-                "		ELSE 0 END) AS PA "\
-                "		, SUM(CASE WHEN HOW IN ('H1','H2','H3','HR','HI','HB','GR','BN','FL','LL','IF','FF','KK','KN','KB','KW','KP','IP','XX','FC','GD','TP') THEN 1 " \
-                "						ELSE 0 END) AS AB "\
-                "		, SUM(CASE WHEN HOW IN ('H1','H2','H3','HR','HI','HB') THEN 1 "\
-                "							ELSE 0 END) AS HIT "\
-                "		, SUM(CASE WHEN HOW = 'H2' THEN 1 ELSE 0 END) H2 "\
-                "		, SUM(CASE WHEN HOW = 'H3' THEN 1 ELSE 0 END) H3 "\
-                "		, SUM(CASE WHEN HOW = 'HR' THEN 1 ELSE 0 END) HR "\
-                "		, SUM(CASE WHEN PLACE IN ('E','R','H')  THEN 1 ELSE 0 END) RBI "\
-                "		, SUM(CASE WHEN HOW = 'SH' THEN 1 ELSE 0 END) SH " \
-                "		, SUM(CASE WHEN HOW = 'SB' THEN 1 ELSE 0 END) SB " \
-                "		, SUM(CASE WHEN HOW = 'SF' THEN 1 ELSE 0 END) SF "\
-                "		, SUM(CASE WHEN HOW IN ('BB', 'IB') THEN 1 ELSE 0 END) BB "\
-                "		, SUM(CASE WHEN HOW = 'IB' THEN 1 ELSE 0 END) IB "\
-                "		, SUM(CASE WHEN HOW = 'HP' THEN 1 ELSE 0 END) HBP "\
-                "		, SUM(CASE WHEN HOW IN ('KK','KN','KB','KW','KP') THEN 1  "\
-                "						ELSE 0 END) SO "\
-                "		, SUM(CASE WHEN HOW IN ('GD','TP') THEN 1 ELSE 0 END)	DP "\
-                "FROM baseball.gamecontapp "\
-                "WHERE 1 = 1 "\
-                "AND PITCHER = '%s' " \
-                "AND HITTER = '%s' " \
-                "GROUP BY HITTER, HITNAME "\
-                ") AAA "\
-                "ORDER BY HIT_RNK " % (pitcher, hitter)
-
-        df  = pd.read_sql(sql, conn, coerce_float=False)
-        df = df.set_index('HITTER')
-        return df
-
-    # consecutive hitter record
-    def get_season_cons_hitter_record(self, hitter):
-            conn = pymysql.connect(host=self._HOST, port=self._PORT, user=self._USER, password=self._PASSWORD, db=self._DB, charset='utf8mb4')
-            sql = "SELECT GDAY, HITTER, HITNAME " \
-                  "		, SUM(CASE WHEN HOW IN ('H1','H2','H3','HR','HI','HB') THEN 1 " \
-                  "							ELSE 0 END) AS HIT " \
-                  "		, SUM(CASE WHEN HOW = 'HR' THEN 1 ELSE 0 END) HR " \
-                  "		, SUM(CASE WHEN HOW = 'SH' THEN 1 ELSE 0 END) SH " \
-                  "FROM baseball.gamecontapp " \
-                  "WHERE 1 = 1 " \
-                  "AND GYEAR = YEAR(CURDATE()) " \
-                  "AND HITTER = %s " \
-                  "GROUP BY GMKEY, GDAY, HITTER, HITNAME " \
-                  "ORDER BY GDAY DESC " % hitter
-            df  = pd.read_sql(sql, conn)
-            return df
-
-    def get_hitter_record_df(self, hitter):
-            conn = pymysql.connect(host=self._HOST, port=self._PORT, user=self._USER, password=self._PASSWORD, db=self._DB, charset='utf8mb4')
-            sql = "SELECT * " \
-                  "FROM  " \
-                  "( " \
-                  "SELECT A.PCODE, B.NAME, A.GAMENUM " \
-                  "               , RBI " \
-                  "               , DENSE_RANK() OVER(ORDER BY RBI DESC) AS RBI_RNK " \
-                  "               , BB " \
-                  "               , DENSE_RANK() OVER(ORDER BY BB DESC) AS BB_RNK " \
-                  "					     , SB " \
-                  "               , DENSE_RANK() OVER(ORDER BY SB DESC) AS SB_RNK " \
-                  "               , SH " \
-                  "               , DENSE_RANK() OVER(ORDER BY SH DESC) AS SH_RNK " \
-                  "               , H2 " \
-                  "               , DENSE_RANK() OVER(ORDER BY H2 DESC) AS H2_RNK " \
-                  "               , H3 " \
-                  "               , DENSE_RANK() OVER(ORDER BY H3 DESC) AS H3_RNK " \
-                  "               , HIT " \
-                  "               , DENSE_RANK() OVER(ORDER BY HIT DESC) AS HIT_RNK " \
-                  "               , HR " \
-                  "               , DENSE_RANK() OVER(ORDER BY HR DESC) AS HR_RNK " \
-                  "               , RUN " \
-                  "               , DENSE_RANK() OVER(ORDER BY RUN DESC) AS RUN_RNK " \
-                  "               , KK " \
-                  "               , DENSE_RANK() OVER(ORDER BY KK DESC) AS KK_RNK " \
-                  "               , ERR " \
-                  "               , DENSE_RANK() OVER(ORDER BY ERR DESC) AS ERR_RNK " \
-                  "               , ROUND(C.HRA, 3) AS HRA " \
-                  "               , DENSE_RANK() OVER(ORDER BY C.HRA DESC) AS HRA_RNK " \
-                  "FROM baseball.battotal A " \
-                  ", baseball.person B " \
-                  ", (SELECT CASE  " \
-                  "			WHEN GAMENUM > B.AVG_GAMENUM THEN HRA " \
-                  "			ELSE 0 " \
-                  "		 END AS HRA " \
-                  "	  , A.PCODE " \
-                  "FROM baseball.battotal A,  " \
-                  "     (SELECT ROUND(AVG(GAMENUM)) AS AVG_GAMENUM FROM baseball.battotal) B " \
-                  ") C " \
-                  "WHERE A.GYEAR = YEAR(CURDATE()) " \
-                  "AND A.PCODE = B.PCODE " \
-                  "AND A.PCODE = C.PCODE " \
-                  ") AAA " \
-                  "WHERE PCODE = '%s' " % hitter
-
-            df = pd.read_sql(sql, conn)
-            df = df.set_index('PCODE')
-            return df
-
-    def get_first_ball_info(self, hitter):
+    @classmethod
+    def get_hitter_first_ball(cls, hitter_code):
+        """
+        hitter의 초구 정보를 가져온다.
+        :param hitter_code:
+        :return:
+        """
         result_list = []
-        conn = pymysql.connect(host=self._HOST, port=self._PORT, user=self._USER, password=self._PASSWORD, db=self._DB, charset='utf8mb4')
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
         query = "SELECT GYEAR, HITTER, HITNAME, PA, AB, S_CNT, S_CNT_RNK, B_CNT, B_CNT_RNK, F_CNT, F_CNT_RNK, H_CNT, T_CNT, T_CNT_RNK "\
                     "FROM  "\
                     "( "\
@@ -171,7 +64,7 @@ class Record(object):
                     "	WHERE pa > 300 "\
                     "	AND GYEAR = YEAR(CURDATE()) "\
                     ") AAA "\
-                    "WHERE HITTER = %s " % hitter
+                    "WHERE HITTER = %s " % hitter_code
         df = pd.read_sql(query, conn)
         df_to_dict = df.to_dict('records')
         if df_to_dict:
@@ -180,54 +73,39 @@ class Record(object):
         conn.close()
         return result_list
 
-    def get_total_hitter_record(self, live_dict):
-        conn = pymysql.connect(host=self._HOST, port=self._PORT, user=self._USER, password=self._PASSWORD, db=self._DB,
-                               charset='utf8mb4')
-        param = live_dict
-
-        result_list = []
-        query = "SELECT SUBJECT, OPPONENT, LEAGUE, GYEAR, HITTER, HITNAME, PITCHER, PITNAME, PITTEAM, PITTEAM_NAME "\
-                            "					, PA, STATE, STATE_SPLIT, RESULT, RNK "\
-                            "FROM baseball.accum_record_hitter "\
-                            "WHERE HITTER = '{hitter}' "\
-                            "AND GYEAR IN ('NA', year(curdate())) "\
-                            "AND PITCHER IN ('NA', '{pitcher}') "\
-                            "AND PITTEAM IN ('NA', '{pitteam}') "\
-                            "AND STATE_SPLIT IN ('BASIC', 'VERSUS', '{score}', '{base}') ".format(**param)
-
-        df = pd.read_sql(query, conn)
-        df_to_dict = df.to_dict('records')
-        if df_to_dict:
-            result_list.extend(df_to_dict)
-
-        conn.close()
-        return result_list
-
-    def get_today_hitter_record(self, gmkey, hitter):
+    # region 조건표에 따른 타자기록을 가져온다.
+    @classmethod
+    def get_hitter_today_record(cls, game_key, hitter_code):
+        """
+        hitter의 오늘 경기 기록을 가져온다.
+        :param game_key:
+        :param hitter_code:
+        :return:
+        """
         result = None
-        conn = pymysql.connect(host=self._HOST, port=self._PORT, user=self._USER, password=self._PASSWORD, db=self._DB,
-                               charset='utf8mb4')
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
 
-        query ="SELECT HITNAME, PA, AB, HIT, HR, RBI, BB, KK "\
-                            "FROM "\
-                            "( "\
-                            "	SELECT SUM(CASE WHEN HOW IN ('H1','H2','H3','HR','HI','HB','BB','IB','HP','KK','KN','KB' "\
-                            "						,'KW','KP','IN','OB','IP','XX','SH','SF','FC','GD','TP','GR','BN','FL','LL','IF','FF') THEN 1 "\
-                            "											ELSE 0 END) AS PA "\
-                            "						, SUM(CASE WHEN HOW IN ('H1','H2','H3','HR','HI','HB','GR','BN','FL','LL','IF','FF', "\
-                            "						'KK','KN','KB','KW','KP','IP','XX','FC','GD','TP') THEN 1 "\
-                            "										ELSE 0 END) AS AB "\
-                            "						, SUM(CASE WHEN HOW IN ('H1','H2','H3','HR','HI','HB') THEN 1 ELSE 0 END) AS HIT "\
-                            "						, SUM(CASE WHEN HOW = 'HR' THEN 1 ELSE 0 END) AS HR "\
-                            "						, SUM(CASE WHEN PLACE IN ('E','R','H')  THEN 1 ELSE 0 END) AS RBI "\
-                            "						, SUM(CASE WHEN HOW IN ('BB', 'IB') THEN 1 ELSE 0 END) AS BB "\
-                            "						, SUM(CASE WHEN HOW = 'KK' THEN 1 ELSE 0 END) AS KK "\
-                            "						, HITNAME "\
-                            "	FROM baseball.gamecontapp_all "\
-                            "	WHERE HITTER = '{1}' "\
-                            "	AND GMKEY = '{0}' "\
-                            ") TODAY "\
-                            "WHERE PA > 0 ".format(gmkey, hitter)
+        query = "SELECT HITNAME, PA, AB, HIT, HR, RBI, BB, KK " \
+                "FROM " \
+                "( " \
+                "	SELECT SUM(CASE WHEN HOW IN ('H1','H2','H3','HR','HI','HB','BB','IB','HP','KK','KN','KB' " \
+                "						,'KW','KP','IN','OB','IP','XX','SH','SF','FC','GD','TP','GR','BN','FL','LL','IF','FF') THEN 1 " \
+                "											ELSE 0 END) AS PA " \
+                "						, SUM(CASE WHEN HOW IN ('H1','H2','H3','HR','HI','HB','GR','BN','FL','LL','IF','FF', " \
+                "						'KK','KN','KB','KW','KP','IP','XX','FC','GD','TP') THEN 1 " \
+                "										ELSE 0 END) AS AB " \
+                "						, SUM(CASE WHEN HOW IN ('H1','H2','H3','HR','HI','HB') THEN 1 ELSE 0 END) AS HIT " \
+                "						, SUM(CASE WHEN HOW = 'HR' THEN 1 ELSE 0 END) AS HR " \
+                "						, SUM(CASE WHEN PLACE IN ('E','R','H')  THEN 1 ELSE 0 END) AS RBI " \
+                "						, SUM(CASE WHEN HOW IN ('BB', 'IB') THEN 1 ELSE 0 END) AS BB " \
+                "						, SUM(CASE WHEN HOW = 'KK' THEN 1 ELSE 0 END) AS KK " \
+                "						, HITNAME " \
+                "	FROM baseball.gamecontapp_all " \
+                "	WHERE HITTER = '{1}' " \
+                "	AND GMKEY = '{0}' " \
+                ") TODAY " \
+                "WHERE PA > 0 ".format(game_key, hitter_code)
 
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             cursor.execute(query)
@@ -235,16 +113,221 @@ class Record(object):
 
         return result
 
-    def get_hitter_continuous_record(self, hitter):
-        conn = pymysql.connect(host=self._HOST, port=self._PORT, user=self._USER, password=self._PASSWORD, db=self._DB,
-                               charset='utf8mb4')
+    @classmethod
+    def get_hitter_basic_record(cls, hitter_code, state=None):
+        """
+        시즌기록, 통산기록을 가져온다.
+        :param hitter_code:
+        :param state: "'HR', 'HIT', 'RBI'...", 없으면 전체를 가져온다.
+        :return:
+        """
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+        if state is None:
+            add_state = ' '
+        else:
+            add_state = " AND STATE = '{0}' ".format(state)
+
+        query = "SELECT RANK, SUBJECT, OPPONENT, LEAGUE, GYEAR, HITTER, HITNAME "\
+                "							    , PITCHER, PITNAME, PITTEAM, PITTEAM_NAME  "\
+                "								, PA, STATE, STATE_SPLIT, RESULT "\
+                "FROM  "\
+                "( "\
+                "	SELECT DENSE_RANK() OVER(PARTITION BY GYEAR, STATE ORDER BY RESULT DESC) AS RANK "\
+                "						, SUBJECT, OPPONENT, LEAGUE, GYEAR, HITTER, HITNAME, PITCHER, PITNAME, PITTEAM "\
+                "						, PITTEAM_NAME, PA, STATE, STATE_SPLIT, RESULT "\
+                "	FROM baseball.accum_record_hitter "\
+                "	WHERE GYEAR IN ('NA', YEAR(CURDATE()))  " + add_state + \
+                "	AND PITCHER = 'NA'  "\
+                "	AND PITTEAM = 'NA'  "\
+                "	AND STATE_SPLIT = 'BASIC' "\
+                " ) AAA "\
+                "WHERE HITTER = '{0}'  ".format(hitter_code)
+
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
+
+        conn.close()
+        return result
+
+    @classmethod
+    def get_hitter_vs_pitcher_record(cls, hitter_code, pitcher_code, state=None):
+        """
+        상대-선수에 대한 통산기록을 가져온다.
+        :param hitter_code:
+        :param pitcher_code:
+        :param state: 'HR', 'HIT', 'RBI'...", 없으면 전체를 가져온다.
+        :return:
+        """
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+        if state is None:
+            add_state = ' '
+        else:
+            add_state = " AND STATE = '{0}' ".format(state)
+
+        query = "SELECT RANK, SUBJECT, OPPONENT, LEAGUE, GYEAR, HITTER, HITNAME " \
+                "							    , PITCHER, PITNAME, PITTEAM, PITTEAM_NAME  " \
+                "								, PA, STATE, STATE_SPLIT, RESULT " \
+                "FROM  " \
+                "( " \
+                "	SELECT DENSE_RANK() OVER(PARTITION BY STATE ORDER BY RESULT DESC) AS RANK " \
+                "						, SUBJECT, OPPONENT, LEAGUE, GYEAR, HITTER, HITNAME, PITCHER, PITNAME, PITTEAM " \
+                "						, PITTEAM_NAME, PA, STATE, STATE_SPLIT, RESULT " \
+                "	FROM baseball.accum_record_hitter " \
+                "	WHERE GYEAR = 'NA'  " + add_state + \
+                "	AND PITCHER = '{0}'  " \
+                "	AND PITTEAM = 'NA'  " \
+                "  AND OPPONENT = 'PITCHER' "\
+                "	AND STATE_SPLIT = 'VERSUS' " \
+                " ) AAA " \
+                "WHERE HITTER = '{1}'  ".format(pitcher_code, hitter_code)
+
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
+
+        conn.close()
+        return result
+
+    @classmethod
+    def get_hitter_vs_team_record(cls, hitter_code, pitcher_team, state=None):
+        """
+        상대-팀에 대한 정보를 가져온다.
+        :param hitter_code:
+        :param pitcher_team: 'HR', 'HIT', 'RBI'...", 없으면 전체를 가져온다.
+        :param state:
+        :return:
+        """
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+        if state is None:
+            add_state = ' '
+        else:
+            add_state = " AND STATE = '{0}' ".format(state)
+
+        query = "SELECT RANK, SUBJECT, OPPONENT, LEAGUE, GYEAR, HITTER, HITNAME " \
+                "							    , PITCHER, PITNAME, PITTEAM, PITTEAM_NAME  " \
+                "								, PA, STATE, STATE_SPLIT, RESULT " \
+                "FROM  " \
+                "( " \
+                "	SELECT DENSE_RANK() OVER(PARTITION BY STATE ORDER BY RESULT DESC) AS RANK " \
+                "						, SUBJECT, OPPONENT, LEAGUE, GYEAR, HITTER, HITNAME, PITCHER, PITNAME, PITTEAM " \
+                "						, PITTEAM_NAME, PA, STATE, STATE_SPLIT, RESULT " \
+                "	FROM baseball.accum_record_hitter " \
+                "	WHERE GYEAR IN ('NA', YEAR(CURDATE()))  " + add_state + \
+                "	AND PITCHER = 'NA'  " \
+                "	AND PITTEAM = '{0}'  " \
+                "  AND OPPONENT = 'TEAM' " \
+                "	AND STATE_SPLIT = 'VERSUS' " \
+                " ) AAA " \
+                "WHERE HITTER = '{1}'  ".format(pitcher_team, hitter_code)
+
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
+
+        conn.close()
+        return result
+
+    @classmethod
+    def get_hitter_score_record(cls, hitter_code, score_split, state=None):
+        """
+        점수차에 대한 데이터를 가져온다.
+        :param hitter_code:
+        :param score_split:  'HR', 'HIT', 'RBI'...", 없으면 전체를 가져온다.
+        :param state:
+        :return:
+        """
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+        if state is None:
+            add_state = ' '
+        else:
+            add_state = " AND STATE = '{0}' ".format(state)
+
+        query = "SELECT RANK, SUBJECT, OPPONENT, LEAGUE, GYEAR, HITTER, HITNAME " \
+                "							    , PITCHER, PITNAME, PITTEAM, PITTEAM_NAME  " \
+                "								, PA, STATE, STATE_SPLIT, RESULT " \
+                "FROM  " \
+                "( " \
+                "	SELECT DENSE_RANK() OVER(PARTITION BY STATE ORDER BY RESULT DESC) AS RANK " \
+                "						, SUBJECT, OPPONENT, LEAGUE, GYEAR, HITTER, HITNAME, PITCHER, PITNAME, PITTEAM " \
+                "						, PITTEAM_NAME, PA, STATE, STATE_SPLIT, RESULT " \
+                "	FROM baseball.accum_record_hitter " \
+                "	WHERE GYEAR IN ('NA', YEAR(CURDATE()))  " + add_state + \
+                "	AND PITCHER = 'NA'  " \
+                "	AND PITTEAM = 'NA'  " \
+                "  AND OPPONENT = 'ALL' " \
+                "	AND STATE_SPLIT = '{0}' " \
+                " ) AAA " \
+                "WHERE HITTER = '{1}'  ".format(score_split, hitter_code)
+
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
+
+        conn.close()
+        return result
+
+    @classmethod
+    def get_hitter_base_record(cls, hitter_code, base_split, state=None):
+        """
+        주자상황 데이터를 가져온다.
+        :param hitter_code:
+        :param base_split:
+        :param state: 'HR', 'HIT', 'RBI'...", 없으면 전체를 가져온다.
+        :return:
+        """
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+        if state is None:
+            add_state = ' '
+        else:
+            add_state = " AND STATE = '{0}' ".format(state)
+
+        query = "SELECT RANK, SUBJECT, OPPONENT, LEAGUE, GYEAR, HITTER, HITNAME " \
+                "							    , PITCHER, PITNAME, PITTEAM, PITTEAM_NAME  " \
+                "								, PA, STATE, STATE_SPLIT, RESULT " \
+                "FROM  " \
+                "( " \
+                "	SELECT DENSE_RANK() OVER(PARTITION BY STATE ORDER BY RESULT DESC) AS RANK " \
+                "						, SUBJECT, OPPONENT, LEAGUE, GYEAR, HITTER, HITNAME, PITCHER, PITNAME, PITTEAM " \
+                "						, PITTEAM_NAME, PA, STATE, STATE_SPLIT, RESULT " \
+                "	FROM baseball.accum_record_hitter " \
+                "	WHERE GYEAR IN ('NA', YEAR(CURDATE()))  " + add_state + \
+                "	AND PITCHER = 'NA'  " \
+                "	AND PITTEAM = 'NA'  " \
+                "  AND OPPONENT = 'ALL' " \
+                "	AND STATE_SPLIT = '{0}' " \
+                " ) AAA " \
+                "WHERE HITTER = '{1}'  ".format(base_split, hitter_code)
+
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
+
+        conn.close()
+        return result
+
+    @classmethod
+    def get_hitter_continuous_record(cls, hitter_code):
+        """
+        연속 경기를 가져온다.
+        :param hitter_code:
+        :return:
+        """
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
 
         result_list = []
         query = "SELECT GMKEY, GDAY, HOW, PLACE, HITTER, HITNAME "\
-                            "FROM  baseball.gamecontapp "\
-                            "WHERE HITTER = '{0}' "\
-                            "AND GMKEY LIKE '{1}%'"\
-                            "ORDER BY GMKEY DESC, SERNO DESC".format(hitter, datetime.now().year)
+                "FROM  baseball.gamecontapp_all "\
+                "WHERE HITTER = '{0}' "\
+                "AND GMKEY LIKE '{1}%'"\
+                "ORDER BY GMKEY DESC, SERNO DESC " \
+                "LIMIT 100 ".format(hitter_code, datetime.now().year)
 
         df = pd.read_sql(query, conn)
         df_to_dict = df.to_dict('records')
@@ -254,6 +337,9 @@ class Record(object):
         conn.close()
         return result_list
 
+    # endregion
+
+    # region 타자기록 Update
     def update_hitter_count_record(self, data_dict):
         result = None
         conn = pymysql.connect(host=self._HOST, port=self._PORT, user=self._USER, password=self._PASSWORD, db=self._DB,
@@ -300,8 +386,14 @@ class Record(object):
             result = cursor.fetchall()
             conn.commit()
         return result
+    # endregion
 
     def call_update_state_rank(self, data_dict):
+        """
+        Procedure 호출 (사용 X)
+        :param data_dict:
+        :return:
+        """
         result = ""
         conn = pymysql.connect(host=self._HOST, port=self._PORT, user=self._USER, password=self._PASSWORD, db=self._DB,
                                charset='utf8mb4')
@@ -315,12 +407,34 @@ class Record(object):
             conn.commit()
         return result
 
-        pass
+    @classmethod
+    def get_personal_info(cls, player_code):
+        """
+        선수 기본정보를 가져온다.
+        :param player_code:
+        :return:
+        """
+        result = None
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query = "SELECT NAME, TEAM, POSITION, BACKNUM, BIRTH, HEIGHT, " \
+                "WEIGHT, MONEY, INDATE " \
+                "FROM baseball.person " \
+                "WHERE PCODE = {0}".format(player_code)
+
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
+            conn.commit()
+        return result
 
 if __name__ == "__main__":
     record = Record()
 
     # hitter,hitteam,pitcher,pitteam,state,score,base
-    live_dict = {'hitter': 78224, 'hitteam': 'OB', 'pitcher': 79140, 'pitteam': 'LG', 'state': 'HR', 'score': '0D', 'base': '1B'}
-    record_df = record.get_total_hitter_record(live_dict)
-    print(record_df)
+    # data = {'hitter': 78224, 'hitteam': 'OB', 'pitcher': 79140, 'pitteam': 'LG', 'state': 'HR', 'score': '0D', 'base': '1B'}
+    # record_df = record.get_total_hitter_record(data)
+    # print(record_df)
+    hitter = '78224'
+    print(Record.get_hitter_basic_record(hitter, "'HIT', 'H2', 'BB'"))
