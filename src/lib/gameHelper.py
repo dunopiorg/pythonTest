@@ -43,8 +43,8 @@ class GameHelper(object):
         self.prev_home_score = 0  # 홈팀 이전 점수
         self.game_event = None
         self.prev_pitcher = None
-        self.prev_hitter = player.Hitter()
-        self.curr_hitter = player.Hitter()
+        self.prev_hitter = None
+        self.curr_hitter = None
         self.curr_pitcher = None
         self.category_score = {}
         self.game_info = {}
@@ -149,7 +149,11 @@ class GameHelper(object):
         pitcher = live_text_dict['pitcher']
         live_dict = self.get_current_game_state(live_text_dict)
 
-        self.curr_hitter = player.Hitter(batter)
+        if batter and self.curr_hitter is None:
+            self.curr_hitter = player.Hitter(batter)
+        elif self.curr_hitter is not None and batter != self.curr_hitter.player_code:
+            self.prev_hitter = self.curr_hitter
+            self.curr_hitter = player.Hitter(batter)
 
         if seq_num == 0:
             game_info_data = self.get_game_info(game_id)
@@ -157,7 +161,7 @@ class GameHelper(object):
                 self.set_score(game_info_data)
 
         # 타자 등판
-        if text_style == 8 and self.prev_hitter.player_code != self.curr_hitter.player_code:
+        if text_style == 8:
             self.prev_hitter = self.curr_hitter
             # 타자의 기록을 가져온다.
             start_time = time.time()
@@ -181,8 +185,9 @@ class GameHelper(object):
         """
 
         # 구속 정보
-        if text_style == 1 and live_state_sc == 1:
-            ball_style_dict = self.get_ball_style_data(game_id, bat_order, ball_count, hitter, pitcher)
+        if text_style == 1 and live_state_sc == 1 and ball_type != 'H':
+            ball_style_dict = self.get_ball_style_data(game_id, bat_order, ball_count,
+                                                       pitcher, hitter, self.curr_hitter.hit_type)
             if ball_style_dict:
                 self.set_score(ball_style_dict)
 
@@ -618,7 +623,7 @@ class GameHelper(object):
         return msg
     # endregion
 
-    def get_ball_style_data(self, game_key, bat_order, ball_count, hitter, pitcher):
+    def get_ball_style_data(self, game_key, bat_order, ball_count, pitcher, hitter, hit_type):
         """
         ball style 설명
         :param game_key:
@@ -626,18 +631,79 @@ class GameHelper(object):
         :param ball_count:
         :param hitter:
         :param pitcher:
+        :param hit_type:
         :return:
         """
+
+        stuff = {'FAST': '빠른 볼', 'CUTT': '커터', 'SLID': '슬라이더', 'CURV': '커브', 'CHUP': '체인지업',
+                 'SPLI': '스플리터', 'SINK': '싱커볼', 'TWOS': '투심패스트볼', 'FORK': '포크볼', 'KNUC': '너클볼'}
+
         db_my_conn = db.MySqlConnector(host=self._HOST, port=self._PORT, user=self._USER, pw=self._PASSWORD,
                                        db=self._DB)
-        query = "select ball, stuff, speed, x, y from baseball.pitzone where gmkey = '{0}' and batorder = '{1}' " \
-                "and ballcount = '{2}' and batter = '{3}' and pitcher = '{4}' " \
-                "limit 1".format(game_key, bat_order, ball_count, hitter, pitcher)
+        query = "select ball, stuff, speed, zonex, zoney, x, y from baseball.pitzone " \
+                "where gmkey = '{0}' and batorder = '{1}' and ballcount = '{2}' and " \
+                "batter = '{3}' and pitcher = '{4}' limit 1".format(game_key, bat_order, ball_count, hitter, pitcher)
         data_list = db_my_conn.select(query, use_dict=True)
+
         if data_list:
-            result = [{'SUBJECT': 'HITTER', 'OPPONENT': 'NA', 'LEAGUE': 'NA', 'PITCHER': pitcher, 'PITNAME': 'NA',
+            pitch_data = data_list[0]
+
+            if pitch_data['stuff'] in stuff:
+                pitch_type = stuff[pitch_data['stuff']]
+            else:
+                pitch_type = ''
+
+            area_x = pitch_data['x']
+            area_y = pitch_data['y']
+            zone_x = pitch_data['zonex']
+            zone_y = pitch_data['zoney']
+            ball_type = pitch_data['ball']
+            comment = ''
+
+            if ball_type == 'B':  # 볼 판정
+                if hit_type == '우타':
+                    if zone_x < 2:
+                        comment = '바깥으로 빠진 '
+                    elif zone_x > 6:
+                        comment = '몸 안쪽 '
+                else:
+                    if zone_x < 2:
+                        comment = '몸 안쪽 '
+                    elif zone_x > 6:
+                        comment = '바깥으로 빠진 '
+                if 50 < area_x < 177 and 63 < area_y < 225:
+                    comment = '스트라이크 같았는데요'
+            elif ball_type == 'T':  # 기다린 스트라이크
+                if hit_type == '우타':  # 우타
+                    if zone_x == 1 or zone_x == 2:  # 바깥쪽 스트라이크
+                        if 45 < area_x < 55:
+                            comment = '바깥쪽 꽉찬 스트라이크'
+                        else:
+                            comment = '바깥쪽 스트라이크'
+                    elif zone_x == 6 or zone_x == 7:  # 몸쪽 스트라이크
+                        if 215 < area_x < 235:
+                            comment = '몸쪽 꽉찬 스크라이크'
+                        else:
+                            comment = '몸쪽 스트라이크'
+                else:  # 좌타
+                    if zone_x == 1 or zone_x == 2:  # 몸쪽 스트라이크
+                        if 45 < area_x < 55:
+                            comment = '몸쪽 꽉찬 스크라이크'
+                        else:
+                            comment = '몸쪽 스트라이크'
+                    elif zone_x == 6 or zone_x == 7:  # 바깥쪽 스트라이크
+                        if 215 < area_x < 235:
+                            comment = '바깥쪽 꽉찬 스트라이크'
+                        else:
+                            comment = '바깥쪽 스트라이크'
+            elif ball_type == 'S':  # 헛스윙
+                if zone_y < 6:
+                    comment = '낮은 공이였는데 휘둘렀어요'
+
+            result = [{'SUBJECT': 'PITCHER', 'OPPONENT': 'NA', 'LEAGUE': 'NA', 'PITCHER': pitcher, 'PITNAME': 'NA',
                        'GYEAR': 'NA', 'PITTEAM': 'NA', 'STATE': 'BALLINFO', 'STATE_SPLIT': 'BALLINFO',
-                       'HITTER': hitter, 'STUFF': data_list[0]['stuff'], 'SPEED': data_list[0]['speed'], 'RANK': 1}]
+                       'COMMENT': comment, 'HITTER': hitter, 'STUFF': pitch_type,  'SPEED': pitch_data['speed'],
+                       'RANK': 1}]
 
             return result
         else:

@@ -62,7 +62,7 @@ class Record(object):
                     "		GROUP BY GYEAR, HITTER, HITNAME  "\
                     "	) A  "\
                     "	WHERE pa > 300 "\
-                    "	AND GYEAR = YEAR(CURDATE()) "\
+                    "	AND GYEAR = 2017 "\
                     ") AAA "\
                     "WHERE HITTER = %s " % hitter_code
         df = pd.read_sql(query, conn)
@@ -137,7 +137,7 @@ class Record(object):
                 "						, SUBJECT, OPPONENT, LEAGUE, GYEAR, HITTER, HITNAME, PITCHER, PITNAME, PITTEAM "\
                 "						, PITTEAM_NAME, PA, STATE, STATE_SPLIT, RESULT "\
                 "	FROM baseball.accum_record_hitter "\
-                "	WHERE GYEAR IN ('NA', YEAR(CURDATE()))  " + add_state + \
+                "	WHERE GYEAR IN ('NA', 2017)  " + add_state + \
                 "	AND PITCHER = 'NA'  "\
                 "	AND PITTEAM = 'NA'  "\
                 "	AND STATE_SPLIT = 'BASIC' "\
@@ -216,7 +216,7 @@ class Record(object):
                 "						, SUBJECT, OPPONENT, LEAGUE, GYEAR, HITTER, HITNAME, PITCHER, PITNAME, PITTEAM " \
                 "						, PITTEAM_NAME, PA, STATE, STATE_SPLIT, RESULT " \
                 "	FROM baseball.accum_record_hitter " \
-                "	WHERE GYEAR IN ('NA', YEAR(CURDATE()))  " + add_state + \
+                "	WHERE GYEAR IN ('NA', 2017)  " + add_state + \
                 "	AND PITCHER = 'NA'  " \
                 "	AND PITTEAM = '{0}'  " \
                 "  AND OPPONENT = 'TEAM' " \
@@ -256,7 +256,7 @@ class Record(object):
                 "						, SUBJECT, OPPONENT, LEAGUE, GYEAR, HITTER, HITNAME, PITCHER, PITNAME, PITTEAM " \
                 "						, PITTEAM_NAME, PA, STATE, STATE_SPLIT, RESULT " \
                 "	FROM baseball.accum_record_hitter " \
-                "	WHERE GYEAR IN ('NA', YEAR(CURDATE()))  " + add_state + \
+                "	WHERE GYEAR IN ('NA', 2017)  " + add_state + \
                 "	AND PITCHER = 'NA'  " \
                 "	AND PITTEAM = 'NA'  " \
                 "  AND OPPONENT = 'ALL' " \
@@ -296,7 +296,7 @@ class Record(object):
                 "						, SUBJECT, OPPONENT, LEAGUE, GYEAR, HITTER, HITNAME, PITCHER, PITNAME, PITTEAM " \
                 "						, PITTEAM_NAME, PA, STATE, STATE_SPLIT, RESULT " \
                 "	FROM baseball.accum_record_hitter " \
-                "	WHERE GYEAR IN ('NA', YEAR(CURDATE()))  " + add_state + \
+                "	WHERE GYEAR IN ('NA', 2017) " + add_state + \
                 "	AND PITCHER = 'NA'  " \
                 "	AND PITTEAM = 'NA'  " \
                 "  AND OPPONENT = 'ALL' " \
@@ -388,6 +388,59 @@ class Record(object):
         return result
     # endregion
 
+    # region 조건표에 따른 투수기록을 가져온다.
+    @classmethod
+    def get_pitcher_today_record(cls, game_key, pitcher_code):
+        """
+        pitcher 의 오늘 경기 기록을 가져온다.
+        :param game_key:
+        :param pitcher_code:
+        :return:
+        """
+        result = None
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query = "SELECT PA, HIT, H1, H2, H3, HR, RBI, BB, IB, HBP, SO, (SO + SH + GR + FL) AS PB  " \
+                "FROM " \
+                "( " \
+                "	SELECT SUM(CASE WHEN HOW IN ('H1','H2','H3','HR','HI','HB','BB','IB','HP','KK','KN','KB' " \
+                "						,'KW','KP','IN','OB','IP','XX','SH','SF','FC','GD','TP','GR','BN','FL','LL','IF','FF') THEN 1 " \
+                "			ELSE 0 END) AS PA " \
+                "			, SUM(CASE WHEN HOW IN ('H1','H2','H3','HR','HI','HB') THEN 1 " \
+                "								ELSE 0 END) AS HIT " \
+                "			, SUM(CASE WHEN HOW = 'H1' THEN 1 ELSE 0 END) AS H1 " \
+                "			, SUM(CASE WHEN HOW = 'H2' THEN 1 ELSE 0 END) AS H2 " \
+                "			, SUM(CASE WHEN HOW = 'H3' THEN 1 ELSE 0 END) AS H3 " \
+                "			, SUM(CASE WHEN HOW = 'HR' THEN 1 ELSE 0 END) AS HR " \
+                "			, SUM(CASE WHEN PLACE IN ('E','R','H')  THEN 1 ELSE 0 END) AS RBI " \
+                "			, SUM(CASE WHEN HOW IN ('BB', 'IB') THEN 1 ELSE 0 END) AS BB " \
+                "			, SUM(CASE WHEN HOW = 'IB' THEN 1 ELSE 0 END) AS IB  -- 고의 사구 " \
+                "			, SUM(CASE WHEN HOW = 'HP' THEN 1 ELSE 0 END) AS HBP " \
+                "			, SUM(CASE WHEN HOW IN ('KK','KN','KB','KW','KP') THEN 1 " \
+                "							ELSE 0 END) AS SO  -- 삼진 " \
+                "			, SUM(CASE WHEN HOW = 'SH' THEN 1 ELSE 0 END) AS SH -- 희생 번트 " \
+                "			, SUM(CASE WHEN HOW = 'GR' AND PLACE IN ('0', '1', '2', '3') THEN 1 ELSE 0 END) AS GR " \
+                "			, SUM(CASE WHEN HOW = 'FL' AND PLACE IN ('0', '1', '2', '3') THEN 1 ELSE 0 END) AS FL " \
+                "	FROM baseball.gamecontapp_all " \
+                "	  WHERE 1 = 1  " \
+                "    AND GMKEY = '{1}'" \
+                "	  AND pitcher = '{0}' " \
+                "	GROUP BY pitcher " \
+                ") AAA ".format(game_key, pitcher_code)
+
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
+
+        return result
+
+
+    # endregion
+
+    # region 투수기록 Update
+    # endregion
+
     def call_update_state_rank(self, data_dict):
         """
         Procedure 호출 (사용 X)
@@ -418,7 +471,7 @@ class Record(object):
         conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
                                password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
 
-        query = "SELECT NAME, TEAM, POSITION, BACKNUM, BIRTH, HEIGHT, " \
+        query = "SELECT NAME, TEAM, POSITION, BACKNUM, BIRTH, HITTYPE, HEIGHT, " \
                 "WEIGHT, MONEY, INDATE " \
                 "FROM baseball.person " \
                 "WHERE PCODE = {0}".format(player_code)

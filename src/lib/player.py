@@ -6,10 +6,10 @@ class Player(object):
 
     def __init__(self, player_code=None):
         self.player_code = player_code
+        self.player_info = {}
         if self.player_code:
             self.recorder = record.Record()
             self.set_player_info()
-        self.player_info = {}
 
         self.today_record_dict = {}
         self.total_basic_record_dict = {}
@@ -20,10 +20,18 @@ class Player(object):
         self.n_continue_record = None
 
     def set_player_info(self):
-        self.player_info = self.recorder.get_personal_info(self.player_code)
+        self.player_info = self.recorder.get_personal_info(self.player_code)[0]
 
 
 class Hitter(Player):
+
+    def __init__(self, player_code=None):
+        if player_code:
+            Player.__init__(self, player_code)
+            if self.player_info:
+                self.hit_type = self.player_info['HITTYPE'][2:]
+        else:
+            Player.__init__(self)
 
     # region Return Hitter 경기기록
     def get_today_hitter_data(self, game_id):
@@ -354,5 +362,40 @@ class Hitter(Player):
 
 class Pitcher(Player):
 
-    def get_pitcher_info(self):
-        pass
+    # region Pitcher 경기기록
+    def get_today_pitcher_data(self, game_id):
+        result = []
+        today_result = record.Record().get_hitter_today_record(game_id, self.player_code)
+
+        if today_result:
+            today = {}
+            for k, v in today_result[0].items():
+                if type(v) == str:
+                    today[k] = v
+                else:
+                    today[k] = int(v)
+
+            data_dict = {'SUBJECT': 'HITTER', 'OPPONENT': 'NA', 'LEAGUE': 'NA', 'PITCHER': 'NA', 'PITNAME': 'NA',
+                         'GYEAR': 'NA', 'PITTEAM': 'NA', 'STATE_SPLIT': 'TODAY',
+                         'RANK': 1, 'HITTER': self.player_code, 'HITNAME': today['HITNAME'], 'PA': today['PA']}
+
+            for k, v in today.items():
+                if k == 'PA' or k == 'HITNAME':
+                    continue
+                set_dict = data_dict.copy()
+                set_dict['STATE'] = k
+                set_dict['RESULT'] = v
+                result.append(set_dict)
+
+            self.set_today_hitter_dict(today)
+
+        if result:
+            self.today_record = result
+        return self.today_record
+    # endregion
+
+    # region 기록 Update
+
+    # endregion
+
+    pass

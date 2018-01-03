@@ -244,7 +244,7 @@ def get_pitzone(gmkey=None):
 
         # Query 설정
         msQuery = 'SELECT *' \
-                  "  FROM [BASEBALL_NEW].[dbo].[KBO_PitZone] WHERE GYEAR = '2017'"
+                  "  FROM [BASEBALL_NEW].[dbo].[KBO_PitZone] WHERE GYEAR = '2016'"
 
         myQuery = "INSERT INTO baseball.pitzone " \
                   "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
@@ -260,6 +260,36 @@ def get_pitzone(gmkey=None):
     finally:
         dbMsConn.close
 
+def get_pittotal(pitcher=None):
+    database_all = "BASEBALL"
+    serverInfo_all = '211.115.88.17'
+    userId_all = 'LAB'
+    pw_all = 'tmvhcm@ilAb10@$'
+
+    try:
+        # DB 연결
+        dbMsConn = db.MSSqlConnector(server=serverInfo_all, user=userId_all, password=pw_all, database=database_all)
+        dbMsConn.open(asDict=False)
+
+        dbMyConn = db.MySqlConnector('localhost', 3307, 'root', 'lab2ai64', 'baseball')
+
+        # Query 설정
+        msQuery = 'SELECT *' \
+                  "  FROM [BASEBALL].[dbo].[PitTotal] "
+
+        myQuery = "INSERT INTO baseball.pittotal " \
+                  "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+
+        # MS Data Selection
+        msItems = dbMsConn.select(msQuery, gmkey)
+        count = msItems.__len__()
+
+        for i in range(count):
+            # Insert to MySql DB
+            result = dbMyConn.insert(myQuery, msItems[i])
+            print(result)
+    finally:
+        dbMsConn.close
 
 if __name__ == "__main__":
     # getLiveText('20170912OBNC0')
