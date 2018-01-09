@@ -1,0 +1,173 @@
+<?xml version="1.0"?>
+<data>
+    <query id="get_hitter_today_record">
+		SELECT HITNAME, PA, AB, HIT, HR, RBI, BB, KK
+		FROM
+		(
+			SELECT SUM(CASE WHEN HOW IN ('H1','H2','H3','HR','HI','HB','BB','IB','HP','KK','KN','KB'
+								,'KW','KP','IN','OB','IP','XX','SH','SF','FC','GD','TP','GR','BN','FL','LL','IF','FF') THEN 1
+													ELSE 0 END) AS PA
+								, SUM(CASE WHEN HOW IN ('H1','H2','H3','HR','HI','HB','GR','BN','FL','LL','IF','FF',
+								'KK','KN','KB','KW','KP','IP','XX','FC','GD','TP') THEN 1
+												ELSE 0 END) AS AB
+								, SUM(CASE WHEN HOW IN ('H1','H2','H3','HR','HI','HB') THEN 1 ELSE 0 END) AS HIT
+								, SUM(CASE WHEN HOW = 'HR' THEN 1 ELSE 0 END) AS HR
+								, SUM(CASE WHEN PLACE IN ('E','R','H')  THEN 1 ELSE 0 END) AS RBI
+								, SUM(CASE WHEN HOW IN ('BB', 'IB') THEN 1 ELSE 0 END) AS BB
+								, SUM(CASE WHEN HOW = 'KK' THEN 1 ELSE 0 END) AS KK
+								, HITNAME
+			FROM baseball.gamecontapp_all
+			WHERE HITTER = '{1}'
+			AND GMKEY = '{0}'
+		) TODAY
+		WHERE PA > 0
+    </query>
+
+	<query id = "get_hitter_basic_record">
+		SELECT RANK, SUBJECT, OPPONENT, LEAGUE, GYEAR, HITTER, HITNAME 
+        							    , PITCHER, PITNAME, PITTEAM, PITTEAM_NAME  
+        								, PA, STATE, STATE_SPLIT, RESULT 
+        FROM  
+        ( 
+        	SELECT DENSE_RANK() OVER(PARTITION BY GYEAR, STATE ORDER BY RESULT DESC) AS RANK 
+        						, SUBJECT, OPPONENT, LEAGUE, GYEAR, HITTER, HITNAME, PITCHER, PITNAME, PITTEAM 
+        						, PITTEAM_NAME, PA, STATE, STATE_SPLIT, RESULT 
+        	FROM baseball.accum_record_hitter 
+        	WHERE GYEAR IN ('NA', 2017)
+			{1}
+        	AND PITCHER = 'NA'  
+        	AND PITTEAM = 'NA'  
+        	AND STATE_SPLIT = 'BASIC' 
+         ) AAA 
+        WHERE HITTER = '{0}' 	
+	</query>
+	
+	<query id = "get_hitter_vs_pitcher_record">
+		SELECT RANK, SUBJECT, OPPONENT, LEAGUE, GYEAR, HITTER, HITNAME 
+        							    , PITCHER, PITNAME, PITTEAM, PITTEAM_NAME  
+        								, PA, STATE, STATE_SPLIT, RESULT 
+        FROM  
+        ( 
+        	SELECT DENSE_RANK() OVER(PARTITION BY STATE ORDER BY RESULT DESC) AS RANK 
+        						, SUBJECT, OPPONENT, LEAGUE, GYEAR, HITTER, HITNAME, PITCHER, PITNAME, PITTEAM 
+        						, PITTEAM_NAME, PA, STATE, STATE_SPLIT, RESULT 
+        	FROM baseball.accum_record_hitter 
+        	WHERE GYEAR = 'NA' 
+			{2}
+        	AND PITCHER = '{0}' 
+        	AND PITTEAM = 'NA' 
+          AND OPPONENT = 'PITCHER' 
+        	AND STATE_SPLIT = 'VERSUS' 
+         ) AAA 
+        WHERE HITTER = '{1}'  
+	</query>
+	
+	<query id = "get_hitter_vs_team_record">
+		SELECT RANK, SUBJECT, OPPONENT, LEAGUE, GYEAR, HITTER, HITNAME 
+        							    , PITCHER, PITNAME, PITTEAM, PITTEAM_NAME  
+        								, PA, STATE, STATE_SPLIT, RESULT 
+        FROM  
+        ( 
+        	SELECT DENSE_RANK() OVER(PARTITION BY STATE ORDER BY RESULT DESC) AS RANK 
+        						, SUBJECT, OPPONENT, LEAGUE, GYEAR, HITTER, HITNAME, PITCHER, PITNAME, PITTEAM 
+        						, PITTEAM_NAME, PA, STATE, STATE_SPLIT, RESULT 
+        	FROM baseball.accum_record_hitter 
+        	WHERE GYEAR IN ('NA', 2017) 
+			{2}
+        	AND PITCHER = 'NA'  
+        	AND PITTEAM = '{0}'  
+          AND OPPONENT = 'TEAM' 
+        	AND STATE_SPLIT = 'VERSUS' 
+         ) AAA 
+        WHERE HITTER = '{1}'  
+	</query>
+	
+	<query id = "get_hitter_score_record">
+		SELECT RANK, SUBJECT, OPPONENT, LEAGUE, GYEAR, HITTER, HITNAME 
+        							    , PITCHER, PITNAME, PITTEAM, PITTEAM_NAME  
+        								, PA, STATE, STATE_SPLIT, RESULT 
+        FROM  
+        ( 
+        	SELECT DENSE_RANK() OVER(PARTITION BY STATE ORDER BY RESULT DESC) AS RANK 
+        						, SUBJECT, OPPONENT, LEAGUE, GYEAR, HITTER, HITNAME, PITCHER, PITNAME, PITTEAM 
+        						, PITTEAM_NAME, PA, STATE, STATE_SPLIT, RESULT 
+        	FROM baseball.accum_record_hitter 
+        	WHERE GYEAR IN ('NA', 2017)  
+			{2} 
+        	AND PITCHER = 'NA'  
+        	AND PITTEAM = 'NA'  
+          AND OPPONENT = 'ALL' 
+        	AND STATE_SPLIT = '{0}' 
+         ) AAA 
+        WHERE HITTER = '{1}'  
+	</query>
+	
+	<query id = "get_hitter_base_record">
+		SELECT RANK, SUBJECT, OPPONENT, LEAGUE, GYEAR, HITTER, HITNAME 
+        							    , PITCHER, PITNAME, PITTEAM, PITTEAM_NAME  
+        								, PA, STATE, STATE_SPLIT, RESULT 
+        FROM  
+        ( 
+        	SELECT DENSE_RANK() OVER(PARTITION BY STATE ORDER BY RESULT DESC) AS RANK 
+        						, SUBJECT, OPPONENT, LEAGUE, GYEAR, HITTER, HITNAME, PITCHER, PITNAME, PITTEAM 
+        						, PITTEAM_NAME, PA, STATE, STATE_SPLIT, RESULT 
+        	FROM baseball.accum_record_hitter 
+        	WHERE GYEAR IN ('NA', 2017)  
+			{2} 
+        	AND PITCHER = 'NA'  
+        	AND PITTEAM = 'NA'  
+          AND OPPONENT = 'ALL' 
+        	AND STATE_SPLIT = '{0}' 
+         ) AAA 
+        WHERE HITTER = '{1}'  
+	</query>
+
+	<query id = "get_hitter_continuous_record">
+		SELECT GMKEY, GDAY, HOW, PLACE, HITTER, HITNAME 
+        FROM  baseball.gamecontapp_all 
+        WHERE HITTER = '{0}' 
+        AND GMKEY LIKE '{1}%' 
+        ORDER BY GMKEY DESC, SERNO DESC 
+        LIMIT 100 "
+	</query>
+	
+	<query id= "update_hitter_count_record">
+		UPDATE baseball.accum_record_hitter T1 INNER JOIN 
+						( 
+						SELECT HITTER, STATE, STATE_SPLIT, OPPONENT, LEAGUE, PITTEAM, GYEAR, RESULT 
+						FROM baseball.accum_record_hitter 
+						WHERE 1 = 1 
+						AND HITTER = '{hitter}' 
+						AND STATE = '{state}' 
+						AND STATE_SPLIT = '{state_split}' 
+						AND OPPONENT ='{opponent}' 
+						AND GYEAR IN ('{gyear}', 'NA') 
+						AND PITCHER = '{pitcher}' 
+						AND PITTEAM = '{pitteam}' 
+						) AS T2 
+						ON T1.HITTER = T2.HITTER 
+						AND T1.STATE = T2.STATE 
+						AND T1.STATE_SPLIT = T2.STATE_SPLIT 
+						AND T1.OPPONENT = T2.OPPONENT 
+						AND T1.LEAGUE = T2.LEAGUE 
+						AND T1.PITTEAM = T2.PITTEAM 
+						AND T1.GYEAR = T2.GYEAR 
+                SET T1.RESULT = T2.RESULT  + 1 
+                        WHERE T1.HITTER = '{hitter}' 
+                        AND T1.HITTER = T2.HITTER 
+                        AND T1.STATE = T2.STATE 
+                        AND T1.STATE_SPLIT = T2.STATE_SPLIT 
+                        AND T1.OPPONENT = T2.OPPONENT 
+                        AND T1.LEAGUE = T2.LEAGUE 
+                        AND T1.PITTEAM = T2.PITTEAM 
+                        AND T1.GYEAR = T2.GYEAR 
+                        AND T1.STATE = '{state}' 
+                        AND T1.STATE_SPLIT = '{state_split}' 
+                        AND T1.OPPONENT = '{opponent}' 
+                        AND T1.GYEAR IN ('{gyear}', 'NA') 
+                        AND T1.PITCHER = '{pitcher}' 
+                        AND T1.PITTEAM = '{pitteam}'; COMMIT; 
+	</query>
+</data>
+
+

@@ -149,52 +149,42 @@ class GameHelper(object):
         pitcher = live_text_dict['pitcher']
         live_dict = self.get_current_game_state(live_text_dict)
 
+        # region 타자 등판 또는 교체시 타자 등록
         if batter and self.curr_hitter is None:
             self.curr_hitter = player.Hitter(batter)
         elif self.curr_hitter is not None and batter != self.curr_hitter.player_code:
             self.prev_hitter = self.curr_hitter
             self.curr_hitter = player.Hitter(batter)
+        # endregion
 
+        # region 게임 시작 정보 (경기장, 심판, 날씨 등)
         if seq_num == 0:
             game_info_data = self.get_game_info(game_id)
             if game_info_data:
                 self.set_score(game_info_data)
+        # endregion
 
-        # 타자 등판
+        # region 타자 등판 - 타자의 기록을 가져온다.
         if text_style == 8:
             self.prev_hitter = self.curr_hitter
-            # 타자의 기록을 가져온다.
-            start_time = time.time()
             hitter_list = self.get_hitter_record_data(live_dict)
-            print('Second: %s' % (time.time() - start_time))
             if hitter_list:
                 result_accum_hitter.update({'hitter_on_mound': hitter_list})
+        # endregion
 
-        # 게임중 나타나는 이벤트 설정
-        """
-        word_list = text.split()
-        for cond_dict in self.event_cond_tuple:
-            if cond_dict.get('EVENT') in word_list:
-                self.game_event = cond_dict.get('EVENT')
-                cond_list = cond_dict.get('CONDITIONS').split(',')
-                for cond in cond_list:
-                    method = getattr(self, cond)
-                    t_dict = method()
-                    if t_dict:
-                        result_condition.update(t_dict)
-        """
-
-        # 구속 정보
+        # region 구종 정보
         if text_style == 1 and live_state_sc == 1 and ball_type != 'H':
             ball_style_dict = self.get_ball_style_data(game_id, bat_order, ball_count,
                                                        pitcher, hitter, self.curr_hitter.hit_type)
             if ball_style_dict:
                 self.set_score(ball_style_dict)
+        # endregion
 
-        # 초구 정보
+        # region 초구 정보
         if ball_count == 1 and ball_type not in ('F', 'H') and text_style == 1:
             print("캐스터: ", text)
             self.get_first_ball_info(self.curr_hitter.player_code, ball_type)
+        # endregion
 
         # 타격 Event 발생
         if ball_type == 'H' and text_style == 1:
@@ -327,9 +317,11 @@ class GameHelper(object):
             base = '123B'
 
         out_count = live_data['out']
+        ball_count = [live_data['ball'], live_data['strike'], live_data['out']]
 
         result_dict = {'hitter': hitter, 'hitteam': hit_team, 'pitcher': pitcher, 'pitteam': pit_team,
-                       'score': score, 'base': base, 'game_id': game_id, 'out_count': out_count}
+                       'score': score, 'base': base, 'game_id': game_id, 'out_count': out_count,
+                       'ball_count': ball_count}
         return result_dict
 
     @classmethod

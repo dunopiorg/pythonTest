@@ -260,7 +260,7 @@ def get_pitzone(gmkey=None):
     finally:
         dbMsConn.close
 
-def get_pittotal(pitcher=None):
+def get_pittotal():
     database_all = "BASEBALL"
     serverInfo_all = '211.115.88.17'
     userId_all = 'LAB'
@@ -278,18 +278,55 @@ def get_pittotal(pitcher=None):
                   "  FROM [BASEBALL].[dbo].[PitTotal] "
 
         myQuery = "INSERT INTO baseball.pittotal " \
-                  "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                  "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 
         # MS Data Selection
-        msItems = dbMsConn.select(msQuery, gmkey)
+        msItems = dbMsConn.select(msQuery)
         count = msItems.__len__()
 
+        result = 0
         for i in range(count):
             # Insert to MySql DB
-            result = dbMyConn.insert(myQuery, msItems[i])
-            print(result)
+            result += dbMyConn.insert(myQuery, msItems[i])
+            print('Success Count : ', result)
     finally:
         dbMsConn.close
+
+def get_pitcher():
+    database_all = "BASEBALL"
+    serverInfo_all = '211.115.88.17'
+    userId_all = 'LAB'
+    pw_all = 'tmvhcm@ilAb10@$'
+
+    try:
+        # DB 연결
+        dbMsConn = db.MSSqlConnector(server=serverInfo_all, user=userId_all, password=pw_all, database=database_all)
+        dbMsConn.open(asDict=False)
+
+        dbMyConn = db.MySqlConnector('localhost', 3307, 'root', 'lab2ai64', 'baseball')
+
+        # Query 설정
+        msQuery = 'SELECT *' \
+                  "  FROM [BASEBALL].[dbo].[Pitcher] "
+
+        myQuery = "INSERT INTO baseball.pitcher " \
+                  "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, " \
+                  "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, " \
+                  "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, " \
+                  "%s,%s,%s,%s,%s,%s)"
+
+        # MS Data Selection
+        msItems = dbMsConn.select(msQuery)
+        count = msItems.__len__()
+
+        result = 0
+        for i in range(count):
+            # Insert to MySql DB
+            result += dbMyConn.insert(myQuery, msItems[i])
+            print('Success Count : ', result)
+    finally:
+        dbMsConn.close
+
 
 if __name__ == "__main__":
     # getLiveText('20170912OBNC0')
@@ -300,4 +337,6 @@ if __name__ == "__main__":
     # getEntry()
     # getKbo_rank10_basic()
     # get_gameinfo()
-    get_pitzone()
+    # get_pitzone()
+    # get_pittotal()
+    get_pitcher()
