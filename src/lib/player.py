@@ -34,7 +34,7 @@ class Hitter(Player):
             Player.__init__(self)
 
     # region Return Hitter 경기기록
-    def get_today_hitter_data(self, game_id):
+    def get_hitter_today_data(self, game_id):
         """
         오늘 hitter의 경기 기록을 가져온다.
         :param game_id:
@@ -129,7 +129,7 @@ class Hitter(Player):
         else:
             return None
 
-    def get_n_continue_data(self):
+    def get_hitter_n_continue_data(self):
         """
         N게임 연속 기록 데이터를 생성한다.
         :return:
@@ -392,6 +392,27 @@ class Pitcher(Player):
         if result:
             self.today_record = result
         return self.today_record
+
+    def get_pitcher_basic_data(self, pitcher_code):
+        result = self.recorder.get_pitcher_basic_record(pitcher_code)
+        if result:
+            return result
+        else:
+            return None
+
+    def get_pitcher_vs_team_data(self, pitcher, hit_team, state=None):
+        result = self.recorder.get_pitcher_vs_team_record(pitcher, hit_team, state)
+        if result:
+            return result
+        else:
+            return None
+
+    def get_pitcher_vs_hitter_data(self, pitcher, hitter, state=None):
+        result = self.recorder.get_pitcher_vs_hitter_record(pitcher, hitter, state)
+        if result:
+            return result
+        else:
+            return None
     # endregion
 
     # region 기록 Update

@@ -35,8 +35,6 @@ class GameHelper(object):
         self.live_data = None
 
         # 기본 전역 변수
-        self.event_cond_tuple = None
-        self.event_category_tuple = None
         self.curr_away_score = 0  # 원정팀 현재 점수
         self.curr_home_score = 0  # 홈팀 현재 점수
         self.prev_away_score = 0  # 원정팀 이전 점수
@@ -46,7 +44,9 @@ class GameHelper(object):
         self.prev_hitter = None
         self.curr_hitter = None
         self.curr_pitcher = None
-        self.category_score = {}
+        self.hitter_category_score = {}
+        self.pitcher_category_score = {}
+        self.common_category_score = {}
         self.game_info = {}
         self.curr_row_num = 0
 
@@ -54,40 +54,20 @@ class GameHelper(object):
         self.recorder = record.Record()
 
         # initialize data
-        self.get_cond_dict()
-        self.get_category_score()
-        self.get_event_category()
+        self.set_category_score()
 
-    def get_event_category(self):
-        """
-        MSG Code 생성시 필요한 인자 정보 테이블
-        :return:
-        """
-        db_my_conn = db.MySqlConnector(host=self._HOST, port=self._PORT, user=self._USER, pw=self._PASSWORD,
-                                       db=self._DB)
-        query = "select mcode, event, param from baseball.event_catg"
-        self.event_category_tuple = db_my_conn.select(query, False)
-
-    def get_cond_dict(self):
-        """
-        Text 이벤트에 따른 함수 활성화 정의 테이블
-        :return:
-        """
-        db_my_conn = db.MySqlConnector(host=self._HOST, port=self._PORT,
-                                       user=self._USER, pw=self._PASSWORD, db=self._DB)
-        query = "select EVENT, CONDITIONS from baseball.event_cond"
-        self.event_cond_tuple = db_my_conn.select(query, True)
-
-    def get_category_score(self):
+    def set_category_score(self):
         """
         이벤트 카테고리 별 점수
         :return:  category score dictionary
         """
         db_my_conn = db.MySqlConnector(host=self._HOST, port=self._PORT, user=self._USER, pw=self._PASSWORD,
                                        db=self._DB)
-        query = "select category, score from baseball.catg_score"
+        query = "select subject, category, score from baseball.catg_score"
         rows = db_my_conn.select(query, True)
-        self.category_score = {row["category"]: row["score"] for row in rows}
+        self.hitter_category_score = {row["category"]: row["score"] for row in rows if row["subject"] == "HITTER"}
+        self.pitcher_category_score = {row["category"]: row["score"] for row in rows if row["subject"] == "PITCHER"}
+        self.common_category_score = {row["category"]: row["score"] for row in rows if row["subject"] == "COMMON"}
 
     def get_live_data(self):
         """
@@ -132,6 +112,7 @@ class GameHelper(object):
         result_condition = {}
         result_hitter = {}
 
+        result_accum_pitcher = {}
         result_accum_hitter = {}
         result_hit_event = {}
 
@@ -149,6 +130,20 @@ class GameHelper(object):
         pitcher = live_text_dict['pitcher']
         live_dict = self.get_current_game_state(live_text_dict)
 
+        # region 투수 등판 또는 교체시 투수 등록 및 투수의 기록을 가져온다.
+        if pitcher and self.curr_pitcher is None:
+            self.curr_pitcher = player.Pitcher(pitcher)
+            pitcher_list = self.get_pitcher_record_data(pitcher, batter, live_dict['hitteam'])
+            if pitcher_list:
+                result_accum_pitcher.update({'pitcher_on_mound': pitcher_list})
+        elif self.curr_pitcher is not None and pitcher != self.curr_pitcher.player_code:
+            self.prev_pitcher = self.curr_pitcher
+            self.curr_pitcher = player.Pitcher(pitcher)
+            pitcher_list = self.get_pitcher_record_data(pitcher, batter, live_dict['hitteam'])
+            if pitcher_list:
+                result_accum_pitcher.update({'pitcher_on_mound': pitcher_list})
+        # endregion
+
         # region 타자 등판 또는 교체시 타자 등록
         if batter and self.curr_hitter is None:
             self.curr_hitter = player.Hitter(batter)
@@ -161,7 +156,7 @@ class GameHelper(object):
         if seq_num == 0:
             game_info_data = self.get_game_info(game_id)
             if game_info_data:
-                self.set_score(game_info_data)
+                self.set_score("COMMON", game_info_data)
         # endregion
 
         # region 타자 등판 - 타자의 기록을 가져온다.
@@ -177,7 +172,7 @@ class GameHelper(object):
             ball_style_dict = self.get_ball_style_data(game_id, bat_order, ball_count,
                                                        pitcher, hitter, self.curr_hitter.hit_type)
             if ball_style_dict:
-                self.set_score(ball_style_dict)
+                self.set_score("COMMON", ball_style_dict)
         # endregion
 
         # region 초구 정보
@@ -186,7 +181,7 @@ class GameHelper(object):
             self.get_first_ball_info(self.curr_hitter.player_code, ball_type)
         # endregion
 
-        # 타격 Event 발생
+        # region 타격 Event 발생
         if ball_type == 'H' and text_style == 1:
             print("캐스터: 쳤습니다.")
         elif ball_type == 'H' and text_style == 13:
@@ -213,6 +208,7 @@ class GameHelper(object):
             print('Get Hitter record: %s' % (time.time() - start_time))
             if hitter_record:
                 result_hit_event.update({'hit_the_ball': hitter_record})
+        # endregion
 
         if result_hitter:
             result.update({'hitter_info': result_hitter})
@@ -222,6 +218,8 @@ class GameHelper(object):
             result.update(result_accum_hitter)
         if result_hit_event:
             result.update(result_hit_event)
+        if result_accum_pitcher:
+            result.update(result_accum_pitcher)
 
         return result
     # endregion
@@ -351,7 +349,7 @@ class GameHelper(object):
             return None
 
     # region 점수 관련 함수
-    def score_generator(self, data_dict):
+    def hitter_score_generator(self, data_dict):
         """
         scoring parameters
         :param data_dict:
@@ -365,8 +363,8 @@ class GameHelper(object):
             state = data_dict['STATE']
             state_split = data_dict['STATE_SPLIT']
 
-            if state in self.category_score:
-                state_score_val = self.category_score.get(state)
+            if state in self.hitter_category_score:
+                state_score_val = self.hitter_category_score.get(state)
                 if 'RANK' in data_dict and type(data_dict.get('RANK')) is int:
                     rank_score = round(0.5 - (data_dict.get('RANK') / 200), 3)
                 else:
@@ -377,27 +375,93 @@ class GameHelper(object):
                 state_score_val = 0.5
                 rank_score = 0.5
 
-            if state_split in self.category_score:
-                state_split_score_val = self.category_score.get(state_split)
+            if state_split in self.hitter_category_score:
+                state_split_score_val = self.hitter_category_score.get(state_split)
 
         if state_score_val is not None and rank_score is not None:
             result = round(self.get_new_sigmoid(rank_score + (state_score_val + state_split_score_val) / 2), 3)
 
         return result
 
-    def set_score(self, data_list):
+    def pitcher_score_generator(self, data_dict):
+        result = None
+        state_score_val = 0
+        state_split_score_val = 0
+        rank_score = 0
+        if 'STATE' in data_dict:
+            state = data_dict['STATE']
+            state_split = data_dict['STATE_SPLIT']
+
+            if state in self.pitcher_category_score:
+                state_score_val = self.pitcher_category_score.get(state)
+                if 'RANK' in data_dict and type(data_dict.get('RANK')) is int:
+                    rank_score = round(0.5 - (data_dict.get('RANK') / 200), 3)
+                else:
+                    print("Rank Exist: ", 'RANK' in data_dict, "Rank:", data_dict.get('RANK'),
+                          "Type: ", type(data_dict.get('RANK')))
+                    rank_score = round(0.5 - (10 / 200), 3)
+            else:
+                state_score_val = 0.5
+                rank_score = 0.5
+
+            if state_split in self.pitcher_category_score:
+                state_split_score_val = self.pitcher_category_score.get(state_split)
+
+        if state_score_val is not None and rank_score is not None:
+            result = round(self.get_new_sigmoid(rank_score + (state_score_val + state_split_score_val) / 2), 3)
+
+        return result
+
+    def common_score_generator(self, data_dict):
+        result = None
+        state_score_val = 0
+        state_split_score_val = 0
+        rank_score = 0
+        if 'STATE' in data_dict:
+            state = data_dict['STATE']
+            state_split = data_dict['STATE_SPLIT']
+
+            if state in self.common_category_score:
+                state_score_val = self.common_category_score.get(state)
+                if 'RANK' in data_dict and type(data_dict.get('RANK')) is int:
+                    rank_score = round(0.5 - (data_dict.get('RANK') / 200), 3)
+                else:
+                    print("Rank Exist: ", 'RANK' in data_dict, "Rank:", data_dict.get('RANK'),
+                          "Type: ", type(data_dict.get('RANK')))
+                    rank_score = round(0.5 - (10 / 200), 3)
+            else:
+                state_score_val = 0.5
+                rank_score = 0.5
+
+            if state_split in self.common_category_score:
+                state_split_score_val = self.common_category_score.get(state_split)
+
+        if state_score_val is not None and rank_score is not None:
+            result = round(self.get_new_sigmoid(rank_score + (state_score_val + state_split_score_val) / 2), 3)
+
+        return result
+
+    def set_score(self, subject, data_list):
         """
         DB 에서 메시지 가져오고, Value 계산한 후에 Score Table Queue 에 넣는다.
+        :param subject:
         :param data_list:
         :return:
         """
         score_data = []
         for data_dict in data_list:
-            score = self.score_generator(data_dict)
+            if subject == "HITTER":
+                score = self.hitter_score_generator(data_dict)
+            elif subject == "PITCHER":
+                score = self.pitcher_score_generator(data_dict)
+            elif subject == "COMMON":
+                score = self.common_score_generator(data_dict)
+
             if score:
                 score_data.append([score, data_dict])
         if score_data:
             self.put_queue(score_data)
+
     # endregion
 
     # region 타자 관련 함수
@@ -445,7 +509,7 @@ class GameHelper(object):
         result_list = []
 
         # HITTER 의 오늘 기록
-        today_record = self.curr_hitter.get_today_hitter_data(game_id)
+        today_record = self.curr_hitter.get_hitter_today_data(game_id)
         if today_record:
             result_list.extend(today_record)
 
@@ -477,7 +541,7 @@ class GameHelper(object):
         if result_list:
             self.curr_hitter.get_nine_record(result_list)
             # N 경기 연속기록 / N 타석 연속기록
-            n_continue_record = self.curr_hitter.get_n_continue_data()
+            n_continue_record = self.curr_hitter.get_hitter_n_continue_data()
             if n_continue_record:
                 result_list.extend(n_continue_record)
             return result_list
@@ -519,7 +583,32 @@ class GameHelper(object):
                 result.append(first_ball_dict)
 
         if result:
-            self.set_score(result)
+            self.set_score("HITTER", result)
+    # endregion
+
+    # region 투수 관련 함수
+    def get_pitcher_record_data(self, pitcher, hitter, hit_team, state_event=None):
+        result_list = []
+
+        basic_record = self.curr_pitcher.get_pitcher_basic_data(pitcher)
+        if basic_record:
+            result_list.extend(basic_record)
+
+        pitcher_vs_team_record = self.curr_pitcher.get_pitcher_vs_team_data(pitcher, hit_team, state_event)
+        if pitcher_vs_team_record:
+            result_list.extend(pitcher_vs_team_record)
+
+        pitcher_vs_hitter_record = self.curr_pitcher.get_pitcher_vs_hitter_data(pitcher, hitter, state_event)
+        if pitcher_vs_hitter_record:
+            result_list.extend(pitcher_vs_hitter_record)
+
+        if result_list:
+            # self.curr_hitter.get_nine_record(result_list)
+            # N 경기 연속기록 / N 타석 연속기록
+            return result_list
+        else:
+            return None
+
     # endregion
 
     # region 메시지 관련 함수
@@ -531,13 +620,18 @@ class GameHelper(object):
         """
         for key, value_dict in data.items():
             # 타자 등판 시
+            subject = ''
             if key == 'hitter_on_mound':
-                self.set_score(value_dict)
+                subject = "HITTER"
             elif key == 'hit_the_ball':
-                self.set_score(value_dict)
-            # 홈런 상황
+                subject = "HITTER"
             # 투수 등판 시
-            # 타자 등판 시
+            elif key == 'pitcher_on_mound':
+                subject = "PITCHER"
+            # 경기장 상황
+
+            if subject:
+                self.set_score(subject, value_dict)
 
     @classmethod
     def print_msg(cls, value_dict):
