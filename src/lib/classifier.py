@@ -3,8 +3,8 @@ import math
 from lib import DBConnection as db
 
 
-class StringAnalyser():
-    __database =None
+class StringAnalyser(object):
+    __database = None
     __serverInfo = None
     __userId = None
     __pw = None
@@ -15,13 +15,13 @@ class StringAnalyser():
         self.__userId = 'LAB'
         self.__pw = 'tmvhcm@ilAb10@$'
 
-    def dbConnector(self, optDict):
-        dbConn = db.MSSqlConnector(server=self.__serverInfo
+    def dbConnector(self, dict_option):
+        conn = db.MSSqlConnector(server=self.__serverInfo
                                    , user=self.__userId
                                    , password=self.__pw
                                    , database=self.__database)
-        dbConn.open(asDict=optDict)
-        return dbConn
+        conn.open(dict_option=dict_option)
+        return conn
 
     def runRecord(self, dbConn, data):
         byten=[10, 100, 1000]

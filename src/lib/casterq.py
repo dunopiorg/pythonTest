@@ -1,16 +1,26 @@
 class CasterQueue:
     q = []
+    async_flag = 0
 
     def put(self, data):
         self.q.extend(data)
 
-    def get(self):
+    def get(self, q_index=None):
+        if q_index is None:
+            q_index = 0
+
         if self.size() > 0:
-            item = self.q[0]
-            del self.q[0]
+            item = self.q[q_index]
             return item
         else:
             return None
+
+    def set(self, q_index, data):
+        self.q[q_index] = data
+
+    def delete_none(self):
+        if self.size() > 0:
+            self.q = [x for x in self.q if x is not None]
 
     def remove(self, priority):
         if self.size() > 0:
@@ -29,4 +39,3 @@ class CasterQueue:
         if self.size() > 0:
             for i in range(self.size()):
                 self.q[i][0] = (self.q[i][0] - dnum)
-

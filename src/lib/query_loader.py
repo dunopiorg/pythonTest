@@ -5,19 +5,22 @@ import os
 class QueryLoader(object):
     __instance = None
 
-    def __init__(self):
+    def __init__(self, location=None):
         self.query_files_dict = {}
-        self.load()
+        self.load(location)
 
-    def __new__(cls):
+    def __new__(cls, location=None):
         if QueryLoader.__instance is None:
             QueryLoader.__instance = object.__new__(cls)
         return QueryLoader.__instance
 
-    def load(self):
-        file_names = os.listdir('query_xml')
+    def load(self, location=None):
+        if location is None:
+            location = 'query_xml'
+
+        file_names = os.listdir(location)
         for filename in file_names:
-            src = 'query_xml/%s' % filename
+            src = '%s/%s' % (location, filename)
             tree = Et.parse(src)
             name = filename.split('.')[0]
             self.query_files_dict[name] = tree.getroot()

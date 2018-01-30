@@ -4,7 +4,7 @@ import socket
 import threading
 
 from lib import tcpSocket
-from lib import gameHelper
+from lib import game_helper
 
 # Message Queue 생성
 recv_broadcast_queue = queue.Queue()
@@ -46,23 +46,23 @@ if __name__ == "__main__":
     except Exception as e:
         server.close()
     """
-
-    sleep_second = 5
+    game_id = '20170912OBNC0'  # 20170926HHLT0
+    sleep_second = 0.1
     currInfoDict = None
     prevInfoDict = None
-    gmHelper = gameHelper.GameHelper()
-    currInfoDict = gmHelper.get_live_data()
-    caster_thread = threading.Thread(target=gmHelper.get_queue)
+    gm_helper = game_helper.GameHelper()
+    currInfoDict = gm_helper.get_live_data()
+    caster_thread = threading.Thread(target=gm_helper.get_queue)
     caster_thread.start()
     # Test Start ------------------------------------
-    testTuple = gmHelper.test_live_data('20170912OBNC0')
+    testTuple = gm_helper.test_live_data(game_id)
     for i, testDict in enumerate(testTuple):
         print("문자: " + testDict['LiveText'])
-        gmHelper.curr_row_num = i
-        result = gmHelper.get_what_info(testDict)
+        gm_helper.curr_row_num = i
+        result = gm_helper.get_what_info(testDict)
 
         if result:
-            gmHelper.make_sentence(result)
+            gm_helper.make_sentence(result)
         time.sleep(sleep_second)
 
     # Test End -------------------------------------

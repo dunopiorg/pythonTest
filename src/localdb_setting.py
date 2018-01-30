@@ -4,44 +4,49 @@ from lib import DBConnection as db, tcpSocket
 baseball_new = "BASEBALL_NEW"
 baseball = "BASEBALL"
 serverInfo = '211.115.88.19'
-userId='LAB'
-pw='tmvhcm@ilAb10@$'
+userId = 'LAB'
+pw = 'tmvhcm@ilAb10@$'
 
-def getLiveText(gameId):
+
+def getLiveText(game_Id):
     try:
         # DB 연결
-        dbMsConn = db.MSSqlConnector(server=serverInfo, user=userId, password=pw, database=baseball_new)
-        dbMsConn.open(asDict=False)
+        ms_conn = db.MSSqlConnector(server=serverInfo, user=userId, password=pw, database=baseball_new)
+        ms_conn.open(dict_option=False)
 
-        dbMyConn = db.MySqlConnector('localhost', 'root', '0000', 'baseball')
+        my_conn = db.MySqlConnector('localhost', 3307, 'root', 'lab2ai64', 'baseball')
 
         # Query 설정
-        msQuery = 'SELECT *' \
+        ms_query = 'SELECT *' \
                   '  FROM [BASEBALL_NEW].[dbo].[IE_LiveText_Score_MIX]' \
                   '  WHERE gameID = %s' \
                   '  ORDER BY gameID'
 
-        myQuery = "INSERT INTO baseball.livetext_score_mix " \
+        my_query = "INSERT INTO baseball.livetext_score_mix " \
                   "VALUES (%s, %s, %s, %s, %s, %s, %s, %s," \
                   "%s, %s, %s, %s, %s, %s, %s, %s, %s," \
                   "%s, %s, %s, %s, %s, %s, %s, %s, %s," \
                   "%s, %s, %s, %s, %s, %s, %s, %s, %s)"
 
         # MS Data Selection
-        msItems = dbMsConn.select(msQuery, gameId)
-        count = msItems.__len__()
+        ms_items = ms_conn.select(ms_query, game_Id)
+        count = ms_items.__len__()
 
+        row_count = 0
         for i in range(count):
             # Insert to MySql DB
-            dbMyConn.insert(myQuery, msItems[i])
+            my_conn.insert(my_query, ms_items[i])
+            row_count += 1
+            print(row_count)
     finally:
-        dbMsConn.close()
+        ms_conn.close()
+
 
 def getGameContApp(gmkey=None):
     try:
         # DB 연결
         dbMsConn = db.MSSqlConnector(server=serverInfo, user=userId, password=pw, database=baseball_new)
-        dbMsConn.open(asDict=False)
+        dbMsConn.open(dict_option=False)
 
         dbMyConn = db.MySqlConnector('localhost', 3307, 'root', 'lab2ai64', 'baseball')
 
@@ -77,7 +82,7 @@ def getGameContApp_all(gmkey=None):
     try:
         # DB 연결
         dbMsConn = db.MSSqlConnector(server=serverInfo_all, user=userId_all, password=pw_all, database=database_all)
-        dbMsConn.open(asDict=False)
+        dbMsConn.open(dict_option=False)
 
         dbMyConn = db.MySqlConnector('localhost', 3307, 'root', 'lab2ai64', 'baseball')
 
@@ -115,7 +120,7 @@ def getHitter():
     try:
         # DB 연결
         dbMsConn = db.MSSqlConnector(server=serverInfo_all, user=userId_all, password=pw_all, database=baseball_all)
-        dbMsConn.open(asDict=False)
+        dbMsConn.open(dict_option=False)
 
         dbMyConn = db.MySqlConnector('localhost', 3307, 'root', 'lab2ai64', 'baseball')
 
@@ -144,7 +149,7 @@ def getEntry():
     try:
         # DB 연결
         dbMsConn = db.MSSqlConnector(server=serverInfo, user=userId, password=pw, database=baseball_new)
-        dbMsConn.open(asDict=False)
+        dbMsConn.open(dict_option=False)
 
         dbMyConn = db.MySqlConnector('localhost', 3307, 'root', 'lab2ai64', 'baseball')
 
@@ -176,7 +181,7 @@ def getKbo_rank10_basic(gmkey=None):
     try:
         # DB 연결
         dbMsConn = db.MSSqlConnector(server=serverInfo_all, user=userId_all, password=pw_all, database=database_all)
-        dbMsConn.open(asDict=False)
+        dbMsConn.open(dict_option=False)
 
         dbMyConn = db.MySqlConnector('localhost', 3307, 'root', 'lab2ai64', 'baseball')
 
@@ -207,7 +212,7 @@ def get_gameinfo(gmkey=None):
     try:
         # DB 연결
         dbMsConn = db.MSSqlConnector(server=serverInfo_all, user=userId_all, password=pw_all, database=database_all)
-        dbMsConn.open(asDict=False)
+        dbMsConn.open(dict_option=False)
 
         dbMyConn = db.MySqlConnector('localhost', 3307, 'root', 'lab2ai64', 'baseball')
 
@@ -238,7 +243,7 @@ def get_pitzone(gmkey=None):
     try:
         # DB 연결
         dbMsConn = db.MSSqlConnector(server=serverInfo_all, user=userId_all, password=pw_all, database=database_all)
-        dbMsConn.open(asDict=False)
+        dbMsConn.open(dict_option=False)
 
         dbMyConn = db.MySqlConnector('localhost', 3307, 'root', 'lab2ai64', 'baseball')
 
@@ -269,7 +274,7 @@ def get_pittotal():
     try:
         # DB 연결
         dbMsConn = db.MSSqlConnector(server=serverInfo_all, user=userId_all, password=pw_all, database=database_all)
-        dbMsConn.open(asDict=False)
+        dbMsConn.open(dict_option=False)
 
         dbMyConn = db.MySqlConnector('localhost', 3307, 'root', 'lab2ai64', 'baseball')
 
@@ -301,7 +306,7 @@ def get_pitcher():
     try:
         # DB 연결
         dbMsConn = db.MSSqlConnector(server=serverInfo_all, user=userId_all, password=pw_all, database=database_all)
-        dbMsConn.open(asDict=False)
+        dbMsConn.open(dict_option=False)
 
         dbMyConn = db.MySqlConnector('localhost', 3307, 'root', 'lab2ai64', 'baseball')
 
@@ -329,8 +334,8 @@ def get_pitcher():
 
 
 if __name__ == "__main__":
-    # getLiveText('20170912OBNC0')
-    # getGameContApp('20170912OBNC0')
+    # getLiveText('20170926LGHT0')
+    # getGameContApp('20170926HHLT0')
     # getGameContApp()
     # getGameContApp_all()
     # getHitter()
@@ -339,4 +344,5 @@ if __name__ == "__main__":
     # get_gameinfo()
     # get_pitzone()
     # get_pittotal()
-    get_pitcher()
+    # get_pitcher()
+    pass

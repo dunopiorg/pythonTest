@@ -221,12 +221,6 @@ class Record(object):
         query = query_format.format(hitter_code, 2017)  # datetime.now().year
 
         result_list = []
-        query2 = "SELECT GMKEY, GDAY, HOW, PLACE, HITTER, HITNAME "\
-                "FROM  baseball.gamecontapp_all "\
-                "WHERE HITTER = '{0}' "\
-                "AND GMKEY LIKE '{1}%'"\
-                "ORDER BY GMKEY DESC, SERNO DESC " \
-                "LIMIT 100 ".format(hitter_code, datetime.now().year)
 
         df = pd.read_sql(query, conn)
         df_to_dict = df.to_dict('records')
@@ -347,6 +341,19 @@ class Record(object):
             cursor.execute(query)
             result = cursor.fetchall()
             conn.commit()
+        return result
+
+    @classmethod
+    def update_hitter_pa(cls, data_dict):
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER, password=cls._PASSWORD, db=cls._DB,
+                               charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_hitter", "update_hitter_pa")
+        query = query_format.format(**data_dict)
+
+        with conn.cursor() as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
         return result
     # endregion
 

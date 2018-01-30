@@ -31,7 +31,7 @@
 			{1} 
 			{2} 
 			AND OPPONENT = 'TEAM' 
-			AND STATE_SPLIT = 'VERSUS' 
+			AND STATE_SPLIT = 'VERSUS_TEAM' 
 		) AAA 
 		WHERE PITCHER = '{0}' 
     </query>
@@ -49,7 +49,7 @@
 			AND OPPONENT = 'HITTER' 
 			AND HITTEAM = 'NA'
 			AND HITTER = '{1}'
-			AND STATE_SPLIT = 'VERSUS' 
+			AND STATE_SPLIT = 'VERSUS_HITTER' 
 			{2}
 		) AAA 
 		WHERE PITCHER = '{0}' 

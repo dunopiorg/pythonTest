@@ -14,7 +14,7 @@ pw='tmvhcm@ilAb10@$'
 
 # DB 연결
 dbMsConn = db.MSSqlConnector(server=serverInfo, user=userId, password=pw, database=database)
-dbMsConn.open(asDict=False)
+dbMsConn.open(dict_option=False)
 
 dbMyConn = db.MySqlConnector('localhost', 'root', '0000', 'baseball')
 
