@@ -5,6 +5,7 @@ from lib import message_maker
 from lib import casterq
 from lib import player
 from lib import record
+from lib import commentate
 from korean import Noun
 import time
 import korean
@@ -33,9 +34,6 @@ class GameHelper(object):
         self._SO = ['KK','KN','KB','KW','KP']
         self._PA = ['H1','H2','H3','HR','HI','HB','BB','IB','HP','KK','KN','KB'
 							,'KW','KP','IN','OB','IP','XX','SH','SF','FC','GD','TP','GR','BN','FL','LL','IF','FF']
-        self._BALL_STUFF = {'FAST': '패스트볼', 'CUTT': '커터', 'SLID': '슬라이더', 'CURV': '커브',
-                            'CHUP': '체인지업', 'SPLI': '스플리터', 'SINK': '싱커볼', 'TWOS': '투심패스트볼',
-                            'FORK': '포크볼', 'KNUC': '너클볼'}
         self._TEAM_KOR = {"WO": "넥센", "SS": "삼성", "SK": "SK", "OB": "두산",
                          "NC": "NC", "LT": "롯데", "LG": "LG", "KT ": "KT", "HT": "기아", "HH": "한화"}
         # test를 위한 변수 (실제 운영시 고쳐야 한다)
@@ -50,9 +48,6 @@ class GameHelper(object):
         self.pitcher_category_score = {}
         self.common_category_score = {}
         self.today_category_score = {}
-        self.continue_ball_count_b = 0  # 연속 볼
-        self.continue_ball_count_f = 0  # 연속 파울
-        self.continue_ball_stuff = {}
 
         # 기본 전역 상수
         self._LEAGUE_SEASON_SCORE = 4
@@ -70,6 +65,7 @@ class GameHelper(object):
         self.recorder = record.Record()
         self.caster_queue = casterq.CasterQueue()
         self.msg_maker = message_maker.MessageMaker()
+        self.commentator = commentate.Commentate()
 
         # initialize data
         self.set_category_score()
@@ -155,13 +151,13 @@ class GameHelper(object):
 
         # region 게임 시작 정보 (경기장, 심판, 날씨 등)
         if seq_num == 0:
-            game_info_data = self.get_game_info(game_id)
+            game_info_data = self.commentator.get_game_info(game_id)
             if game_info_data:
                 self.set_score(self._COMMON_EVENT, game_info_data)
         # endregion
 
         # region 게임 진행 정보 (아웃카운트, 주루 상황, 점수상황)
-        current_game_info = self.get_current_game_info(live_dict)
+        current_game_info = self.commentator.get_current_game_info(live_dict)
         if current_game_info:
             self.set_score(self._COMMON_EVENT, current_game_info)
         # endregion
@@ -205,7 +201,7 @@ class GameHelper(object):
 
         # region 구종 정보
         if text_style == 1 and live_state_sc == 1 and ball_type != 'H' and ball_type != 'F':
-            ball_style_dict = self.get_ball_style_data(game_id, bat_order, ball_count,
+            ball_style_dict = self.commentator.get_ball_style_data(game_id, bat_order, ball_count,
                                                        pitcher, hitter, self.curr_hitter.hit_type)
             if ball_style_dict:
                 self.set_score(self._COMMON_EVENT, ball_style_dict)
@@ -213,7 +209,9 @@ class GameHelper(object):
 
         # region 초구 정보
         if ball_count == 1 and ball_type not in ('F', 'H') and text_style == 1:
-            self.get_first_ball_info(self.curr_hitter.player_code, ball_type)
+            first_ball_result = self.commentator.get_first_ball_info(self.curr_hitter.player_code, ball_type)
+            if first_ball_result:
+                self.set_score(self._COMMON_EVENT, first_ball_result)
         # endregion
 
         # region 타격 Event 발생
@@ -345,15 +343,6 @@ class GameHelper(object):
 
     # region 기능 관련 Functions
     @classmethod
-    def get_new_sigmoid(cls, x):
-        """
-        변경된 Sigmoid 함수 return -0.49 ~ 0.99
-        :param x: 점수
-        :return:
-        """
-        return 1 / (0.667 + exp(-10*x + 5)) - 0.5
-
-    @classmethod
     def get_current_game_state(cls, live_data):
         """
         현재 경기 상황 정보 return dict: hitter, hitteam, pitcher, pitteam, score, base, game_id
@@ -427,32 +416,6 @@ class GameHelper(object):
                        'batorder': bat_order, 'ballcount': ball_count, 'textStyle': text_style,
                        'ball_type': ball_type}
         return result_dict
-
-    @classmethod
-    def get_game_info_data(cls, game_key):
-        """
-        게임 환경 정보
-        :param game_key:
-        :return:
-        """
-        db_my_conn = db.MySqlConnector(host=cls.__HOST, port=cls.__PORT, user=cls.__USER, pw=cls.__PASSWORD,
-                                       db=cls.__DB)
-        query = "SELECT Stadium, Vteam, Hteam, Umpc, Ump1, Ump2, Ump3, Mois, Weath, Wind, Crowd, Chajun "\
-                "FROM baseball.gameinfo "\
-                "WHERE GmKey = '%s'" % game_key
-        result_dict = db_my_conn.select(query, use_dict=True)
-        return result_dict
-
-    def get_game_info(self, game_key):
-        info_dict = self.get_game_info_data(game_key)[0]
-        if info_dict:
-            result = [{'STADIUM': info_dict['Stadium'], 'VTEAM': info_dict['Vteam'], 'HTEAM': info_dict['Hteam'],
-                       'UMPC': info_dict['Umpc'], 'UMP1': info_dict['Ump1'], 'UMP2': info_dict['Ump2'],
-                       'UMP3': info_dict['Ump3'], 'MOIS': info_dict['Mois'], 'CHAJUN': info_dict['Chajun'],
-                       'STATE': 'GAMEINFO', 'STATE_SPLIT': 'GAMEINFO', 'RANK': 1}]
-            return result
-        else:
-            return None
 
     # region 점수 관련 함수
     def hitter_score_generator(self, data_dict):
@@ -842,45 +805,6 @@ class GameHelper(object):
             return result_list
         else:
             return None
-
-    def get_first_ball_info(self, hitter, ball_type):
-        """
-        초구 정보
-        :param hitter:
-        :param ball_type: S: 헛스윙, T:기다리는 Strike
-        :return:
-        """
-        data_dict = {'HITTER': hitter, 'OPPONENT': 'NA', 'LEAGUE': 'NA', 'PITCHER': 'NA', 'PITNAME': 'NA',
-                     'GYEAR': 'NA', 'PITTEAM': 'NA', 'STATE_SPLIT': 'FIRSTBALL'}
-
-        result = []
-        first_ball_data = self.recorder.get_hitter_first_ball(hitter)
-
-        if first_ball_data:
-            first_ball_info = first_ball_data[0]
-
-            if ball_type == 'S':
-                if first_ball_info['T_CNT_RNK'] < 30:
-                    first_ball_dict = data_dict.copy()
-                    first_ball_dict['HITNAME'] = first_ball_info['HITNAME']
-                    first_ball_dict['RANK'] = 1
-                    first_ball_dict['STATE'] = '0S'
-                    first_ball_dict['PA'] = first_ball_info['PA']
-                    first_ball_dict['RESULT'] = first_ball_info['T_CNT_RNK']  # 아무데이터
-                    result.append(first_ball_dict)
-
-            elif ball_type == 'T':
-                if first_ball_info['S_CNT_RNK'] < 30:
-                    first_ball_dict = data_dict.copy()
-                    first_ball_dict['HITNAME'] = first_ball_info['HITNAME']
-                    first_ball_dict['RANK'] = 1
-                    first_ball_dict['STATE'] = '0T'
-                    first_ball_dict['PA'] = first_ball_info['PA']
-                    first_ball_dict['RESULT'] = first_ball_info['S_CNT_RNK']  # 아무데이터
-                    result.append(first_ball_dict)
-
-        if result:
-            self.set_score(self._COMMON_EVENT, result)
     # endregion
 
     # region 투수 관련 함수
@@ -905,7 +829,6 @@ class GameHelper(object):
             return result_list
         else:
             return None
-
     # endregion
 
     # region 메시지 관련 함수
@@ -931,299 +854,6 @@ class GameHelper(object):
 
             if subject:
                 self.set_score(subject, value_dict)
-
-    @classmethod
-    def print_msg(cls, value_dict):
-        """
-        Print Message
-        :param value_dict:
-        :return: None or Message string
-        """
-        # msg_code = "{}L0{:02d}".format(mcode, random.randrange(0, 2))
-        msg = None
-        msg_code = cls.get_msg_code(value_dict)
-
-        if msg_code is None:
-            return None
-
-        db_my_conn = db.MySqlConnector(host=cls.__HOST, port=cls.__PORT,
-                                       user=cls.__USER,
-                                       pw=cls.__PASSWORD,
-                                       db=cls.__DB)
-
-        query = "SELECT MSG FROM baseball.castermsg_mas WHERE CODE = '%s' limit 1" % msg_code
-        template = db_my_conn.select(query, True)
-        if template:
-            try:
-                if 'RESULT' in value_dict and value_dict['RESULT'] > 1:
-                    value_dict['RESULT'] = int(value_dict['RESULT'])
-
-                msg = korean.l10n.Template(template[0]['MSG']).format(**value_dict)
-            except Exception as ex:
-                print(ex)
-            return msg
-        else:
-            return None
-
-    @classmethod
-    def get_msg_code(cls, data_dict):
-        """
-        Message Code 생성
-        :param data_dict:  data parameters
-        :return: message code
-        """
-        msg_code_type1 = '{0}_{1}_{2}_{3}'
-        msg_code_type2 = '{0}_{1}'
-
-        if 'STATE' in data_dict:
-            state = data_dict['STATE']
-        else:
-            state = None
-
-        if 'STATE_SPLIT' in data_dict:
-            if data_dict['STATE_SPLIT'][:6] == 'VERSUS':
-                state_split = 'VS'
-            else:
-                state_split = data_dict['STATE_SPLIT']
-        else:
-            state_split = None
-
-        if 'OPPONENT' in data_dict:
-            opponent = data_dict['OPPONENT'][0]
-        else:
-            opponent = None
-
-        if 'LEAGUE' in data_dict:
-            league = data_dict['LEAGUE'][0]
-        else:
-            league = None
-
-        if state is not None and state_split is not None and opponent is not None and league is not None:
-            msg = msg_code_type1.format(state, state_split, opponent, league)
-        elif state is not None and state_split is not None:
-            msg = msg_code_type2.format(state, state_split)
-        else:
-            msg = None
-
-        return msg
     # endregion
 
-    def get_ball_style_data(self, game_key, bat_order, ball_count, pitcher, hitter, hit_type):
-        """
-        ball style 설명
-        :param game_key:
-        :param bat_order:
-        :param ball_count:
-        :param hitter:
-        :param pitcher:
-        :param hit_type:
-        :return:
-        """
-        db_my_conn = db.MySqlConnector(host=self._HOST, port=self._PORT, user=self._USER, pw=self._PASSWORD,
-                                       db=self._DB)
-        query = "select ball, stuff, speed, zonex, zoney, x, y from baseball.pitzone " \
-                "where gmkey = '{0}' and batorder = '{1}' and ballcount = '{2}' and " \
-                "batter = '{3}' and pitcher = '{4}' limit 1".format(game_key, bat_order, ball_count, hitter, pitcher)
-        data_list = db_my_conn.select(query, use_dict=True)
-
-        if data_list:
-            pitch_data = data_list[0]
-
-            if pitch_data['stuff'] in self._BALL_STUFF:
-                pitch_type = self._BALL_STUFF[pitch_data['stuff']]
-                if pitch_data['stuff'] in self.continue_ball_stuff:
-                    self.continue_ball_stuff[pitch_data['stuff']] += 1
-                else:
-                    self.continue_ball_stuff.clear()
-                    self.continue_ball_stuff[pitch_data['stuff']] = 1
-            else:
-                pitch_type = ''
-
-            area_x = pitch_data['x']
-            area_y = pitch_data['y']
-            zone_x = pitch_data['zonex']
-            zone_y = pitch_data['zoney']
-            ball_type = pitch_data['ball']
-            comment = ''
-
-            if ball_type == 'B':  # 볼 판정
-                if hit_type == '우타':
-                    if zone_x < 2:
-                        comment = '바깥으로 빠진 '
-                    elif zone_x > 6:
-                        comment = '몸 안쪽 '
-                else:
-                    if zone_x < 2:
-                        comment = '몸 안쪽 '
-                    elif zone_x > 6:
-                        comment = '바깥으로 빠진 '
-                if 45 < area_x < 180 and 60 < area_y < 230:
-                    comment = '스트라이크 같았는데요. '
-            elif ball_type == 'T':  # 기다린 스트라이크
-                if hit_type == '우타':  # 우타
-                    if zone_x == 1 or zone_x == 2:  # 바깥쪽 스트라이크
-                        if 45 < area_x < 60:
-                            comment = '바깥쪽 꽉찬 스트라이크 '
-                        else:
-                            comment = '바깥쪽 스트라이크 '
-                    elif zone_x == 6 or zone_x == 7:  # 몸쪽 스트라이크
-                        if 210 < area_x < 235:
-                            comment = '몸쪽 꽉찬 스크라이크 '
-                        else:
-                            comment = '몸쪽 스트라이크 '
-                else:  # 좌타
-                    if zone_x == 1 or zone_x == 2:  # 몸쪽 스트라이크
-                        if 45 < area_x < 60:
-                            comment = '몸쪽 꽉찬 스크라이크 '
-                        else:
-                            comment = '몸쪽 스트라이크 '
-                    elif zone_x == 6 or zone_x == 7:  # 바깥쪽 스트라이크
-                        if 210 < area_x < 235:
-                            comment = '바깥쪽 꽉찬 스트라이크 '
-                        else:
-                            comment = '바깥쪽 스트라이크 '
-            elif ball_type == 'S':  # 헛스윙
-                if zone_y < 6:
-                    comment = '낮은 공이였는데 휘둘렀어요. '
-
-            result = [{'SUBJECT': 'PITCHER', 'OPPONENT': 'NA', 'LEAGUE': 'NA', 'PITCHER': pitcher, 'PITNAME': 'NA',
-                       'GYEAR': 'NA', 'PITTEAM': 'NA', 'STATE': 'BALLINFO', 'STATE_SPLIT': 'BALLINFO',
-                       'COMMENT': comment, 'HITTER': hitter, 'STUFF': pitch_type,  'SPEED': pitch_data['speed'],
-                       'RANK': 1}]
-
-            return result
-        else:
-            return None
-
-    def get_current_game_info(self, live_dict):
-        result_list = []
-        data_dict = {'OPPONENT': 'NA', 'LEAGUE': 'NA', 'PITCHER': 'NA', 'PITNAME': 'NA',
-                     'GYEAR': 'NA', 'PITTEAM': 'NA', 'STATE_SPLIT': 'CURRENT_INFO'}
-        score_detail = live_dict['score_detail']
-        base_detail = live_dict['base_detail']
-        out_count = live_dict['out_count']
-        bat_order = live_dict['batorder']
-        ball_count = live_dict['ballcount']
-        text_style = live_dict['textStyle']
-        full_count = live_dict['full_count']
-        ball_type = live_dict['ball_type']
-        hit_team = live_dict['hitteam']
-
-        # region 등판시 주루상황, 점수상황, 아웃상황
-        if bat_order > 1 and ball_count == 0 and text_style == 8:
-            self.continue_ball_count_b = 0  # 연속 볼
-            self.continue_ball_count_f = 0  # 연속 파울
-            self.continue_ball_stuff.clear()
-            if out_count == 0:
-                out = '노'
-            elif out_count == 1:
-                out = '원'
-            else:
-                out = '투'
-
-            if base_detail == '0B':
-                base = '없는 상황'
-            elif base_detail == '1B':
-                base = '1루'
-            elif base_detail == '2B':
-                base = '2루'
-            elif base_detail == '3B':
-                base = '3루'
-            elif base_detail == '12B':
-                base = '1,2루'
-            elif base_detail == '13B':
-                base = '1,3루'
-            elif base_detail == '23B':
-                base = '2,3루'
-            else:
-                base = '만루'
-
-            if score_detail == '0D':
-                score = '동점인 상황'
-            else:
-                if score_detail[1] == 'L':
-                    score_temp = " 이기고 있는 상황"
-                else:
-                    score_temp = " 지고 있는 상황"
-                score = "{0}점차로 {1}".format(score_detail[0], score_temp)
-
-            current_game = data_dict.copy()
-            current_game['LEAGUE'] = 'SEASON'
-            current_game['STATE'] = 'CURRENT_INFO'
-            current_game['out'] = out
-            current_game['base'] = base
-            current_game['score'] = score
-
-            result_list.append(current_game)
-        # endregion
-
-        # region Ball Count 설명
-        if text_style == 1:
-            if ball_type == 'S' or ball_type == 'T':
-                strike_counting = full_count[1]
-                if strike_counting == 1:
-                    print("캐스터: 원스트라이크")
-                elif strike_counting == 2:
-                    print("캐스터: 투스트라이크")
-            elif ball_type == 'B':
-                ball_counting = full_count[0]
-                if ball_counting == 1:
-                    print("캐스터: 원볼")
-                elif ball_counting == 2:
-                    print("캐스터: 투볼")
-                elif ball_counting == 3:
-                    print("캐스터: 스리볼")
-        # endregion
-
-        # region Full count
-        if full_count[0] == 2 and full_count[1] == 3 and text_style == 1:
-            full_count_dict = data_dict.copy()
-            full_count_dict['LEAGUE'] = 'SEASON'
-            full_count_dict['STATE'] = 'FULL_COUNT'
-            result_list.append(full_count_dict)
-        # endregion
-
-        # region 연속 볼, 연속 파울 설정
-        if ball_type == 'B' and text_style == 1:
-            self.continue_ball_count_b += 1
-            self.continue_ball_count_f = 0
-        elif ball_type == 'F' and text_style == 1:
-            self.continue_ball_count_f += 1
-            self.continue_ball_count_b = 0
-        else:
-            self.continue_ball_count_b = 0
-            self.continue_ball_count_f = 0
-
-        if self.continue_ball_count_b > 2 and self.continue_ball_count_b < 4:
-            continue_ball_dict = data_dict.copy()
-            continue_ball_dict['LEAGUE'] = 'SEASON'
-            continue_ball_dict['STATE'] = 'CONTINUE_BALL'
-            continue_ball_dict['type'] = '볼'
-            continue_ball_dict['count'] = self.continue_ball_count_b
-            result_list.append(continue_ball_dict)
-        elif self.continue_ball_count_f > 2:
-            continue_ball_dict = data_dict.copy()
-            continue_ball_dict['LEAGUE'] = 'SEASON'
-            continue_ball_dict['STATE'] = 'CONTINUE_BALL'
-            continue_ball_dict['type'] = '파울'
-            continue_ball_dict['count'] = self.continue_ball_count_f
-            result_list.append(continue_ball_dict)
-        # endregion
-
-        # region 연속 같은 볼
-        if ball_type == 'H':
-            self.continue_ball_stuff.clear()
-        else:
-            ball_stuff_value_list = list(self.continue_ball_stuff.values())
-            ball_stuff_key_list = list(self.continue_ball_stuff.keys())
-            if ball_stuff_value_list and ball_stuff_value_list[0] > 2:
-                ball_stuff_dict = data_dict.copy()
-                ball_stuff_dict['LEAGUE'] = 'SEASON'
-                ball_stuff_dict['STATE'] = 'BALL_STUFF_COUNT'
-                ball_stuff_dict['count'] = ball_stuff_value_list[0]
-                ball_stuff_dict['ball_type'] = self._BALL_STUFF[ball_stuff_key_list[0]]
-                result_list.append(ball_stuff_dict)
-        # endregion
-
-        return result_list
     # endregion

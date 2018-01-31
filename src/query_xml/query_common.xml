@@ -1,9 +1,19 @@
 <?xml version="1.0"?>
 <data>
-    <query id="test2">
-      select *
-      from inquiry
-      where inquery_id = %s
+    <query id="get_pitzone_info">
+		SELECT ball, stuff, speed, zonex, zoney, x, y from baseball.pitzone 
+		WHERE gmkey = '{0}' 
+		AND batorder = '{1}' 
+		AND ballcount = '{2}' 
+		AND batter = '{3}' 
+		AND pitcher = '{4}' 
+		LIMIT 1
+    </query>
+	
+	<query id="get_game_info_data">
+		SELECT Stadium, Vteam, Hteam, Umpc, Ump1, Ump2, Ump3, Mois, Weath, Wind, Crowd, Chajun, Temp 
+		FROM baseball.gameinfo 
+        WHERE GmKey = '{0}'
     </query>
 
 </data>

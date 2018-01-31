@@ -183,23 +183,6 @@ class Record(object):
         query_format = cls.ql.get_query("query_hitter", "get_hitter_base_record")
         query = query_format.format(base_split, hitter_code, add_state)
 
-        query2 = "SELECT RANK, SUBJECT, OPPONENT, LEAGUE, GYEAR, HITTER, HITNAME " \
-                "							    , PITCHER, PITNAME, PITTEAM, PITTEAM_NAME  " \
-                "								, PA, STATE, STATE_SPLIT, RESULT " \
-                "FROM  " \
-                "( " \
-                "	SELECT DENSE_RANK() OVER(PARTITION BY STATE ORDER BY RESULT DESC) AS RANK " \
-                "						, SUBJECT, OPPONENT, LEAGUE, GYEAR, HITTER, HITNAME, PITCHER, PITNAME, PITTEAM " \
-                "						, PITTEAM_NAME, PA, STATE, STATE_SPLIT, RESULT " \
-                "	FROM baseball.accum_record_hitter " \
-                "	WHERE GYEAR IN ('NA', 2017) " + add_state + \
-                "	AND PITCHER = 'NA'  " \
-                "	AND PITTEAM = 'NA'  " \
-                "  AND OPPONENT = 'ALL' " \
-                "	AND STATE_SPLIT = '{0}' " \
-                " ) AAA " \
-                "WHERE HITTER = '{1}'  ".format(base_split, hitter_code)
-
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             cursor.execute(query)
             result = cursor.fetchall()
@@ -244,43 +227,6 @@ class Record(object):
         query_format = cls.ql.get_query("query_hitter", "get_hitter_first_ball")
         query = query_format.format(hitter_code)
 
-        query2 = "SELECT GYEAR, HITTER, HITNAME, PA, AB, S_CNT, S_CNT_RNK, B_CNT, B_CNT_RNK, F_CNT, F_CNT_RNK, H_CNT, T_CNT, T_CNT_RNK " \
-                "FROM  " \
-                "( " \
-                "	SELECT GYEAR, HITTER, HITNAME " \
-                "	, PA, AB " \
-                "	, S_CNT  " \
-                "	, DENSE_RANK() OVER (ORDER BY S_CNT DESC) AS S_CNT_RNK " \
-                "	, B_CNT " \
-                "	, DENSE_RANK() OVER (ORDER BY B_CNT DESC) AS B_CNT_RNK " \
-                "	, F_CNT " \
-                "	, DENSE_RANK() OVER (ORDER BY F_CNT DESC) AS F_CNT_RNK " \
-                "	, H_CNT " \
-                "	, DENSE_RANK() OVER (ORDER BY H_CNT DESC) AS H_CNT_RNK " \
-                "	, T_CNT  " \
-                "	, DENSE_RANK() OVER (ORDER BY T_CNT DESC) AS T_CNT_RNK " \
-                "	FROM " \
-                "	(  " \
-                "		select GYEAR, HITTER, HITNAME  " \
-                "		, SUM(CASE WHEN HOW IN ('H1','H2','H3','HR','HI','HB','BB','IB','HP','KK','KN','KB'  " \
-                "							,'KW','KP','IN','OB','IP','XX','SH','SF','FC','GD','TP','GR','BN','FL','LL','IF','FF') THEN 1  " \
-                "				ELSE 0 END) AS PA  " \
-                "		, SUM(CASE WHEN HOW IN ('H1','H2','H3','HR','HI','HB','GR','BN','FL','LL','IF','FF', " \
-                "					'KK','KN','KB','KW','KP','IP','XX','FC','GD','TP') THEN 1 ELSE 0 END) AS AB  " \
-                "		, SUM(CASE WHEN LEFT(BCOUNT, 1) = 'S' THEN 1 ELSE 0 END) AS S_CNT  " \
-                "		, SUM(CASE WHEN LEFT(BCOUNT, 1) = 'B' THEN 1 ELSE 0 END) AS B_CNT  " \
-                "		, SUM(CASE WHEN LEFT(BCOUNT, 1) = 'F' THEN 1 ELSE 0 END) AS F_CNT  " \
-                "		, SUM(CASE WHEN LEFT(BCOUNT, 1) = 'H' THEN 1 ELSE 0 END) AS H_CNT  " \
-                "		, SUM(CASE WHEN LEFT(BCOUNT, 1) = 'T' THEN 1 ELSE 0 END) AS T_CNT	 " \
-                "		from baseball.gamecontapp_all " \
-                "		where 1 = 1  " \
-                "		and bcount != ''  " \
-                "		GROUP BY GYEAR, HITTER, HITNAME  " \
-                "	) A  " \
-                "	WHERE pa > 300 " \
-                "	AND GYEAR = 2017 " \
-                ") AAA " \
-                "WHERE HITTER = %s " % hitter_code
         df = pd.read_sql(query, conn)
         df_to_dict = df.to_dict('records')
         if df_to_dict:
@@ -294,48 +240,11 @@ class Record(object):
     # region 타자기록 Update
     @classmethod
     def update_hitter_count_record(cls, data_dict):
-        result = None
         conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER, password=cls._PASSWORD, db=cls._DB,
                                charset='utf8mb4')
 
         query_format = cls.ql.get_query("query_hitter", "update_hitter_count_record")
         query = query_format.format(**data_dict)
-
-        query2 = "UPDATE baseball.accum_record_hitter T1 INNER JOIN "\
-                            "( "\
-                            "SELECT HITTER, STATE, STATE_SPLIT, OPPONENT, LEAGUE, PITTEAM, GYEAR, RESULT "\
-                            "FROM baseball.accum_record_hitter "\
-                            "WHERE 1 = 1 " \
-                            "AND HITTER = '{hitter}' "\
-                            "AND STATE = '{state}' "\
-                            "AND STATE_SPLIT = '{state_split}' "\
-                            "AND OPPONENT ='{opponent}' "\
-                            "AND GYEAR IN ('{gyear}', 'NA') "\
-                            "AND PITCHER = '{pitcher}' "\
-                            "AND PITTEAM = '{pitteam}' "\
-                            ") AS T2 " \
-                            "ON T1.HITTER = T2.HITTER " \
-                            "AND T1.STATE = T2.STATE " \
-                            "AND T1.STATE_SPLIT = T2.STATE_SPLIT " \
-                            "AND T1.OPPONENT = T2.OPPONENT " \
-                            "AND T1.LEAGUE = T2.LEAGUE " \
-                            "AND T1.PITTEAM = T2.PITTEAM " \
-                            "AND T1.GYEAR = T2.GYEAR " \
-                "SET T1.RESULT = T2.RESULT  + 1 "\
-                            "WHERE T1.HITTER = '{hitter}' " \
-                            "AND T1.HITTER = T2.HITTER " \
-                            "AND T1.STATE = T2.STATE " \
-                            "AND T1.STATE_SPLIT = T2.STATE_SPLIT " \
-                            "AND T1.OPPONENT = T2.OPPONENT " \
-                            "AND T1.LEAGUE = T2.LEAGUE " \
-                            "AND T1.PITTEAM = T2.PITTEAM " \
-                            "AND T1.GYEAR = T2.GYEAR " \
-                            "AND T1.STATE = '{state}' " \
-                            "AND T1.STATE_SPLIT = '{state_split}' "\
-                            "AND T1.OPPONENT = '{opponent}' "\
-                            "AND T1.GYEAR IN ('{gyear}', 'NA') "\
-                            "AND T1.PITCHER = '{pitcher}' "\
-                            "AND T1.PITTEAM = '{pitteam}'; COMMIT; ".format(**data_dict)
 
         with conn.cursor() as cursor:
             cursor.execute(query)
@@ -487,6 +396,7 @@ class Record(object):
 
     # endregion
 
+    # region 기타 Functions
     @classmethod
     def get_personal_info(cls, player_code):
         """
@@ -494,7 +404,6 @@ class Record(object):
         :param player_code:
         :return:
         """
-        result = None
         conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
                                password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
 
@@ -508,6 +417,42 @@ class Record(object):
             result = cursor.fetchall()
             conn.commit()
         return result
+
+    @classmethod
+    def get_pitzone_info(cls, game_key, bat_order, ball_count, hitter, pitcher):
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_common", "get_pitzone_info")
+        query = query_format.format(game_key, bat_order, ball_count, hitter, pitcher)
+
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
+
+        return result
+
+    @classmethod
+    def get_game_info_data(cls, game_key):
+        """
+        게임 환경 정보
+        :param game_key:
+        :return:
+        """
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_common", "get_game_info_data")
+        query = query_format.format(game_key)
+
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
+
+        return result
+    # endregion
+
+
 
 
 if __name__ == "__main__":

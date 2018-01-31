@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<data>
+    <query id="is_exist">
+		SELECT count(*)
+		FROM baseball.message_history
+		WHERE group_id = '{0}'
+		AND subject = '{1}'
+		AND msg_param = '{2}'
+		LIMIT 1
+    </query>
+	
+	<query id="insert_msg">
+		INSERT INTO baseball.message_history (group_id, subject, msg_param, use_count)
+		VALUES('{0}', '{1}', '{2}', 1)
+    </query>
+	
+	<query id="update_msg_count">
+		UPDATE baseball.message_history 
+		SET use_count = use_count + 1
+		WHERE group_id = '{0}'
+		AND subject = '{1}'
+		AND msg_param = '{2}'
+    </query>
+
+</data>
