@@ -30,3 +30,7 @@ class QueryLoader(object):
             query_node = self.query_files_dict[category].find(".//query[@id='" + query_id + "']")
 
         return query_node.text
+
+    def get_query_id_list(self):
+        self.load()
+        return self.query_files_dict

@@ -1,7 +1,27 @@
 <component name="ProjectDictionaryState">
   <dictionary name="Lab2AI">
     <words>
+      <w>ballcount</w>
+      <w>ballinfo</w>
+      <w>batorder</w>
+      <w>chajun</w>
+      <w>chup</w>
+      <w>curv</w>
+      <w>cutt</w>
+      <w>firstball</w>
+      <w>gameinfo</w>
+      <w>gyear</w>
       <w>hitname</w>
+      <w>hteam</w>
+      <w>knuc</w>
+      <w>mois</w>
+      <w>pitname</w>
+      <w>pitteam</w>
+      <w>spli</w>
+      <w>umpc</w>
+      <w>vteam</w>
+      <w>zonex</w>
+      <w>zoney</w>
     </words>
   </dictionary>
 </component>

@@ -4,10 +4,10 @@ import socket
 import threading
 
 from lib import tcpSocket
-from lib import game_helper
+from lib import game_app
 
 # Message Queue 생성
-recv_broadcast_queue = queue.Queue()
+# recv_broadcast_queue = queue.Queue()
 
 # Program Start
 """
@@ -46,24 +46,22 @@ if __name__ == "__main__":
     except Exception as e:
         server.close()
     """
-    game_id = '20170912OBNC0'  # 20170926HHLT0
-    sleep_second = 0.1
-    currInfoDict = None
-    prevInfoDict = None
-    gm_helper = game_helper.GameHelper()
-    currInfoDict = gm_helper.get_live_data()
-    caster_thread = threading.Thread(target=gm_helper.get_queue)
+    game_id = '20170926HHLT0'  # 20170912OBNC0
+    sleep_second = 1
+    gm_app = game_app.GameApp(game_id)
+
+    msg_thread = threading.Thread(target=gm_app.message_thread, name='Message Thread')
+    msg_thread.start()
+    caster_thread = threading.Thread(target=gm_app.score_thread, name='Score Table Thread')
     caster_thread.start()
     # Test Start ------------------------------------
-    testTuple = gm_helper.test_live_data(game_id)
-    for i, testDict in enumerate(testTuple):
-        print("문자: " + testDict['LiveText'])
-        gm_helper.curr_row_num = i
-        result = gm_helper.get_what_info(testDict)
+    game_live_tuple = gm_app.test_live_data(game_id)
+    for game_live_dict in game_live_tuple:
+        print("문자: " + game_live_dict['LiveText'])
+        result = gm_app.get_what_info(game_live_dict)
 
         if result:
-            gm_helper.make_sentence(result)
+            gm_app.make_sentence(result)
         time.sleep(sleep_second)
 
     # Test End -------------------------------------
-    prevInfoDict = currInfoDict

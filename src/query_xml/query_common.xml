@@ -15,5 +15,57 @@
 		FROM baseball.gameinfo 
         WHERE GmKey = '{0}'
     </query>
-
+	
+	<query id="get_starting_line_up">
+		SELECT turn, name, pcode, team as tb, 
+		CASE WHEN team = 'T' THEN SUBSTRING(gmkey, 9, 2) ELSE SUBSTRING(gmkey, 11, 2) END AS team, posi
+		FROM baseball.entry
+		WHERE GMKEY = '{0}' 
+    </query>
+	
+	<query id="get_gamecontapp">
+		SELECT serno, turn, inn, tb, inn2, ocount, bcount, rturn, how, field, place, hitter, hitname, pitcher, pitname, 
+						   catcher, catname, bcnt, tscore, bscore, base1b, base2b, base3b, base1a, base2a, base3a 
+		FROM baseball.gamecontapp 
+		WHERE GMKEY = '{0}' 
+		AND HITTER = '{1}'
+		AND PITCHER = '{2}'
+		AND INN = '{3}'
+		AND HOW = '{4}'
+		ORDER BY SERNO DESC 
+		-- LIMIT 1
+    </query>
+	
+	<query id="get_teamrank_daily">
+		SELECT RANK, TEAM, GAME, WIN, LOSE, SAME, WRA, AB, HIT, HR, SB, RUN, INN, INN2, R, ER, ERR, HRA, LRA, BRA, ERA, DRA, A.CONTINUE, H2, H3, BB, HP, SF, A.DATE
+		FROM baseball.teamrank_daily A
+		WHERE team = '{0}'
+		ORDER BY DATE DESC
+		LIMIT 1
+    </query>
+	
+	<query id="get_teamrank">
+		SELECT RANK, TEAM, GAME, WIN, LOSE, SAME, WRA, AB, HIT, HR, SB, RUN, INN, INN2, R, ER, ERR, HRA, LRA, BRA, ERA, DRA, A.CONTINUE, H2, H3, BB, HP, SF
+		FROM baseball.teamrank A
+		WHERE gyear = '{0}'
+		AND team in ('{1}', '{2}')
+    </query>
+	
+	<query id="test_get_gamecontapp">
+		SELECT gmkey, gyear, tb, how, field, place, hitter, hitname, pitcher, pitname, catcher, catname, tscore, bscore, base1a, base2a, base2a
+		FROM baseball.gamecontapp_all
+    </query>
+	
+	<query id="get_player_info">
+		SELECT NAME, PCODE, TEAM, POSITION, POS, BACKNUM, BIRTH, HEIGHT, WEIGHT, CAREER, HITTYPE, INDATE, MONEY, CAREER2
+		FROM baseball.person
+		WHERE PCODE = '{0}'
+    </query>
+	
+	<query id="get_player_info">
+		SELECT NAME, PCODE, TEAM, POSITION, POS, BACKNUM, BIRTH, HEIGHT, WEIGHT, CAREER, HITTYPE, INDATE, MONEY, CAREER2
+		FROM baseball.person
+		WHERE PCODE = '{0}'
+    </query>
+	
 </data>

@@ -587,8 +587,9 @@ class Pitcher(Player):
             self.today_record = result
         return self.today_record
 
-    def get_pitcher_basic_data(self, pitcher_code):
-        result = self.recorder.get_pitcher_basic_record(pitcher_code)
+    def get_pitcher_basic_data(self, pitcher_code, state=None):
+        result = self.recorder.get_pitcher_basic_record(pitcher_code, state)
+
         if result:
             return result
         else:
@@ -607,9 +608,47 @@ class Pitcher(Player):
             return result
         else:
             return None
+
+    def get_pitcher_basic_total_data(self, pitcher):
+        result = self.recorder.get_pitcher_basic_total_record(pitcher)
+        if result:
+            return result
+        else:
+            return None
+
+    def get_how_event_data(self, how_event, hitter, hit_team):
+        result_list = []
+        how_dict = {'KK': 'SO', 'KN': 'SO', 'KB': 'SO', 'KW': 'SO', 'KP': 'SO',
+                    'H1': 'HIT', 'H2': 'HIT', 'H3': 'HIT', 'HR': 'HIT', 'HI': 'HIT', 'HB': 'HIT',
+                    'HR': 'HR',
+                    'BB': 'BB', 'IB': 'BB',
+                    'HP': 'HP'}
+
+        if how_event in how_dict:
+            basic_record = self.get_pitcher_basic_data(self.player_code, how_dict[how_event])
+            if basic_record:
+                result_list.extend(basic_record)
+
+            pitcher_vs_hitter_record = self.get_pitcher_vs_hitter_data(self.player_code, hitter, how_dict[how_event])
+            if pitcher_vs_hitter_record:
+                result_list.extend(pitcher_vs_hitter_record)
+
+            pitcher_vs_team_record = self.get_pitcher_vs_team_data(self.player_code, hit_team, how_dict[how_event])
+            if pitcher_vs_team_record:
+                result_list.extend(pitcher_vs_team_record)
+
+            if result_list:
+                return result_list
+            else:
+                return None
     # endregion
 
     # region 기록 Update
 
     # endregion
 
+
+if __name__ == "__main__":
+    pitcher = Pitcher(60263)
+    result = pitcher.get_how_event_data('H2', '76249', 'OB')
+    print(result)

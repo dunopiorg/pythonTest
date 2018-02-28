@@ -2,6 +2,7 @@ from datetime import datetime
 from lib import query_loader
 import pandas as pd
 import pymysql.cursors
+import time
 
 
 class Record(object):
@@ -11,6 +12,7 @@ class Record(object):
     _PASSWORD = 'lab2ai64'
     _DB = 'baseball'
     _PORT = 3307
+    # ql = query_loader.QueryLoader('../query_xml')
     ql = query_loader.QueryLoader()
 
     def __init__(self):
@@ -390,6 +392,39 @@ class Record(object):
 
         conn.close()
         return result
+
+    @classmethod
+    def get_pitcher_basic_total_record(cls, pitcher_code):
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_pitcher", "get_pitcher_basic_total_record")
+        query = query_format.format(pitcher_code)
+
+        result_list = []
+
+        df = pd.read_sql(query, conn)
+        conn.close()
+
+        pitcher_season_dict = df[df['GYEAR'] == '2017'].to_dict('record')[0]
+        if pitcher_season_dict:
+            result_list.append(pitcher_season_dict)
+        count_record = df[['GAMENUM', 'CG', 'SHO', 'W', 'L', 'SV', 'HOLD', 'BF', 'HIT', 'HR', 'BB', 'HP', 'KK', 'R', 'ER', 'SCORE', 'QS', 'STARTING_NUM']].sum().astype(int)
+        rate_record = df[['ERA', 'INNG', 'INNK', 'OPS', 'WHIP', 'INNB', 'KK_BB_RT', 'PA_BB_RT', 'PA_KK_RT', 'WRA']].mean().round(3)
+
+        total_record = count_record.add(rate_record, fill_value=0)
+        total_record['PITCHER'] = df.iloc[-1:, 0].values[0]
+        total_record['PITNAME'] = df.iloc[-1:, 1].values[0]
+        total_record['GYEAR'] = 'NA'
+        total_record['STATE'] = 'STARTING'
+        total_record['STATE_SPLIT'] = 'STARTING_TOTAL'
+        total_record['LEAGUE'] = 'ALL'
+        total_record['TEAM'] = df.iloc[-1:, 3].values[0]
+        pitcher_all_dict = dict(total_record)
+        if pitcher_all_dict:
+            result_list.append(pitcher_all_dict)
+
+        return result_list
     # endregion
 
     # region 투수기록 Update
@@ -450,17 +485,106 @@ class Record(object):
             result = cursor.fetchall()
 
         return result
+
+    @classmethod
+    def get_starting_line_up(cls, game_key):
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_common", "get_starting_line_up")
+        query = query_format.format(game_key)
+
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
+
+        return result
+
+    @classmethod
+    def get_gamecontapp(cls, game_key, hitter, pitcher, inn, how):
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_common", "get_gamecontapp")
+        query = query_format.format(game_key, hitter, pitcher, inn, how)
+
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
+
+        return result
+
+    @classmethod
+    def get_player_info(cls, player_code):
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_common", "get_player_info")
+        query = query_format.format(player_code)
+
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
+
+        return result
     # endregion
 
+    @classmethod
+    def test_get_gamecontapp(cls):
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
 
+        query_format = cls.ql.get_query("query_common", "test_get_gamecontapp")
+        query = query_format.format()  # datetime.now().year
 
+        df = pd.read_sql(query, conn)
+
+        conn.close()
+        return df
+
+    @classmethod
+    def get_teamrank_daily(cls, team):
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_common", "get_teamrank_daily")
+        query = query_format.format(team)
+
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
+
+        return result
+
+    @classmethod
+    def get_teamrank(cls, year, tteam, bteam):
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_common", "get_teamrank")
+        query = query_format.format(year, tteam, bteam)
+
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
+
+        return result
 
 if __name__ == "__main__":
     record = Record()
 
+    # record.get_pitcher_basic_total_record(60263)
+
+    # start_time = time.time()
+    # record.test_get_gamecontapp()
+    # print("--- %s Seconds --- " % (time.time() - start_time))
+    #
+    # start_time = time.time()
+    # record.get_hitter_basic_record('76249')
+    # print("--- %s Seconds --- " % (time.time() - start_time))
     # hitter,hitteam,pitcher,pitteam,state,score,base
     # data = {'hitter': 78224, 'hitteam': 'OB', 'pitcher': 79140, 'pitteam': 'LG', 'state': 'HR', 'score': '0D', 'base': '1B'}
     # record_df = record.get_total_hitter_record(data)
     # print(record_df)
-    hitter = '78224'
-    print(record.get_hitter_basic_record(hitter))
+    # hitter = '78224'
+    # print(record.get_hitter_basic_record(hitter))

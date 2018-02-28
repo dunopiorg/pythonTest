@@ -54,4 +54,16 @@
 		) AAA 
 		WHERE PITCHER = '{0}' 
     </query>
+	
+	<query id="get_pitcher_basic_total_record">
+		SELECT A.PCODE AS PITCHER, A.NAME AS PITNAME, A.GYEAR, A.TEAM, ROUND(A.ERA, 3) AS ERA, A.GAMENUM, A.CG, A.SHO, A.W, A.L, A.SV, A.HOLD, A.BF
+		, A.INN, A.INN2, A.HIT, A.HR, A.BB, A.HP, A.KK, A.R, A.ER, A.SCORE, A.INNG, A.INNK, A.QS, ROUND(A.OPS, 3) AS OPS, ROUND(A.WHIP, 3) AS WHIP, A.INNB
+		, A.KK_BB_RT, A.PA_BB_RT, A.PA_KK_RT, A.WRA
+		, 'STARTING' AS STATE
+		, 'STARTING_SEASON' AS STATE_SPLIT
+		, 'SEASON' AS LEAGUE
+		, (SELECT CASE WHEN SUM(START) IS NULL THEN 0 ELSE SUM(START) END SUM_START FROM baseball.pitcher WHERE pcode = A.PCODE AND substring(gday, 1, 4) = A.GYEAR) AS STARTING_NUM
+		FROM baseball.pittotal_extra A
+		WHERE A.pcode = '{0}'
+    </query>
 </data>
