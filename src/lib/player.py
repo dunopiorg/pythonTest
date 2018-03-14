@@ -28,10 +28,7 @@ class Player(object):
         self.prev_total_record = self.total_record
 
     def get_total_record(self):
-        if self.total_record:
-            return self.total_record
-        else:
-            return None
+        return self.recorder.get_hitter_basic_record(hitter, state)
 
     def get_today_record(self):
         if self.today_record:
@@ -170,7 +167,7 @@ class Hitter(Player):
         else:
             return None
 
-    def get_hitter_n_continue_data(self, state):
+    def get_hitter_n_continue_data(self, game_id, state):
         """
         N게임 연속 기록 데이터를 생성한다.
         :return:
@@ -181,7 +178,7 @@ class Hitter(Player):
                      'LEAGUE': 'SEASON', 'PITCHER': 'NA', 'PITNAME': 'NA', 'PITTEAM': 'NA', 'RANK': 1}
         counter_dict = {'HIT': 0, 'HR': 0, 'RBI': 0, 'BB': 0, 'SO': 0}
 
-        all_game_list = self.recorder.get_hitter_continuous_record(self.player_code)
+        all_game_list = self.recorder.get_hitter_continuous_record(game_id, self.player_code)
         result = []
         n_game_data_exist = False
         n_pa_data_exist = False
@@ -332,7 +329,7 @@ class Hitter(Player):
 
         for record_dict in record_dict_list:
             rank = record_dict['RANK']
-            if rank < 11:
+            if rank < 6:
                 result_record = record_dict['RESULT']
                 league = record_dict['LEAGUE']
                 hitter_name = record_dict['HITNAME']
@@ -616,18 +613,39 @@ class Pitcher(Player):
         else:
             return None
 
+    def get_pitcher_nine_record(self, record_dict_list):
+        result_list = []
+        data_dict = {'SUBJECT': 'PITCHER', 'RANK': 1}
+        for record_dict in record_dict_list:
+            if 'KK' in record_dict:
+                if record_dict['KK'] % 10 == 9:
+                    nine_dict = data_dict.copy()
+                    nine_dict['STATE_SPLIT'] = '1UNIT'
+                    nine_dict['LEAGUE'] = record_dict['LEAGUE']
+                    nine_dict['RESULT'] = int(record_dict['KK']) + 1
+                    nine_dict['PITNAME'] = record_dict['PITNAME']
+                    nine_dict['STATE'] = record_dict['STATE']
+                    nine_dict['TEAM'] = record_dict['TEAM']
+                    result_list.append(nine_dict)
+
+        if result_list:
+            return result_list
+        else:
+            return None
+
     def get_how_event_data(self, how_event, hitter, hit_team):
         result_list = []
         how_dict = {'KK': 'SO', 'KN': 'SO', 'KB': 'SO', 'KW': 'SO', 'KP': 'SO',
-                    'H1': 'HIT', 'H2': 'HIT', 'H3': 'HIT', 'HR': 'HIT', 'HI': 'HIT', 'HB': 'HIT',
-                    'HR': 'HR',
-                    'BB': 'BB', 'IB': 'BB',
-                    'HP': 'HP'}
+                    # 'H1': 'HIT', 'H2': 'HIT', 'H3': 'HIT', 'HR': 'HIT', 'HI': 'HIT', 'HB': 'HIT',
+                    # 'HR': 'HR',
+                    # 'BB': 'BB', 'IB': 'BB',
+                    # 'HP': 'HP'
+                    }
 
         if how_event in how_dict:
-            basic_record = self.get_pitcher_basic_data(self.player_code, how_dict[how_event])
-            if basic_record:
-                result_list.extend(basic_record)
+            # basic_record = self.get_pitcher_basic_data(self.player_code, how_dict[how_event])
+            # if basic_record:
+            #     result_list.extend(basic_record)
 
             pitcher_vs_hitter_record = self.get_pitcher_vs_hitter_data(self.player_code, hitter, how_dict[how_event])
             if pitcher_vs_hitter_record:

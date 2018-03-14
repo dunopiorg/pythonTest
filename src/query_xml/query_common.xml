@@ -10,7 +10,7 @@
 		LIMIT 1
     </query>
 	
-	<query id="get_game_info_data">
+	<query id="get_gameinfo_data">
 		SELECT Stadium, Vteam, Hteam, Umpc, Ump1, Ump2, Ump3, Mois, Weath, Wind, Crowd, Chajun, Temp 
 		FROM baseball.gameinfo 
         WHERE GmKey = '{0}'
@@ -68,4 +68,48 @@
 		WHERE PCODE = '{0}'
     </query>
 	
+	<query id="get_team_vs_team">
+		SELECT SUM(CASE WHEN WLS = 'W'THEN 1 ELSE 0 END) AS WIN
+						, SUM(CASE WHEN WLS = 'L'THEN 1 ELSE 0 END) AS LOSS
+						, SUM(CASE WHEN WLS = 'S'THEN 1 ELSE 0 END) AS SAME
+		FROM
+			(SELECT GDAY, PCODE, WLS
+								, CASE WHEN TB = 'T' THEN SUBSTRING(GMKEY, 9, 2) ELSE SUBSTRING(GMKEY, 11, 2) END AS TEAM
+			FROM baseball.pitcher
+			WHERE name = '합계'
+			AND gday LIKE '{0}%'
+			AND (gmkey LIKE '%{1}%' OR gmkey LIKE '%{2}%')
+			) A
+		WHERE TEAM = '{3}'
+    </query>
+	
+	<query id="get_li_rate">
+		SELECT ROUND(LI_RT, 3) AS VALUE
+		FROM matrix_detail
+		WHERE SEASON_ID = '{0}'
+		AND INN_NO = '{1}'
+		AND TB_SC = '{2}'
+		AND OUT_CN =  '{3}'
+		AND RUNNER_SC = '{4}'
+		AND SCORE_GAP_CN = '{5}' 
+    </query>
+	
+	<query id="get_max_li_rate">
+		SELECT ROUND(MAX(LI_RT), 3) AS VALUE
+		FROM record_matrix_mix
+		WHERE gameid = '{0}'
+		AND seqno &lt; '{1}'
+	</query>
+	
+	<query id="get_record_matrix_mix">
+		SELECT ROUND(BEFORE_WE_RT, 3) AS BEFORE_WE_RT
+						, ROUND(AFTER_WE_RT, 3) AS AFTER_WE_RT
+						, ROUND(WPA_RT, 3) AS WPA_RT
+						, ROUND(LI_RT, 3) AS LI_RT
+						, ROUND(RE_RT, 3) AS RE_RT
+		FROM record_matrix_mix
+		WHERE GAMEID = '{0}'
+		AND GYEAR = '{1}'
+		AND SEQNO = '{2}'
+    </query>
 </data>

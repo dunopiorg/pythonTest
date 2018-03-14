@@ -46,7 +46,7 @@ if __name__ == "__main__":
     except Exception as e:
         server.close()
     """
-    game_id = '20170926HHLT0'  # 20170912OBNC0
+    game_id = '20170914SKOB0'  # 20170912OBNC0 20170926HHLT0
     sleep_second = 1
     gm_app = game_app.GameApp(game_id)
 

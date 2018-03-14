@@ -18,7 +18,7 @@ def getLiveText(game_Id=None):
 
         # Query 설정
         ms_query = "SELECT *" \
-                  "  FROM [BASEBALL_NEW].[dbo].[IE_LiveText_Score_MIX] where gyear = 2017"
+                  "  FROM [BASEBALL_NEW].[dbo].[IE_LiveText_Score_MIX] where gyear = 2017 "
 
         my_query = "INSERT INTO baseball.livetext_score_mix " \
                   "VALUES (%s, %s, %s, %s, %s, %s, %s, %s," \
@@ -411,7 +411,7 @@ def get_teamrank_daily():
 
         # Query 설정
         msQuery = 'SELECT *' \
-                  "  FROM [%s].[dbo].[%s] where gyear = '2017'" % (database_all, table_name)
+                  "  FROM [%s].[dbo].[%s] where gyear != '2017'" % (database_all, table_name)
 
         myQuery = "INSERT INTO baseball.teamrank_daily " \
                   "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"

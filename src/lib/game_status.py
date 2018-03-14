@@ -27,7 +27,7 @@ class GameStatus(object):
         self.set_team_info_record(game_key)
 
     def set_stadium_info(self, game_key):
-        stadium_info_list = record.Record().get_game_info_data(game_key)
+        stadium_info_list = record.Record().get_gameinfo_data(game_key)
         if stadium_info_list:
             stadium_info = stadium_info_list[0]
             self.stadium_info_dict = stadium_info
@@ -106,6 +106,7 @@ class GameStatus(object):
         seq_no = live_data['seqNO']
         how = live_data['HOW']
         inning = live_data['inning']
+        year = live_data['GYEAR']
         tb = 'T' if live_data['bTop'] == 1 else 'B'
 
         if bat_order > 0:
@@ -123,7 +124,7 @@ class GameStatus(object):
                        'batorder': bat_order, 'ballcount': ball_count, 'textStyle': text_style,
                        'pitname': pitname, 'hitname': hitname, 'home_score': home_score,
                        'away_score': away_score, 'tb': tb, 'seq_no': seq_no, 'how': how,
-                       'inning': inning, 'ball_type': ball_type}
+                       'inning': inning, 'ball_type': ball_type, 'gyear':year}
         return result_dict
 
     def set_gamecontapp_info(self, hitter, pitcher, inn, how):
@@ -152,10 +153,6 @@ class GameStatus(object):
             # region 점수 상황 관련
             self.tscore = gamecontapp['tscore']
             self.bscore = gamecontapp['bscore']
-            # endregion
-
-            # region 득점 상황 관련
-
             # endregion
 
     def get_explain_how_event(self, hitter, pitcher, inn, how):

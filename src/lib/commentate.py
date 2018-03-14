@@ -1,4 +1,5 @@
 from lib import record
+from korean import Noun
 from lib import game_status
 
 
@@ -12,9 +13,15 @@ class Commentate(object):
                          "NC": "NC", "LT": "롯데", "LG": "LG", "KT ": "kt", "HT": "기아", "HH": "한화"}
         self.POSITION_WORD = {"1": "P", "2": "C", "3": "1B", "4": "2B", "5": "3B", "6": "SS"
                               , "7": "LF", "8": "CF", "9": "RF", "D": "DH"}
+        self.WPA_HOW_KOR = {'BB': '볼넷', 'BN': '번트', 'H1': '1루타', 'H2': '2루타', 'H3': '3루타',
+                        'HB': '번트안타', 'HI': '내야안타', 'HP': '사구', 'HR': '홈런', 'IB': '고의4구', 'KP': '포일',
+                        'KW': '폭투', 'SF': '희생플라이', 'SH': '희생번트', 'B2': '보크', 'PB': '패스트볼',
+                        'P2': '포일', 'SB': '도루', 'SD': '더블스틸', 'ST': '트리플스틸', 'WP': '폭투', 'W2': '폭투'}
+
         self.continue_ball_stuff = {}
         self.continue_ball_count_b = 0
         self.continue_ball_count_f = 0
+        self.max_li = 0
 
     @classmethod
     def get_first_ball_info(cls, hitter, ball_type):
@@ -50,13 +57,16 @@ class Commentate(object):
         return result
 
     @classmethod
-    def get_game_info(cls, game_info_dict):
-        info_dict = game_info_dict
-        if game_info_dict:
-            temp = int(info_dict['Temp']) * 0.1
-            result = [{'STADIUM': info_dict['Stadium'], 'VTEAM': info_dict['Vteam'], 'HTEAM': info_dict['Hteam'],
-                       'UMPC': info_dict['Umpc'], 'UMP1': info_dict['Ump1'], 'UMP2': info_dict['Ump2'],
-                       'UMP3': info_dict['Ump3'], 'MOIS': info_dict['Mois'], 'CHAJUN': info_dict['Chajun'],
+    def get_game_info(cls, game_key):
+        stadium_info_list = record.Record().get_gameinfo_data(game_key)
+        if stadium_info_list:
+            stadium_info = stadium_info_list[0]
+
+        if stadium_info:
+            temp = int(stadium_info['Temp']) * 0.1
+            result = [{'STADIUM': stadium_info['Stadium'], 'VTEAM': stadium_info['Vteam'], 'HTEAM': stadium_info['Hteam'],
+                       'UMPC': stadium_info['Umpc'], 'UMP1': stadium_info['Ump1'], 'UMP2': stadium_info['Ump2'],
+                       'UMP3': stadium_info['Ump3'], 'MOIS': stadium_info['Mois'], 'CHAJUN': stadium_info['Chajun'],
                        'TEMP': temp,
                        'STATE': 'GAMEINFO', 'STATE_SPLIT': 'GAMEINFO', 'RANK': 1}]
             return result
@@ -156,6 +166,7 @@ class Commentate(object):
         result_list = []
         data_dict = {'OPPONENT': 'NA', 'LEAGUE': 'NA', 'PITCHER': 'NA', 'PITNAME': 'NA',
                      'GYEAR': 'NA', 'PITTEAM': 'NA', 'STATE': 'CURRENT_INFO'}
+        game_id = live_dict['game_id']
         score_detail = live_dict['score_detail']
         score_simple = live_dict['score']
         seq_no = live_dict['seq_no']
@@ -170,27 +181,53 @@ class Commentate(object):
         inning = live_dict['inning']
         tb = live_dict['tb']
         hit_team = live_dict['hitteam']
-        home_team = live_dict['gameID'][10:12]
-        away_team = live_dict['gameID'][8:10]
+        year = live_dict['gyear']
+        home_team = game_id[10:12]
+        away_team = game_id[8:10]
 
         # region 팀 시즌 정보
         if seq_no == 0:
-            home_team_info = record.Record().get_teamrank_daily(home_team)
-            away_team_info = record.Record().get_teamrank_daily(away_team)
-            home_team_dict = data_dict.copy()
-            home_team_dict['LEAGEU'] = 'SEASON'
-            home_team_dict['TEAM_NAME'] = self.TEAM_KOR[home_team_info['TEAM']]
-            home_team_dict['STATE_SPLIT'] = 'SEASON_TEAM_INFO'
-            home_team_dict.update(home_team_info)
-            result_list.append(home_team_dict)
-
-            away_team_dict = data_dict.copy()
-            away_team_dict['LEAGEU'] = 'SEASON'
-            away_team_dict['TEAM_NAME'] = self.TEAM_KOR[away_team_info['TEAM']]
-            away_team_dict['STATE_SPLIT'] = 'SEASON_TEAM_INFO'
-            away_team_dict.update(away_team_info)
-            result_list.append(away_team_dict)
+            home_team_info = record.Record().get_teamrank_daily(self.TEAM_KOR[home_team])
+            away_team_info = record.Record().get_teamrank_daily(self.TEAM_KOR[away_team])
+            if home_team_info:
+                home_team_info = home_team_info[0]
+                if home_team_info['GAME'] > 0:
+                    home_team_dict = data_dict.copy()
+                    home_team_dict['LEAGEU'] = 'SEASON'
+                    home_team_dict['TEAM_NAME'] = home_team_info['TEAM']
+                    home_team_dict['STATE_SPLIT'] = 'SEASON_TEAM_INFO'
+                    home_team_dict.update(home_team_info)
+                    result_list.append(home_team_dict)
+            if away_team_info:
+                away_team_info = away_team_info[0]
+                if away_team_info['GAME'] > 0:
+                    away_team_dict = data_dict.copy()
+                    away_team_dict['LEAGEU'] = 'SEASON'
+                    away_team_dict['TEAM_NAME'] = away_team_info['TEAM']
+                    away_team_dict['STATE_SPLIT'] = 'SEASON_TEAM_INFO'
+                    away_team_dict.update(away_team_info)
+                    result_list.append(away_team_dict)
         # endregion 팀 시즌 정보
+
+        # region 팀 대결 정보
+        if seq_no == 0:
+            team_vs_team_info = record.Record().get_team_vs_team(home_team, away_team, 2017)
+            if team_vs_team_info:
+                versus_info = team_vs_team_info[0]
+                versus_dict = data_dict.copy()
+                versus_dict['HOME_TEAM'] = self.TEAM_KOR[home_team]
+                versus_dict['AWAY_TEAM'] = self.TEAM_KOR[away_team]
+                versus_dict['STATE_SPLIT'] = 'VERSUS_TEAM'
+                versus_dict['TEAM_NAME'] = '{name:는}'.format(name=Noun(self.TEAM_KOR[home_team]))
+                versus_dict.update(versus_info)
+                if versus_info['LOSS'] > versus_info['WIN']:
+                    versus_dict['TEAM_NAME'] = '{name:는}'.format(name=Noun(self.TEAM_KOR[away_team]))
+                    versus_dict['WIN'] = versus_info['LOSS']
+                    versus_dict['LOSS'] = versus_info['WIN']
+                elif versus_info['WIN'] == versus_info['LOSS']:
+                    versus_dict['STATE_SPLIT'] = 'VERSUS_TEAM_SAME'
+                result_list.append(versus_dict)
+        # endregion 팀 대결 정보
 
         # region 등판시 주루상황, 점수상황, 아웃상황
         if bat_order > 1 and ball_count == 0 and text_style == 8:
@@ -337,6 +374,60 @@ class Commentate(object):
             result_list.append(inning_start_dict)
         # endregion
 
+        # region Max LI
+        if inning > 5:
+            max_li_rt = record.Record().get_max_li_rate(game_id, seq_no)[0]['VALUE']
+            curr_li_rt = record.Record().get_li_rate(year, inning, tb, out_count, base_detail, score_detail)[0]['VALUE']
+
+            if self.max_li < max_li_rt:
+                self.max_li = max_li_rt
+
+            if self.max_li < curr_li_rt:
+                self.max_li = curr_li_rt
+                if self.max_li < 3:
+                    state_split = 'MAX_LI_MIDDLE'
+                elif 3 <= self.max_li < 6:
+                    state_split = 'MAX_LI_PEAK'
+                elif 6 <= self.max_li:
+                    state_split = 'MAX_LI_DONE'
+                max_li = data_dict.copy()
+                max_li['LEAGUE'] = 'SEASON'
+                max_li['STATE_SPLIT'] = state_split
+                result_list.append(max_li)
+        # endregion Max LI
+
+        # region WPA 변화량에 따른 승리 확률
+        if inning > 3 and how in self.WPA_HOW_KOR:
+            record_matrix_dict = None
+            record_matrix = record.Record().get_record_matrix_mix(game_id, year, seq_no)
+            if record_matrix:
+                record_matrix_dict = record_matrix[0]
+
+            if record_matrix_dict and record_matrix_dict['WPA_RT'] > 0.1:
+                wpa_rt = record_matrix_dict['WPA_RT']
+                after_we_rt = record_matrix_dict['AFTER_WE_RT']
+                before_we_rt = record_matrix_dict['BEFORE_WE_RT']
+
+                home_after_we_rt = round(after_we_rt * 100)
+                away_after_we_rt = round((1 - after_we_rt) * 100)
+                wpa_rt = round(wpa_rt * 100)
+
+                if (tb == 'T' and after_we_rt - before_we_rt < 0) or (tb == 'B' and after_we_rt - before_we_rt > 0):
+                    wpa_rate = data_dict.copy()
+                    wpa_rate['LEAGUE'] = 'SEASON'
+                    wpa_rate['STATE_SPLIT'] = 'WPA_RATE'
+                    wpa_rate['HOW'] = "{state:이}".format(state=Noun(self.WPA_HOW_KOR[how]))
+                    if tb == 'T':
+                        wpa_rate['TEAM'] = self.TEAM_KOR[away_team]
+                    else:
+                        wpa_rate['TEAM'] = self.TEAM_KOR[home_team]
+                    wpa_rate['WPA_RT'] = wpa_rt
+                    wpa_rate['HOME_TEAM'] = self.TEAM_KOR[home_team]
+                    wpa_rate['AWAY_TEAM'] = self.TEAM_KOR[away_team]
+                    wpa_rate['HOME_WE_RT'] = home_after_we_rt
+                    wpa_rate['AWAY_WE_RT'] = away_after_we_rt
+                    result_list.append(wpa_rate)
+        # endregion WPA 변화량에 따른 승리 확률
         return result_list
 
     def get_starting_line_info(self, tb, starting_line_dict):

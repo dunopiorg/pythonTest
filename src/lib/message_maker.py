@@ -32,8 +32,13 @@ class MessageMaker(object):
         self.FLOAT_STATE = ['HRA', 'OBA', 'SLG']
         self.HITTER_STATE_KOR = {"HR": "홈런", "HIT": "안타", "H2": "2루타", "H3": "3루타", "BB": "볼넷", "SO": "삼진", "RBI": "타점"
             , "HRA": "타율", "OBA": "출루율", "SLG": "장타율", "AB": "타수", "PA": "타석"}
-        self.PITCHER_STATE_KOR = {"BB": "볼넷", "CG_L": "완투패", "CG_W": "완투승", "HIT": "피안타", "HOLDS": "홀드", "HP": "사구"
-            , "HR": "피홈런", "LOSSES": "패", "NO_HIT": "노히트로런", "PB": "범타", "QS": "퀄리티스타트", "SAVES": "세이브", "SHO": "완봉승", "SO": "삼진", "WINS": "승"}
+        self.PITCHER_STATE = {"NO_HIT": "노히트로런", "SHO": "완봉승", "CG_W": "완투승", "CG_L": "완투패", "WINS": "승", "LOSSES": "패", "QS": "퀄리티스타트",
+                                  "HOLDS": "홀드", "SAVES": "세이브", "HIT": "피안타", "HR": "피홈런", "HP": "사구", "PB": "범타", "SO": "삼진", "BB": "볼넷"}
+        self.PITCHER_STATE_KOR = {"NO_HIT": "노히트로런 {}번", "SHO": "완봉승 {}번", "CG_W": "완투승 {}번", "CG_L": "완투패 {}번", "WINS": "{}승",
+                                  "LOSSES": "{}패", "QS": "퀄리티스타트 {}개", "HOLDS": "홀드 {}개", "SAVES": "세이브 {}개",
+                                  "HIT": "피안타 {}개", "HR": "피홈런 {}개", "PB": "범타 {}개", "HP": "사구 {}개", "SO": "삼진 {}개", "BB": "볼넷 {}개"}
+        self.PITCHER_STATE_ORDER = ["NO_HIT", "SHO", "CG_W", "CG_L", "WINS", "LOSSES", "QS", "HOLDS", "SAVES",
+                                    "HIT", "HR", "HP", "PB", "SO", "BB"]
 
 
     def set_player_info(self, personal_dict, today_record_list, total_record_list):
@@ -55,18 +60,20 @@ class MessageMaker(object):
         group_id = event
         sentence = []
         for param in parameters:
-            state = param[2]
+            state_split = param[2]
             param_dict = param[4]
+            if param_dict['STATE'] not in self.FLOAT_STATE:
+                param_dict['RESULT'] = int(param_dict['RESULT'])
             template_dict = MessageUnit.get_template_dict(group_id)
 
-            if state in template_dict:
-                template = template_dict[state]
+            if state_split in template_dict:
+                template = template_dict[state_split]
 
-                if state == 'BASIC':
+                if state_split == 'BASIC':
                     param_dict['LEAGUE'] = template_dict[param_dict['LEAGUE']]
-                elif state == 'VERSUS_TEAM':
+                elif state_split == 'VERSUS_TEAM':
                     param_dict['HITTEAM'] = self.TEAM_KOR[param_dict['HITTEAM']]
-                param_dict['STATE'] = self.PITCHER_STATE_KOR[param_dict['STATE']]
+                param_dict['STATE'] = self.PITCHER_STATE[param_dict['STATE']]
                 text = template.format(**param_dict)
 
                 if text:
@@ -78,6 +85,7 @@ class MessageMaker(object):
         versus_team_list = []
         sentence = []
         args_dict = {}
+        record_dict = {}
         template_dict = MessageUnit.get_template_dict(group_id)
 
         for param in parameters:
@@ -99,14 +107,82 @@ class MessageMaker(object):
                     args_dict['LEAGUE'] = common_dict['LEAGUE' + '_' + param_dict["LEAGUE"]]
 
                 if "GAME_NUM" not in args_dict and "GAME_NUM" in param_dict and param_dict["GAME_NUM"] > 0:
-                    args_dict['GAME_NUM'] = param_dict["GAME_NUM"]
+                    args_dict['GAME_NUM'] = int(param_dict["GAME_NUM"])
 
-                text = "{0} {1}개".format(self.PITCHER_STATE_KOR[param_dict["STATE"]], int(param_dict["RESULT"]))
-                versus_team_list.append(text)
+                record_dict[param_dict["STATE"]] = param_dict["RESULT"]
             else:
+                if 'STARTING_NUM' in param_dict:
+                    param_dict['STARTING_NUM'] = int(param_dict['STARTING_NUM'])
                 text = template.format(**param_dict)
                 if text:
                     sentence.append(text)
+
+        if len(record_dict) > 0:
+            for key in list(self.PITCHER_STATE_ORDER):
+                if key in record_dict:
+                    if type(record_dict[key]) is float:
+                        record_val = int(record_dict[key])
+                    else:
+                        record_val = record_dict[key]
+                    text = self.PITCHER_STATE_KOR[key].format(record_val)
+                    versus_team_list.append(text)
+
+        if versus_team_list:
+            args_dict["COMMENT"] = ",".join(versus_team_list)
+            if state_split in template_dict:
+                template = template_dict[state_split]
+                if args_dict:
+                    text = template.format(**args_dict)
+                    if text:
+                        sentence.append(text)
+
+        return '\n'.join(sentence)
+
+    def get_pitcher_on_mound_message(self, event, parameters):
+        group_id = event
+        versus_team_list = []
+        sentence = []
+        args_dict = {}
+        record_dict = {}
+        text = ''
+        template_dict = MessageUnit.get_template_dict(group_id)
+
+        for param in parameters:
+            state_split = param[2]
+            param_dict = param[4]
+
+            if state_split in template_dict:
+                template = template_dict[state_split]
+
+                if state_split == "VERSUS_TEAM":
+                    if "HITTEAM" not in args_dict and "HITTEAM" in param_dict:
+                        args_dict['HITTEAM'] = self.TEAM_KOR[param_dict["HITTEAM"]]
+
+                    if "PITNAME" not in args_dict and "PITNAME" in param_dict:
+                        args_dict['PITNAME'] = param_dict["PITNAME"]
+
+                    if "LEAGUE" not in args_dict and "LEAGUE" in param_dict:
+                        common_dict = MessageUnit.get_template_dict('COMMON_EVENT')
+                        args_dict['LEAGUE'] = common_dict['LEAGUE' + '_' + param_dict["LEAGUE"]]
+
+                    if "GAME_NUM" not in args_dict and "GAME_NUM" in param_dict and param_dict["GAME_NUM"] > 0:
+                        args_dict['GAME_NUM'] = int(param_dict["GAME_NUM"])
+
+                    record_dict[param_dict["STATE"]] = param_dict["RESULT"]
+                else:
+                    text = template.format(**param_dict)
+        if text:
+            sentence.append(text)
+
+        if len(record_dict) > 0:
+            for key in list(self.PITCHER_STATE_ORDER):
+                if key in record_dict:
+                    if type(record_dict[key]) is float:
+                        record_val = int(record_dict[key])
+                    else:
+                        record_val = record_dict[key]
+                    text = self.PITCHER_STATE_KOR[key].format(record_val)
+                    versus_team_list.append(text)
 
         if versus_team_list:
             args_dict["COMMENT"] = ",".join(versus_team_list)
@@ -397,9 +473,15 @@ class MessageMaker(object):
 
                     if state_count < 3:
                         if pos_neg == "POS":
-                            pos = "높은"
+                            if rate_score < 200:
+                                pos = "좋은"
+                            else:
+                                pos = "상당히 좋은"
                         else:
-                            pos = "낮은"
+                            if rate_score < 200:
+                                pos = "낮은"
+                            else:
+                                pos = "상당히 낮은"
 
                         if league == "ALL":
                             usable_list.append({'COMPARE_ALL': {'percent': rate_score, 'result': pos,
@@ -418,6 +500,51 @@ class MessageMaker(object):
             return sentence
         else:
             return None
+
+    def get_hitter_split_message_v2(self, event, parameters):
+        group_id = event
+        sentence = []
+        hit_list = ['HIT', 'HR', 'H1', 'H2', 'H3']
+
+        for param in parameters:
+            state_split = param[2]
+            param_dict = param[4]
+            text = ''
+            template_dict = MessageUnit.get_template_dict(group_id)
+            state = param_dict['STATE']
+
+            if param_dict['STATE'] in hit_list:
+                state = 'HIT'
+            msg_code = state_split + '_' + param_dict['LEAGUE'] + '_' + state + '_' + param_dict['POS_NEG']
+
+            if param_dict['RATE_SCORE'] > 200:
+                msg_code += '_PLUS'
+
+            if msg_code in template_dict:
+                template = template_dict[msg_code]
+
+                if state_split == 'VERSUS_TEAM':
+                    param_dict['TEAM'] = self.TEAM_KOR[param_dict['PITTEAM']]
+                elif state_split == 'VERSUS_PITCHER':
+                    param_dict['PITCHER'] = param_dict['PITNAME']
+
+                if state in self.FLOAT_STATE:
+                    hal_pun_li = self.get_halpunli(param_dict['RESULT'])
+                    param_dict['RESULT'] = "{rate:로} ".format(rate=Noun(hal_pun_li))
+                else:
+                    param_dict['RESULT'] = int(param_dict['RESULT'])
+
+                param_dict['STATE'] = self.HITTER_STATE_KOR[param_dict['STATE']]
+
+            try:
+                text = template.format(**param_dict)
+            except Exception as ex:
+                print(ex)
+
+            if text:
+                sentence.append(text)
+
+        return '\n'.join(sentence)
 
     def get_today_event_message(self, event, parameters):
         group_id = event
@@ -513,6 +640,8 @@ class MessageMaker(object):
         hitter_name = ''
         sentence = ''
         state_list = []
+        state_text_dict = {}
+        state_sort_list = ['HIT', 'HR', 'RBI', 'HRA', 'OBA', 'SLG', 'KK', 'H2', 'H3', 'BB', 'SO']
         state_text = ''
         hitter = None
         for param in parameters:
@@ -532,17 +661,17 @@ class MessageMaker(object):
                 hal_pun_li = self.get_halpunli(state_result)
                 if hal_pun_li:
                     state_text = "{0} {1}".format( self.HITTER_STATE_KOR[state], hal_pun_li)
-                    state_list.append(state_text)
+                    state_text_dict[state_sort_list.index(state)] = state_text
             else:
                 state_val = int(state_result)
                 state_text = "{0} {1}개".format(self.HITTER_STATE_KOR[state], state_val)
-                state_list.append(state_text)
+                state_text_dict[state_sort_list.index(state)] = state_text
 
         state_count = len(state_dict)
         if state_count > 0:
             usable_list.append({'HITNAME': {'hitname': hitter_name}})
             usable_list.append({league: {'league': league}})
-            usable_list.append({'BASIC': {'state': ', '.join(state_list)}})
+            usable_list.append({'BASIC': {'state': ', '.join(state_text_dict.values())}})
             usable_list.append({'BASIC_FINISH': {'league': league}})
 
         if usable_list:

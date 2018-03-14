@@ -193,7 +193,7 @@ class Record(object):
         return result
 
     @classmethod
-    def get_hitter_continuous_record(cls, hitter_code):
+    def get_hitter_continuous_record(cls, game_id, hitter_code):
         """
         연속 경기를 가져온다.
         :param hitter_code:
@@ -203,7 +203,7 @@ class Record(object):
                                password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
 
         query_format = cls.ql.get_query("query_hitter", "get_hitter_continuous_record")
-        query = query_format.format(hitter_code, 2017)  # datetime.now().year
+        query = query_format.format(hitter_code, game_id[0:8])  # datetime.now().year
 
         result_list = []
 
@@ -468,7 +468,7 @@ class Record(object):
         return result
 
     @classmethod
-    def get_game_info_data(cls, game_key):
+    def get_gameinfo_data(cls, game_key):
         """
         게임 환경 정보
         :param game_key:
@@ -477,7 +477,7 @@ class Record(object):
         conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
                                password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
 
-        query_format = cls.ql.get_query("query_common", "get_game_info_data")
+        query_format = cls.ql.get_query("query_common", "get_gameinfo_data")
         query = query_format.format(game_key)
 
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
@@ -527,20 +527,27 @@ class Record(object):
             result = cursor.fetchall()
 
         return result
-    # endregion
 
     @classmethod
-    def test_get_gamecontapp(cls):
+    def get_team_vs_team(cls, home_team, away_team, game_year):
+        '''
+        Home Team 기준으로 데이터를 뽑는다. 통산 기록은 game_year를 %로 하면 된다.
+        :param home_team:
+        :param away_team:
+        :param game_year:
+        :return:
+        '''
         conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
                                password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
 
-        query_format = cls.ql.get_query("query_common", "test_get_gamecontapp")
-        query = query_format.format()  # datetime.now().year
+        query_format = cls.ql.get_query("query_common", "get_team_vs_team")
+        query = query_format.format(game_year, home_team+away_team, away_team+home_team, home_team)
 
-        df = pd.read_sql(query, conn)
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
 
-        conn.close()
-        return df
+        return result
 
     @classmethod
     def get_teamrank_daily(cls, team):
@@ -569,6 +576,69 @@ class Record(object):
             result = cursor.fetchall()
 
         return result
+
+    @classmethod
+    def get_li_rate(cls, year, inn_no, tb, out_cn, runner_sc, score_gap):
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        runner = runner_sc[:-1]
+        if score_gap[-1] == 'L':
+            score = int(score_gap[:-1]) * -1
+        else:
+            score = int(score_gap[:-1])
+
+        query_format = cls.ql.get_query("query_common", "get_li_rate")
+        query = query_format.format(year, inn_no, tb, out_cn, runner, score)
+
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
+
+        return result
+
+    @classmethod
+    def get_max_li_rate(cls, game_id, seq_no):
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_common", "get_max_li_rate")
+        query = query_format.format(game_id, seq_no)
+
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
+
+        return result
+
+    @classmethod
+    def get_record_matrix_mix(cls, game_id, year, seq_no):
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_common", "get_record_matrix_mix")
+        query = query_format.format(game_id, year, seq_no)
+
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
+
+        return result
+    # endregion
+
+    @classmethod
+    def test_get_gamecontapp(cls):
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_common", "test_get_gamecontapp")
+        query = query_format.format()  # datetime.now().year
+
+        df = pd.read_sql(query, conn)
+
+        conn.close()
+        return df
+
 
 if __name__ == "__main__":
     record = Record()

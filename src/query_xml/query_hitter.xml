@@ -127,7 +127,7 @@
 		SELECT GMKEY, GDAY, HOW, PLACE, HITTER, HITNAME 
         FROM  baseball.gamecontapp_all 
         WHERE HITTER = '{0}' 
-        AND GMKEY LIKE '{1}%' 
+        AND GDAY &lt; '{1}' 
         ORDER BY GMKEY DESC, SERNO DESC 
 	</query>
 	

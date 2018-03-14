@@ -48,12 +48,12 @@ class GameApp(object):
         self.pitcher_category_score = {}
         self.common_category_score = {}
         self.starting_category_score = {}
-        self.pitcher_list_dict = {"T": [], "B": []}
+        self.pitcher_mounc_list =[]
 
         # 기본 전역 상수
         self.LEAGUE_SEASON_SCORE = 4
         self.LEAGUE_ALL_SCORE = 3
-        self.PRE_THRESHOLD = 50
+        self.PRE_THRESHOLD = 70
         self.SEASON = "SEASON"
         self.ALL = "ALL"
         self.HITTER_STARTING_SPLIT = "HITTER_STARTING_SPLIT"
@@ -62,6 +62,7 @@ class GameApp(object):
         self.HITTER_EVENT = "HITTER_EVENT"
         self.HITTER_STARTING = "HITTER_STARTING"
         self.PITCHER_STARTING = "PITCHER_STARTING"
+        self.PITCHER_ON_MOUND = "PITCHER_ON_MOUND"
 
         # 기본 전역 객체 변수
         self.recorder = record.Record()
@@ -144,16 +145,18 @@ class GameApp(object):
         pitcher = live_text_dict['pitcher']
         inning= live_text_dict['inning']
         pitname = live_dict['pitname']
+        if inning == 99:
+            return None
         self.game_status.set_gamecontapp_info(hitter, pitcher, inning, how)
 
         # region 게임 시작 정보 (경기장, 심판, 날씨 등)
         if seq_num == 0:
-            game_info_data = self.commentator.get_game_info(self.game_status.stadium_info_dict)
+            game_info_data = self.commentator.get_game_info(game_id)
             if game_info_data:
                 self.set_score(self.COMMON_EVENT, game_info_data)
-            team_info_data = self.commentator.get_team_info(self.game_status.team_info)
-            if team_info_data:
-                self.set_score(self.COMMON_EVENT, team_info_data)
+            # team_info_data = self.commentator.get_team_info(self.game_status.team_info)
+            # if team_info_data:
+            #     self.set_score(self.COMMON_EVENT, team_info_data)
         # endregion
 
         # region 게임 진행 중계 정보 (대부분)
@@ -172,18 +175,19 @@ class GameApp(object):
         # endregion
 
         # region 투수 등판 또는 교체시 투수 등록 및 투수의 기록을 가져온다.
-        if pitcher and self.curr_pitcher is None:
+        if pitcher and self.curr_pitcher is None:  # 선발등판
+            self.pitcher_mounc_list.append(pitcher)
             self.curr_pitcher = player.Pitcher(pitcher)
             pitcher_starting = self.get_pitcher_record_data(pitcher, live_dict['hitteam'])
             if pitcher_starting:
                 result_pitcher.update({self.PITCHER_STARTING: pitcher_starting})
-        elif pitcher and self.curr_pitcher is not None and pitcher not in self.pitcher_list_dict[live_dict['tb']]:
-            self.pitcher_list_dict[live_dict['tb']].append(pitcher)
+        elif pitcher and self.curr_pitcher is not None and pitcher not in self.pitcher_mounc_list:
+            self.pitcher_mounc_list.append(pitcher)
             self.prev_pitcher = self.curr_pitcher
             self.curr_pitcher = player.Pitcher(pitcher)
             pitcher_list = self.get_pitcher_record_data(pitcher, live_dict['hitteam'], batter)
             if pitcher_list:
-                result_pitcher.update({self.PITCHER_STARTING: pitcher_list})
+                result_pitcher.update({self.PITCHER_ON_MOUND: pitcher_list})
         # endregion
 
         # region 타자 등판 또는 교체시 타자 등록
@@ -255,7 +259,8 @@ class GameApp(object):
 
         # region Pitcher How Event
         if how:
-            pitcher_event = self.curr_pitcher.get_how_event_data(how, hitter, live_dict['hitteam'])
+            pitcher_event = self.get_pitcher_record_data(pitcher, live_dict['hitteam'], batter, how)
+            # pitcher_event = self.curr_pitcher.get_how_event_data(how, hitter, live_dict['hitteam'])
             if pitcher_event:
                 result_pitcher.update({self.PITCHER_EVENT: pitcher_event})
         # endregion Pitcher How Event
@@ -309,6 +314,8 @@ class GameApp(object):
                         msg = self.msg_maker.get_pitcher_message(event, parameter_list)
                     elif event == self.PITCHER_STARTING:
                         msg = self.msg_maker.get_pitcher_starting_message(event, parameter_list)
+                    elif event == self.PITCHER_ON_MOUND:
+                        msg = self.msg_maker.get_pitcher_on_mound_message(event, parameter_list)
                     elif event == self.HITTER_EVENT:
                         msg = self.msg_maker.get_hit_event_message_new(event, parameter_list)
                     elif event == self.HITTER_STARTING:
@@ -318,7 +325,8 @@ class GameApp(object):
                             msg = self.msg_maker.get_today_event_message(event, parameter_list)
                     elif event == self.HITTER_STARTING_SPLIT:
                         #  msg = self.msg_maker.get_hitter_message(parameter_list)
-                        msg = self.msg_maker.get_hitter_split_message(event, parameter_list)
+                        # msg = self.msg_maker.get_hitter_split_message(event, parameter_list)
+                        msg = self.msg_maker.get_hitter_split_message_v2(event, parameter_list)
                     elif event == self.COMMON_EVENT:
                         msg = self.msg_maker.get_common_message(event, parameter_list)
 
@@ -561,6 +569,9 @@ class GameApp(object):
 
         pre_scored_list = self.pre_score_generator(event, data_list)
 
+        # region History 관리
+        # endregion
+
         for data_dict in pre_scored_list:
             if event == self.HITTER_STARTING_SPLIT or event == self.HITTER_EVENT:
                 score = self.hitter_score_generator(data_dict)
@@ -600,24 +611,19 @@ class GameApp(object):
             # total, season 기본 rate 구성
             for state_key, state_data_list in state_group_data.items():
                 compare_temp_list = []
-                hitter_total_list = self.curr_hitter.get_total_record()
+                hitter_total_list = self.curr_hitter.get_hitter_basic_data(self.curr_hitter.player_code, state_key)
                 if hitter_total_list:
                     for hitter_total in hitter_total_list:
-                        total_state = hitter_total["STATE"]
-                        total_league = hitter_total['LEAGUE']
-                        total_result = hitter_total["RESULT"]
-                        total_rate = hitter_total['RATE']
-                        if state_key == total_state:
-                            if total_state in rate_list:
-                                if total_league == self.SEASON:
-                                    season_rate = total_result
-                                else:
-                                    all_rate = total_result
+                        if hitter_total['LEAGUE'] == self.SEASON:
+                            if hitter_total["STATE"] in rate_list:
+                                season_rate = hitter_total["RESULT"]
                             else:
-                                if total_league == self.SEASON:
-                                    season_rate = total_rate
-                                else:
-                                    all_rate = total_rate
+                                season_rate = hitter_total['RATE']
+                        else:
+                            if hitter_total["STATE"] in rate_list:
+                                all_rate = hitter_total["RESULT"]
+                            else:
+                                all_rate = hitter_total['RATE']
 
                 for state_data_dict in state_data_list:
                     rate_score = 0
@@ -647,12 +653,12 @@ class GameApp(object):
                                 divide_rate = state_result / all_rate
                             else:
                                 divide_rate = state_rate / all_rate
-                    distance_rate = divide_rate - 1
-                    rate_score = round(abs(distance_rate) * 100, 3)
+                    pos_neg = divide_rate - 1
+                    rate_score = round(abs(pos_neg) * 100, 3)
                     state_data_dict["RATE_SCORE"] = rate_score
 
                     # Add Positive Negative field.
-                    if distance_rate >= 0:
+                    if divide_rate >= 0:
                         if state_info == "SO":
                             state_data_dict["POS_NEG"] = "NEG"
                         else:
@@ -666,9 +672,9 @@ class GameApp(object):
                     if state_split in split_list:
                         new_data_list.append(state_data_dict)
                     elif rate_score > self.PRE_THRESHOLD:
-                        if state_split not in rate_list and state_result != 1:
+                        if state_info not in rate_list and state_result > 2:
                             compare_temp_list.append([rate_score, state_split, state_data_dict])
-                        elif state_split in rate_list:
+                        elif state_info in rate_list:
                             compare_temp_list.append([rate_score, state_split, state_data_dict])
                     elif state_split == "BASIC":
                         compare_temp_list.append([rate_score, state_split, state_data_dict])
@@ -716,7 +722,7 @@ class GameApp(object):
             for data_dict in new_data_list:
                 data_dict["DATA_GROUP"] = self.PITCHER_EVENT + "_" + data_dict['STATE_SPLIT']
             return new_data_list
-        elif subject == self.PITCHER_STARTING:
+        elif subject == self.PITCHER_STARTING or subject == self.PITCHER_ON_MOUND:
             # 기록이 0이상인 시즌 기록
             # 시즌 기록과 비교해서 상당히 차이나는 기록만?
             new_data_list = []
@@ -724,15 +730,19 @@ class GameApp(object):
                 if data_dict['LEAGUE'] == self.SEASON and data_dict['STATE'] == "STARTING":
                     new_data_list.append(data_dict)
                 else:
-                    if data_dict['LEAGUE'] == self.SEASON and data_dict['RESULT'] > 0:
-                        new_data_list.append(data_dict)
+                    if data_dict['LEAGUE'] == self.SEASON:
+                        if data_dict['RESULT'] > 0:
+                            new_data_list.append(data_dict)
+                        elif data_dict['STATE'] == 'LOSSES' or data_dict['STATE'] == 'WINS':
+                            data_dict['RESULT'] = '무'
+                            new_data_list.append(data_dict)
             for new_data_dict in new_data_list:
-                new_data_dict["DATA_GROUP"] = self.PITCHER_STARTING + "_" + new_data_dict['STATE_SPLIT']
+                new_data_dict["DATA_GROUP"] = subject + "_" + new_data_dict['STATE_SPLIT']
             return new_data_list
-        elif subject == self.HITTER_STARTING:
+        elif subject == self.HITTER_STARTING: #todo
             new_data_list = []
             for data_dict in data_list:
-                if data_dict['LEAGUE'] == self.SEASON:
+                if data_dict['LEAGUE'] == self.SEASON or data_dict['LEAGUE'] == 'TODAY':
                     new_data_list.append(data_dict)
             # add Today group code
             for data_dict in new_data_list:
@@ -782,6 +792,7 @@ class GameApp(object):
         pit_team = live_dict['pitteam']
         score = live_dict['score']
         base = live_dict['base']
+        game_id = live_dict['game_id']
         result_list = []
         state_iterator = [state_event]
 
@@ -836,7 +847,7 @@ class GameApp(object):
 
             if event and event in ['HIT', 'HR', 'RBI']:
                 # N 경기 연속기록 / N 타석 연속기록
-                n_continue_record = self.curr_hitter.get_hitter_n_continue_data(event)
+                n_continue_record = self.curr_hitter.get_hitter_n_continue_data(game_id, event)
                 if n_continue_record:
                     result_list.extend(n_continue_record)
 
@@ -849,26 +860,35 @@ class GameApp(object):
     # region 투수 관련 함수
     def get_pitcher_record_data(self, pitcher, hit_team, hitter=None, state_event=None):
         result_list = []
+        how_dict = {'KK': 'SO', 'KN': 'SO', 'KB': 'SO', 'KW': 'SO', 'KP': 'SO',
+                    # 'H1': 'HIT', 'H2': 'HIT', 'H3': 'HIT', 'HR': 'HIT', 'HI': 'HIT', 'HB': 'HIT',
+                    # 'HR': 'HR',
+                    # 'BB': 'BB', 'IB': 'BB',
+                    # 'HP': 'HP'
+                    }
 
         if state_event is None:
             pitcher_basic_record = self.curr_pitcher.get_pitcher_basic_total_data(pitcher)
             if pitcher_basic_record:
                 result_list.extend(pitcher_basic_record)
         else:
-            basic_record = self.curr_pitcher.get_pitcher_basic_data(pitcher, state_event)
-            if basic_record:
-                result_list.extend(basic_record)
+            if state_event in how_dict:
+                basic_record = self.curr_pitcher.get_pitcher_basic_data(pitcher, how_dict[state_event])
+                if basic_record:
+                    result_list.extend(basic_record)
 
-        pitcher_vs_team_record = self.curr_pitcher.get_pitcher_vs_team_data(pitcher, hit_team, state_event)
-        if pitcher_vs_team_record:
-            result_list.extend(pitcher_vs_team_record)
+        if state_event in how_dict:
+            pitcher_vs_team_record = self.curr_pitcher.get_pitcher_vs_team_data(pitcher, hit_team, how_dict[state_event])
+            if pitcher_vs_team_record:
+                result_list.extend(pitcher_vs_team_record)
 
-        if hitter is not None:
-            pitcher_vs_hitter_record = self.curr_pitcher.get_pitcher_vs_hitter_data(pitcher, hitter, state_event)
-            if pitcher_vs_hitter_record:
-                result_list.extend(pitcher_vs_hitter_record)
+            if hitter is not None:
+                pitcher_vs_hitter_record = self.curr_pitcher.get_pitcher_vs_hitter_data(pitcher, hitter, how_dict[state_event])
+                if pitcher_vs_hitter_record:
+                    result_list.extend(pitcher_vs_hitter_record)
 
         if result_list:
+            self.curr_pitcher.get_pitcher_nine_record(result_list)
             # self.curr_hitter.get_nine_record(result_list)
             # N 경기 연속기록 / N 타석 연속기록
             return result_list
