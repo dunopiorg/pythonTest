@@ -16,20 +16,20 @@ import korean
 
 
 class GameApp(object):
-    __HOST = 'localhost'
-    __USER = 'root'
-    __PASSWORD = 'lab2ai64'
-    __DB = 'baseball'
-    __PORT = 3307
+    __HOST = config.DB_HOST
+    __USER = config.DB_USER
+    __PASSWORD = config.DB_PASSWORD
+    __DB = config.DB_NAME
+    __PORT = config.DB_PORT
 
     # region Initialize 필요한 정보
     def __init__(self, game_key):
         # database connection 상수 정보
-        self.HOST = 'localhost'
-        self.USER = 'root'
-        self.PASSWORD = 'lab2ai64'
-        self.DB = 'baseball'
-        self.PORT = 3307
+        self.HOST = config.DB_HOST
+        self.USER = config.DB_USER
+        self.PASSWORD = config.DB_PASSWORD
+        self.DB = config.DB_NAME
+        self.PORT = config.DB_PORT
 
         # state 상수 정보
         self.HIT_LIST = ['H1', 'H2', 'H3', 'HR', 'HI', 'HB']

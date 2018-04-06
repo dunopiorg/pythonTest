@@ -2,25 +2,26 @@ from datetime import datetime
 from lib import query_loader
 import pandas as pd
 import pymysql.cursors
+import config
 import time
 
 
 class Record(object):
 
-    _HOST = 'localhost'
-    _USER = 'root'
-    _PASSWORD = 'lab2ai64'
-    _DB = 'baseball'
-    _PORT = 3307
+    _HOST = config.DB_HOST
+    _USER = config.DB_USER
+    _PASSWORD = config.DB_PASSWORD
+    _DB = config.DB_NAME
+    _PORT = config.DB_PORT
     # ql = query_loader.QueryLoader('../query_xml')
     ql = query_loader.QueryLoader()
 
     def __init__(self):
-        self._HOST = 'localhost'
-        self._USER = 'root'
-        self._PASSWORD = 'lab2ai64'
-        self._DB = 'baseball'
-        self._PORT = 3307
+        self._HOST = config.DB_HOST
+        self._USER = config.DB_USER
+        self._PASSWORD = config.DB_PASSWORD
+        self._DB = config.DB_NAME
+        self._PORT = config.DB_PORT
 
     # region 조건표에 따른 타자기록을 가져온다.
     @classmethod

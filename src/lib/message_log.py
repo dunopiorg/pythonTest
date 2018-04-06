@@ -2,15 +2,16 @@ import pymysql.cursors
 import json
 import logging
 import logging.handlers
+import config
 from lib import query_loader
 
 
 class MsgLog(object):
-    HOST = 'localhost'
-    USER = 'root'
-    PASSWORD = 'lab2ai64'
-    DB = 'baseball'
-    PORT = 3307
+    HOST = config.DB_HOST
+    USER = config.DB_USER
+    PASSWORD = config.DB_PASSWORD
+    DB = config.DB_NAME
+    PORT = config.DB_PORT
     ql = query_loader.QueryLoader()
     # ql = query_loader.QueryLoader('../query_xml')
 
@@ -48,11 +49,11 @@ class MsgLog(object):
 
 class MysqlHandler(logging.Handler):
     def __init__(self):
-        self.HOST = 'localhost'
-        self.USER = 'root'
-        self.PASSWORD = 'lab2ai64'
-        self.DB = 'baseball'
-        self.PORT = 3307
+        self.HOST = config.DB_HOST
+        self.USER = config.DB_USER
+        self.PASSWORD = config.DB_PASSWORD
+        self.DB = config.DB_NAME
+        self.PORT = config.DB_PORT
         # ql = query_loader.QueryLoader()
         self.ql = query_loader.QueryLoader('../query_xml')
         logging.Handler.__init__(self, level=logging.NOTSET)

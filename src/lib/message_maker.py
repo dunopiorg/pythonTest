@@ -4,6 +4,7 @@ from lib import query_loader
 import pymysql.cursors
 import random
 import re
+import config
 
 
 class HitterRecord(Enum):
@@ -846,11 +847,11 @@ class Node(object):
 
 
 class MessageUnit(object):
-    _HOST = 'localhost'
-    _USER = 'root'
-    _PASSWORD = 'lab2ai64'
-    _DB = 'baseball'
-    _PORT = 3307
+    _HOST = config.DB_HOST
+    _USER = config.DB_USER
+    _PASSWORD = config.DB_PASSWORD
+    _DB = config.DB_NAME
+    _PORT = config.DB_PORT
     ql = query_loader.QueryLoader()
 
     @classmethod
