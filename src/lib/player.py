@@ -22,13 +22,10 @@ class Player(object):
         self.n_continue_record = None
 
     def set_player_info(self):
-        self.player_info = self.recorder.get_personal_info(self.player_code)[0]
+        self.player_info = self.recorder.get_player_info(self.player_code)[0]
 
     def set_prev_total_record(self):
         self.prev_total_record = self.total_record
-
-    def get_total_record(self):
-        return self.recorder.get_hitter_basic_record(hitter, state)
 
     def get_today_record(self):
         if self.today_record:
@@ -90,16 +87,16 @@ class Hitter(Player):
                         result.append(data_dict)
                         return result
 
-        hra_list = record.Record().get_hitter_basic_record(self.player_code, 'HRA')
-        if hra_list:
-            for hra in hra_list:
-                if hra['LEAGUE'] == 'SEASON':
-                    if today_result:
-                        hra['STATE_SPLIT'] = 'TODAY'
-                    else:
-                        hra['STATE_SPLIT'] = 'FIRST'
-                    hra['LEAGUE'] = 'TODAY'
-                    result.append(hra)
+        # hra_list = record.Record().get_hitter_basic_record(self.player_code, 'HRA')
+        # if hra_list:
+        #     for hra in hra_list:
+        #         if hra['LEAGUE'] == 'SEASON':
+        #             if today_result:
+        #                 hra['STATE_SPLIT'] = 'TODAY'
+        #             else:
+        #                 hra['STATE_SPLIT'] = 'FIRST'
+        #             hra['LEAGUE'] = 'TODAY'
+        #             result.append(hra)
 
         if result:
             self.today_record = result
@@ -167,7 +164,7 @@ class Hitter(Player):
         else:
             return None
 
-    def get_hitter_n_continue_data(self, game_id, state):
+    def get_hitter_n_continue_data(self, game_id, hitter_name, state):
         """
         N게임 연속 기록 데이터를 생성한다.
         :return:
@@ -287,6 +284,7 @@ class Hitter(Player):
             set_dict['RESULT'] = n_game_counter
             set_dict['STATE'] = state
             set_dict['STATE_SPLIT'] = 'NGAME'
+            # set_dict['HITTER'] = hitter_name
             set_dict['PA'] = len(all_game_list)
             set_dict['RATE'] = n_game_counter / len(all_game_list)  # todo rate 값이 필요한가?
             result.append(set_dict)
@@ -329,7 +327,7 @@ class Hitter(Player):
 
         for record_dict in record_dict_list:
             rank = record_dict['RANK']
-            if rank < 6:
+            if rank < 6 and record_dict['STATE'] != 'SO' and record_dict['PA'] > 100:
                 result_record = record_dict['RESULT']
                 league = record_dict['LEAGUE']
                 hitter_name = record_dict['HITNAME']
@@ -472,6 +470,44 @@ class Hitter(Player):
                     result_list.append(copy_dict)
         return result_list
         pass
+
+    def get_hitter_game_number(self, hitter_code):
+        game_number = None
+        numbers = [1000, 1500, 2000, 2500]
+        data_dict = {'SUBJECT': 'HITTER', 'HITTER': self.player_info['NAME'], 'RANK': 1}
+        query_result = self.recorder.get_hitter_gamenum(hitter_code)
+        if query_result:
+            for num in numbers:
+                if (num - query_result[0]['GAMENUM']) == 0:
+                    number_cnt = self.recorder.get_pitcher_gamenum_cnt(num)
+                    if number_cnt:
+                        record_rank = number_cnt[0]['GAMENUM'] + 1
+                    else:
+                        record_rank = '첫'
+                    game_number = data_dict.copy()
+                    game_number['LEAGUE'] = 'SEASON'
+                    game_number['STATE'] = 'HITTER_STARTING'
+                    game_number['STATE_SPLIT'] = 'GAMENUM_RECORD'
+                    game_number['RESULT'] = num
+                    game_number['RANKER'] = record_rank
+                elif 0 < (num - query_result[0]['GAMENUM']) < 4:
+                    number_cnt = self.recorder.get_pitcher_gamenum_cnt(num)
+                    if number_cnt:
+                        record_rank = number_cnt[0]['GAMENUM'] + 1
+                    else:
+                        record_rank = '첫'
+                    game_number = data_dict.copy()
+                    game_number['LEAGUE'] = 'SEASON'
+                    game_number['STATE'] = 'HITTER_STARTING'
+                    game_number['STATE_SPLIT'] = 'GAMENUM_RECORD_LEFT'
+                    game_number['RESULT'] = query_result[0]['GAMENUM']
+                    game_number['TARGET'] = num
+                    game_number['LEFT'] = num - query_result[0]['GAMENUM']
+                    game_number['RANKER'] = record_rank
+
+            return game_number
+        else:
+            return None
     # endregion
 
     # region 기록 Update
@@ -552,7 +588,7 @@ class Hitter(Player):
 
 class Pitcher(Player):
 
-    # region Pitcher 경기기록
+    # region Pitcher 기록
     def get_today_pitcher_data(self, game_id):
         result = []
         today_result = record.Record().get_hitter_today_record(game_id, self.player_code)
@@ -592,24 +628,24 @@ class Pitcher(Player):
         else:
             return None
 
-    def get_pitcher_vs_team_data(self, pitcher, hit_team, state=None):
-        result = self.recorder.get_pitcher_vs_team_record(pitcher, hit_team, state)
+    def get_pitcher_vs_team_data(self, pitcher_code, hit_team, state=None):
+        result = self.recorder.get_pitcher_vs_team_record(pitcher_code, hit_team, state)
         if result:
             return result
         else:
             return None
 
-    def get_pitcher_vs_hitter_data(self, pitcher, hitter, state=None):
-        result = self.recorder.get_pitcher_vs_hitter_record(pitcher, hitter, state)
+    def get_pitcher_vs_hitter_data(self, pitcher_code, hitter_code, state=None):
+        result = self.recorder.get_pitcher_vs_hitter_record(pitcher_code, hitter_code, state)
         if result:
             return result
         else:
             return None
 
-    def get_pitcher_basic_total_data(self, pitcher):
-        result = self.recorder.get_pitcher_basic_total_record(pitcher)
-        if result:
-            return result
+    def get_pitcher_basic_total_data(self, pitcher_code):
+        pitcher_basic_result = self.recorder.get_pitcher_basic_total_record(pitcher_code)
+        if pitcher_basic_result:
+            return pitcher_basic_result
         else:
             return None
 
@@ -659,7 +695,50 @@ class Pitcher(Player):
                 return result_list
             else:
                 return None
-    # endregion
+
+    def get_previous_game_pitcher_data(self, game_key, pitcher_code):
+        query_result = self.recorder.get_previous_game_pitcher_record(game_key[:8], pitcher_code)
+        if query_result:
+            return query_result
+        else:
+            return None
+
+    def get_pitcher_game_number(self, pitcher_code):
+        game_number = None
+        numbers = [500, 600, 700, 800, 900, 1000]
+        data_dict = {'SUBJECT': 'PITCHER', 'PITCHER': self.player_info['NAME'], 'RANK': 1}
+        query_result = self.recorder.get_pitcher_gamenum(pitcher_code)
+        if query_result:
+            for num in numbers:
+                if (num - query_result[0]['GAMENUM']) == 0:
+                    number_cnt = self.recorder.get_pitcher_gamenum_cnt(num)
+                    if number_cnt:
+                        record_rank = number_cnt[0]['GAMENUM'] + 1
+                    else:
+                        record_rank = '첫'
+                    game_number = data_dict.copy()
+                    game_number['STATE'] = 'PITCHER_STARTING'
+                    game_number['STATE_SPLIT'] = 'GAMENUM_RECORD'
+                    game_number['RESULT'] = num
+                    game_number['RANKER'] = record_rank
+                elif 0 < (num - query_result[0]['GAMENUM']) < 4:
+                    number_cnt = self.recorder.get_pitcher_gamenum_cnt(num)
+                    if number_cnt:
+                        record_rank = number_cnt[0]['GAMENUM'] + 1
+                    else:
+                        record_rank = '첫'
+                    game_number = data_dict.copy()
+                    game_number['STATE'] = 'PITCHER_STARTING'
+                    game_number['STATE_SPLIT'] = 'GAMENUM_RECORD_LEFT'
+                    game_number['RESULT'] = query_result[0]['GAMENUM']
+                    game_number['TARGET'] = num
+                    game_number['LEFT'] = num - query_result[0]['GAMENUM']
+                    game_number['RANKER'] = record_rank
+
+            return game_number
+        else:
+            return None
+    # endregion Pitcher 기록
 
     # region 기록 Update
 

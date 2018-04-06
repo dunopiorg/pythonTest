@@ -1,0 +1,1 @@
+hitter_basic = False

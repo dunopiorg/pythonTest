@@ -13,6 +13,7 @@ class GameStatus(object):
         self.last_how_seq_no = 0
         self.tscore = 0
         self.bscore = 0
+        self.inning = 1
         self.base_player = []
 
         self.team_info = {}
@@ -40,6 +41,13 @@ class GameStatus(object):
             self.starting_line_up['B'] = [x for x in line_up if int(x['turn']) < 20 and x['posi'][0] == '1' and x['tb'] == 'B']
             self.whole_selection_player['T'] = [x for x in line_up if x['tb'] == 'T']
             self.whole_selection_player['B'] = [x for x in line_up if x['tb'] == 'B']
+
+    def is_starting_pitcher(self, tb, player_code):
+        line_up = self.starting_line_up['T' if tb == 'B' else 'B']
+        for line in line_up:
+            if line['pcode'] == player_code:
+                return True
+        return False
 
     def get_live_text_info(self, live_data):
         game_id = live_data['gameID']

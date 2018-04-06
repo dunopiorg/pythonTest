@@ -62,12 +62,6 @@
 		WHERE PCODE = '{0}'
     </query>
 	
-	<query id="get_player_info">
-		SELECT NAME, PCODE, TEAM, POSITION, POS, BACKNUM, BIRTH, HEIGHT, WEIGHT, CAREER, HITTYPE, INDATE, MONEY, CAREER2
-		FROM baseball.person
-		WHERE PCODE = '{0}'
-    </query>
-	
 	<query id="get_team_vs_team">
 		SELECT SUM(CASE WHEN WLS = 'W'THEN 1 ELSE 0 END) AS WIN
 						, SUM(CASE WHEN WLS = 'L'THEN 1 ELSE 0 END) AS LOSS

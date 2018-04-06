@@ -203,7 +203,7 @@ class MessageMaker(object):
         state_split_list = ["UNIT10", "UNIT100", "NGAME", "NPA", "RANK_UP"]
         score_split_dict = {"0D": "동점인 상황", "1W": "1점차로 이기고 있는 상황", "1L": "1점차로 지고 있는 상황",
                             "WW": "이기고 있는 상황", "LL": "지고 있는 상황"}
-        base_split_dict = {"ONB": "주자가 나가 있는 상황", "NOBf": "주자가 없는 상황", "SCORE_B": "득점권 상황"}
+        base_split_dict = {"ONB": "주자가 나가 있는 상황", "NOB": "주자가 없는 상황", "SCORE_B": "득점권 상황"}
         # for param in parameters:
         #     param_data = param[4]
         #     # rank = param_data['RANK']
@@ -218,6 +218,7 @@ class MessageMaker(object):
             league_data = param_dict['LEAGUE']
             state_result = param_dict['RESULT']
             rate_score = param_dict['RATE_SCORE']
+            hitname = param_dict['HITNAME']
 
             # region Ngame, Npa, Unit10, Unit100, Rank up
             if state_split == "BASIC":
@@ -230,12 +231,17 @@ class MessageMaker(object):
             elif state_split == "NGAME" or state_split == "NPA":
                 usable_list.append({state_split: {'result': int(state_result), 'state': self.HITTER_STATE_KOR[state]}})
             elif state_split == "UNIT10" or state_split == "UNIT100":
+                usable_list.append({'HITNAME': {'hitname': hitname}})
                 usable_list.append({league_data: {'league_data': league_data}})
                 usable_list.append({state_split: {'result': int(state_result), 'state': self.HITTER_STATE_KOR[state]}})
             elif state_split == "RANK_UP":
                 usable_list.append({league_data: {'league_data': league_data}})
                 usable_list.append({state_split: {'result': int(state_result), 'state': self.HITTER_STATE_KOR[state]},
                                     'pre_result': param_dict['PREV_RANK']})
+            elif state_split == "1UNIT":
+                usable_list.append({'HITNAME': {'hitname': hitname}})
+                usable_list.append({league_data: {'league_data': league_data}})
+                usable_list.append({state_split: {'result': int(state_result), 'state': self.HITTER_STATE_KOR[state]}})
             # endregion
             # region Versus Pitcher and Team
             elif state_split == "VERSUS_PITCHER" or state_split == "VERSUS_TEAM":
@@ -253,15 +259,15 @@ class MessageMaker(object):
                     usable_list.append({'STYLE_NEG': {'state': self.HITTER_STATE_KOR[state]}})
 
                 # usable_list.append({league_data: {'league_data': league_data}})
-                state_word = "{0} {1}개로 ".format(self.HITTER_STATE_KOR[state], int(state_result))
-                usable_list.append({'STATE': {'state': state_word}})
+                state_word = "{0} {1}번째 ".format(self.HITTER_STATE_KOR[state], int(state_result))
+                # usable_list.append({'STATE': {'state': state_word}})
 
                 if league_data == "ALL":
                     usable_list.append({'COMPARE_ALL': {'percent': rate_score,
-                                                        'result': record_good_bad, 'state': self.HITTER_STATE_KOR[state]}})
+                                                        'result': state_word, 'state': self.HITTER_STATE_KOR[state]}})
                 else:
                     usable_list.append({'COMPARE_SEASON': {'percent': rate_score,
-                                                           'result': record_good_bad, 'state': self.HITTER_STATE_KOR[state]}})
+                                                           'result': state_word, 'state': self.HITTER_STATE_KOR[state]}})
             # endregion
             # region 점수차, 주자상황 Split
             elif state_split in score_split_dict or state_split in base_split_dict:
@@ -274,18 +280,17 @@ class MessageMaker(object):
                     record_good_bad = '낮은'
                     usable_list.append({'BAD_RECORD': {'state': self.HITTER_STATE_KOR[state]}})
                 if state in self.FLOAT_STATE:
-                    hal_pun_li = self.get_halpunli(state_result)
-                    state_word = "{state} {rate:로} ".format(state=self.HITTER_STATE_KOR[state], rate=Noun(hal_pun_li))
+                    state_word = "{state} {rate:로} ".format(state=self.HITTER_STATE_KOR[state], rate=Noun(str(state_result)))
                 else:
                     state_word = "{0} {1}개로 ".format(self.HITTER_STATE_KOR[state], int(state_result))
                 usable_list.append({'STATE': {'state': state_word}})
 
                 if league_data == "ALL":
                     usable_list.append({'COMPARE_ALL': {'percent': rate_score, 'result': record_good_bad,
-                                                        'state': self.HITTER_STATE_KOR[state]}})
+                                                        'state': '{state:을}'.format(state=Noun(self.HITTER_STATE_KOR[state]))}})
                 else:
                     usable_list.append({'COMPARE_SEASON': {'percent': rate_score, 'result': record_good_bad,
-                                                           'state': self.HITTER_STATE_KOR[state]}})
+                                                           'state': '{state:을}'.format(state=Noun(self.HITTER_STATE_KOR[state]))}})
             # endregion
 
             if usable_list:
@@ -395,7 +400,7 @@ class MessageMaker(object):
                     state = data_dict['STATE']
                     pa = data_dict['PA']
                     if state in self.FLOAT_STATE:
-                        state_result = self.get_halpunli(data_dict['RESULT'])
+                        state_result = str(data_dict['RESULT'])
                         if state_result:
                             state_list.append('{0}{1}'.format(self.HITTER_STATE_KOR[state], state_result))
                             if pos_neg == "POS":
@@ -465,9 +470,8 @@ class MessageMaker(object):
                             usable_list.append({'STYLE_NEG': {'state': state_neg_name}})
 
                     if hra > 0:
-                        halpunli = self.get_halpunli(hra)
                         state_name_list.append('HRA')
-                        state_list.append('{0} {1}'.format(self.HITTER_STATE_KOR['HRA'], halpunli))
+                        state_list.append('{0} {1}'.format(self.HITTER_STATE_KOR['HRA'], state_result))
                     state_val = ', '.join([x for x in state_list])
                     usable_list.append({'STATE': {'state': state_val}})
 
@@ -529,8 +533,7 @@ class MessageMaker(object):
                     param_dict['PITCHER'] = param_dict['PITNAME']
 
                 if state in self.FLOAT_STATE:
-                    hal_pun_li = self.get_halpunli(param_dict['RESULT'])
-                    param_dict['RESULT'] = "{rate:로} ".format(rate=Noun(hal_pun_li))
+                    param_dict['RESULT'] = "{rate:로} ".format(rate=Noun(str(param_dict['RESULT'])))
                 else:
                     param_dict['RESULT'] = int(param_dict['RESULT'])
 
@@ -570,9 +573,8 @@ class MessageMaker(object):
                 if 'PA' not in state_dict:
                     state_dict['PA'] = "{0}{1}".format(pa, self.HITTER_STATE_KOR['PA'])
                 if state in self.FLOAT_STATE:
-                    hal_pun_li = self.get_halpunli(state_result)
-                    if hal_pun_li:
-                        state_dict[state] = "이번시즌 타율" + hal_pun_li
+                    if state_result:
+                        state_dict[state] = "이번 시즌 타율" + str(state_result)
                 else:
                     state_val = int(state_result)
                     if state_val == 0 and state == "HIT":
@@ -583,11 +585,13 @@ class MessageMaker(object):
             # region FIRST SPLIT
             elif event_split == "FIRST":
                 if state in self.FLOAT_STATE:
-                    state_result = self.get_halpunli(data_dict['RESULT'])
+                    state_result = str(data_dict['RESULT'])
                     state_dict[state] = state_result
             elif event_split == "RANKER":
                 state_dict = data_dict
                 state_dict['STATE'] = self.HITTER_STATE_KOR[state]
+                if state not in self.FLOAT_STATE:
+                    state_dict['RESULT'] = int(state_dict['RESULT'])
                 template_dict = MessageUnit.get_template_dict(group_id)
                 state_dict['LEAGUE'] = template_dict['LEAGUE' + '_' + state_dict['LEAGUE']]
             elif event_split == "1UNIT":
@@ -601,11 +605,11 @@ class MessageMaker(object):
         state_count = len(state_dict)
         if state_count > 0:
             if event_split == "FIRST":
-                usable_list.append({'HITNAME': {'hitname': hitter_name}})
+                # usable_list.append({'HITNAME': {'hitname': hitter_name}})
                 usable_list.append({'TODAY': {'league': league}})
                 usable_list.append({'FIRST': {'HRA': state_result}})
             elif event_split == "TODAY":
-                usable_list.append({'HITNAME': {'hitname': hitter_name}})
+                # usable_list.append({'HITNAME': {'hitname': hitter_name}})
                 usable_list.append({'TODAY': {'league': league}})
                 state_list = []
                 for state_name in state_name_list:
@@ -641,7 +645,7 @@ class MessageMaker(object):
         sentence = ''
         state_list = []
         state_text_dict = {}
-        state_sort_list = ['HIT', 'HR', 'RBI', 'HRA', 'OBA', 'SLG', 'KK', 'H2', 'H3', 'BB', 'SO']
+        state_sort_list = ['HRA', 'OBA', 'SLG', 'HIT', 'HR', 'RBI', 'KK', 'H2', 'H3', 'BB']  #, 'SO'
         state_text = ''
         hitter = None
         for param in parameters:
@@ -657,21 +661,21 @@ class MessageMaker(object):
                 state_dict['PA'] = pa
 
             rank = data_dict['RANK']
-            if state in self.FLOAT_STATE:
-                hal_pun_li = self.get_halpunli(state_result)
-                if hal_pun_li:
-                    state_text = "{0} {1}".format( self.HITTER_STATE_KOR[state], hal_pun_li)
+            if state in state_sort_list:
+                if state in self.FLOAT_STATE:
+                    if state_result:
+                        state_text = "{0} {1}".format( self.HITTER_STATE_KOR[state], state_result)
+                        state_text_dict[state_sort_list.index(state)] = state_text
+                else:
+                    state_val = int(state_result)
+                    state_text = "{0} {1}개".format(self.HITTER_STATE_KOR[state], state_val)
                     state_text_dict[state_sort_list.index(state)] = state_text
-            else:
-                state_val = int(state_result)
-                state_text = "{0} {1}개".format(self.HITTER_STATE_KOR[state], state_val)
-                state_text_dict[state_sort_list.index(state)] = state_text
 
         state_count = len(state_dict)
         if state_count > 0:
-            usable_list.append({'HITNAME': {'hitname': hitter_name}})
-            usable_list.append({league: {'league': league}})
-            usable_list.append({'BASIC': {'state': ', '.join(state_text_dict.values())}})
+            # usable_list.append({'HITNAME': {'hitname': hitter_name}})
+            usable_list.append({'LEAGUE_' + league: {'league': league}})
+            usable_list.append({'BASIC': {'state': ' '.join(state_text_dict.values())}})
             usable_list.append({'BASIC_FINISH': {'league': league}})
 
         if usable_list:
@@ -691,7 +695,7 @@ class MessageMaker(object):
             text = ''
             template_dict = MessageUnit.get_template_dict(group_id)
             only_text = ["0T", "0S", "FULL_COUNT", "WHEN_LOSS", "HOW_HP"]
-            param_text = ["BALLINFO", "BALLINFO_BALL", "CURRENT_INFO", "CONTINUE_BALL", "BALL_STUFF_COUNT",
+            param_text = ["BALLINFO", "BALLINFO_BALL", "CURRENT_INFO", "CONTINUE_BALL", "BALL_STUFF_COUNT", "BALL_STUFF_COUNT_MANY"
                           "HOW_EVENT", "TEAM_INFO_T", "TEAM_INFO_B", "LINE_UP_INFO_T", "LINE_UP_INFO_B"]
 
             if state_split in template_dict:

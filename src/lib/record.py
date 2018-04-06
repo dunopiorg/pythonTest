@@ -237,6 +237,45 @@ class Record(object):
         conn.close()
         return result_list
 
+    @classmethod
+    def get_hitter_gamenum(cls, hitter_code):
+        """
+        타자의 출장기록
+        :param hitter_code:
+        :return:
+        """
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_hitter", "get_hitter_gamenum")
+        query = query_format.format(hitter_code)
+
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
+
+        conn.close()
+        return result
+
+    @classmethod
+    def get_hitter_gamenum_cnt(cls, counter):
+        """
+        역대 couter 이상 출장기록 개수
+        :param counter:
+        :return:
+        """
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_hitter", "get_hitter_gamenum_cnt")
+        query = query_format.format(counter)
+
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
+
+        conn.close()
+        return result
     # endregion
 
     # region 타자기록 Update
@@ -425,34 +464,74 @@ class Record(object):
             result_list.append(pitcher_all_dict)
 
         return result_list
-    # endregion
+
+    @classmethod
+    def get_previous_game_pitcher_record(cls, game_date, pitcher_code):
+        """
+        투수의 이전 게임 기록
+        :param game_date:
+        :param pitcher_code:
+        :return:
+        """
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_pitcher", "get_previous_game_pitcher_record")
+        query = query_format.format(game_date, pitcher_code)
+
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
+
+        conn.close()
+        return result
+
+    @classmethod
+    def get_pitcher_gamenum(cls, pitcher_code):
+        """
+        투수의 출장기록
+        :param pitcher_code:
+        :return:
+        """
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_pitcher", "get_pitcher_gamenum")
+        query = query_format.format(pitcher_code)
+
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
+
+        conn.close()
+        return result
+
+    @classmethod
+    def get_pitcher_gamenum_cnt(cls, counter):
+        """
+        역대 couter 이상 출장기록 개수
+        :param counter:
+        :return:
+        """
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_pitcher", "get_pitcher_gamenum_cnt")
+        query = query_format.format(counter)
+
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
+
+        conn.close()
+        return result
+    # endregion 조건표에 따른 투수기록을 가져온다.
 
     # region 투수기록 Update
 
     # endregion
 
     # region 기타 Functions
-    @classmethod
-    def get_personal_info(cls, player_code):
-        """
-        선수 기본정보를 가져온다.
-        :param player_code:
-        :return:
-        """
-        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
-                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
-
-        query = "SELECT NAME, TEAM, POSITION, BACKNUM, BIRTH, HITTYPE, HEIGHT, " \
-                "WEIGHT, MONEY, INDATE " \
-                "FROM baseball.person " \
-                "WHERE PCODE = {0}".format(player_code)
-
-        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
-            cursor.execute(query)
-            result = cursor.fetchall()
-            conn.commit()
-        return result
-
     @classmethod
     def get_pitzone_info(cls, game_key, bat_order, ball_count, hitter, pitcher):
         conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,

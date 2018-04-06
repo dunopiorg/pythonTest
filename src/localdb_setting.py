@@ -232,6 +232,39 @@ def get_gameinfo(gmkey=None):
     finally:
         dbMsConn.close
 
+def get_gameinfo_all(gmkey=None):
+    database_all = "BASEBALL"
+    serverInfo_all = '211.115.88.17'
+    userId_all = 'LAB'
+    pw_all = 'tmvhcm@ilAb10@$'
+
+    try:
+        # DB 연결
+        dbMsConn = db.MSSqlConnector(server=serverInfo_all, user=userId_all, password=pw_all, database=database_all)
+        dbMsConn.open(dict_option=False)
+
+        dbMyConn = db.MySqlConnector('localhost', 3307, 'root', 'lab2ai64', 'baseball')
+
+        # Query 설정
+        msQuery = 'SELECT *' \
+                  '  FROM [BASEBALL].[dbo].[Gameinfo]'
+
+        myQuery = "INSERT INTO baseball.gameinfo " \
+                  "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+
+        # MS Data Selection
+        msItems = dbMsConn.select(msQuery, gmkey)
+        count = msItems.__len__()
+
+        result_cnt = 0
+        for i in range(count):
+            # Insert to MySql DB
+            result = dbMyConn.insert(myQuery, msItems[i])
+            result_cnt += result
+            print(result_cnt)
+    finally:
+        dbMsConn.close
+
 def get_pitzone(gmkey=None):
     database_all = "BASEBALL_NEW"
     serverInfo_all = '211.115.88.19'
@@ -260,6 +293,69 @@ def get_pitzone(gmkey=None):
             # Insert to MySql DB
             result = dbMyConn.insert(myQuery, msItems[i])
             print(result)
+    finally:
+        dbMsConn.close
+
+def get_person():
+    database_all = "BASEBALL"
+    serverInfo_all = '211.115.88.17'
+    userId_all = 'LAB'
+    pw_all = 'tmvhcm@ilAb10@$'
+
+    try:
+        # DB 연결
+        dbMsConn = db.MSSqlConnector(server=serverInfo_all, user=userId_all, password=pw_all, database=database_all)
+        dbMsConn.open(dict_option=False)
+
+        dbMyConn = db.MySqlConnector('localhost', 3307, 'root', 'lab2ai64', 'baseball')
+
+        # Query 설정
+        msQuery = 'SELECT *' \
+                  "  FROM [BASEBALL].[dbo].[Person] "
+
+        myQuery = "INSERT INTO baseball.person " \
+                  "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+
+        # MS Data Selection
+        msItems = dbMsConn.select(msQuery)
+        count = msItems.__len__()
+
+        result = 0
+        for i in range(count):
+            # Insert to MySql DB
+            result += dbMyConn.insert(myQuery, msItems[i])
+            print('Success Count : ', result)
+    finally:
+        dbMsConn.close
+
+def get_battotal():
+    database_all = "BASEBALL"
+    serverInfo_all = '211.115.88.17'
+    userId_all = 'LAB'
+    pw_all = 'tmvhcm@ilAb10@$'
+
+    try:
+        # DB 연결
+        dbMsConn = db.MSSqlConnector(server=serverInfo_all, user=userId_all, password=pw_all, database=database_all)
+        dbMsConn.open(dict_option=False)
+
+        dbMyConn = db.MySqlConnector('localhost', 3307, 'root', 'lab2ai64', 'baseball')
+
+        # Query 설정
+        msQuery = 'SELECT *' \
+                  "  FROM [BASEBALL].[dbo].[BatTotal] "
+
+        myQuery = "INSERT INTO baseball.battotal VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+
+        # MS Data Selection
+        msItems = dbMsConn.select(msQuery)
+        count = msItems.__len__()
+
+        result = 0
+        for i in range(count):
+            # Insert to MySql DB
+            result += dbMyConn.insert(myQuery, msItems[i])
+            print('Success Count : ', result)
     finally:
         dbMsConn.close
 
@@ -395,6 +491,39 @@ def get_teamrank():
     finally:
         dbMsConn.close
 
+def get_teamrank_all():
+    database_all = "BASEBALL"
+    serverInfo_all = '211.115.88.17'
+    userId_all = 'LAB'
+    pw_all = 'tmvhcm@ilAb10@$'
+    table_name = 'TeamRank'
+
+    try:
+        # DB 연결
+        dbMsConn = db.MSSqlConnector(server=serverInfo_all, user=userId_all, password=pw_all, database=database_all)
+        dbMsConn.open(dict_option=False)
+
+        dbMyConn = db.MySqlConnector('localhost', 3307, 'root', 'lab2ai64', 'baseball')
+
+        # Query 설정
+        msQuery = 'SELECT *' \
+                  "  FROM [%s].[dbo].[%s]" % (database_all, table_name)
+
+        myQuery = "INSERT INTO baseball.teamrank " \
+                  "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+
+        # MS Data Selection
+        msItems = dbMsConn.select(msQuery)
+        count = msItems.__len__()
+
+        result = 0
+        for i in range(count):
+            # Insert to MySql DB
+            result += dbMyConn.insert(myQuery, msItems[i])
+            print('Success Count : ', result)
+    finally:
+        dbMsConn.close
+
 def get_teamrank_daily():
     database_all = "BASEBALL"
     serverInfo_all = '211.115.88.19'
@@ -461,7 +590,11 @@ def set_entryt_aws():
         dbMsConn.close
 
 if __name__ == "__main__":
-    getLiveText()
+    get_person()
+    # getLiveText()
+    # get_teamrank_all()
+    # get_gameinfo_all()
+    # get_battotal()
     # getGameContApp('20170926HHLT0')
     # getGameContApp()
     # getGameContApp_all()

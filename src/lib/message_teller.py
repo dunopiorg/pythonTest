@@ -4,7 +4,7 @@ class MsgTeller(object):
         self.q = []
         self.async_flag = 0
 
-    def put_back(self, data):
+    def put_rear(self, data):
         self.q.append(data)
 
     def put_front(self, data):
@@ -53,5 +53,5 @@ class MsgTeller(object):
 
     def say(self):
         if self.get_size() > 0:
-            message = self.pop()
-            print("캐스터: ", message.rstrip('\n'))
+            data = self.pop()
+            return data

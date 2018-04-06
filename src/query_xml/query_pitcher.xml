@@ -66,4 +66,42 @@
 		FROM baseball.pittotal_extra A
 		WHERE A.pcode = '{0}'
     </query>
+	
+	<query id="get_previous_game_pitcher_record">
+		SELECT CASE WHEN tb = 'B' THEN SUBSTRING(gmkey, 9, 2) ELSE SUBSTRING(gmkey, 11, 2) END AS TEAM
+		, GDAY, NAME, SUBSTRING(POS, 1, 1) AS POS, `START`, CG, SHO, WLS, HOLD, INN, INN2, BF, HIT, HR, ERR, R, ER
+		, DAY(GDAY) AS DAY
+		, 'STARTING' AS STATE
+		, 0 AS RESULT
+		, CASE WHEN CG > 0 AND WLS = 'W' THEN 'PREV_GAME_CG_W'
+						WHEN CG > 0 AND WLS = 'L' THEN 'PREV_GAME_CG_L'
+						WHEN SHO > 0 THEN 'PREV_GAME_SHO'
+						WHEN WLS = 'W' THEN 'PREV_GAME_WINNER' 
+						WHEN WLS = 'L' THEN 'PREV_GAME_LOSER'
+						ELSE 'PREV_GAME' END AS STATE_SPLIT
+		, 'SEASON' AS LEAGUE
+		FROM baseball.pitcher
+		WHERE gday &lt; '{0}'
+		AND pcode = '{1}'
+		ORDER BY gday desc
+		LIMIT 1
+	</query>
+	
+	<query id="get_pitcher_gamenum_cnt">
+		SELECT COUNT(GAMENUM) AS GAMENUM
+		FROM 
+		(
+			SELECT PCODE, ROUND(SUM(GAMENUM)/2) AS GAMENUM
+			FROM baseball.pittotal A
+			GROUP BY PCODE
+		) A
+		WHERE GAMENUM >= {}
+	</query>
+	
+	<query id="get_pitcher_gamenum">
+		SELECT ROUND(SUM(GAMENUM)/2) + 1 AS GAMENUM
+		FROM baseball.pittotal
+		WHERE PCODE = '{}'
+	</query>
+	
 </data>

@@ -39,7 +39,7 @@
         	AND PITTEAM = 'NA'  
         	AND STATE_SPLIT = 'BASIC' 
          ) AAA 
-        WHERE HITTER = '{0}' 	
+        WHERE HITTER = '{0}'
 	</query>
 	
 	<query id = "get_hitter_vs_pitcher_record">
@@ -215,6 +215,23 @@
         	AND GYEAR = 2017 
         ) AAA 
         WHERE HITTER = '{0}' 
+	</query>
+	
+	<query id="get_hitter_gamenum_cnt">
+		SELECT COUNT(GAMENUM) AS GAMENUM
+		FROM 
+		(
+			SELECT PCODE, ROUND(SUM(GAMENUM)/2) AS GAMENUM
+			FROM baseball.battotal A
+			GROUP BY PCODE
+		) A
+		WHERE GAMENUM >= {}
+	</query>
+	
+	<query id="get_hitter_gamenum">
+		SELECT ROUND(SUM(GAMENUM)/2) + 1 AS GAMENUM
+		FROM baseball.battotal
+		WHERE PCODE = '{}'
 	</query>
 
 </data>

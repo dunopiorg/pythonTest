@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<data>
+	<query id="insert_log">
+		INSERT INTO message_log
+		(row_key, log_kind, subject, game_id, group_id, message, parameters, inning, date)
+		VALUES (NULL, '{log_kind}', '{subject}', '{game_id}', '{group_id}', '{message}', "{parameters}", '{inning}', NOW())
+    </query>
+
+	<query id="get_count">
+		SELECT count(row_key) AS count
+		FROM message_log
+		WHERE game_id = '{game_id}'
+		AND log_kind = '{log_kind}'
+		AND group_id = '{group_id}'
+		AND parameters = "{parameters}"
+		AND subject = '{subject}'
+		AND inning = '{inning}'
+    </query>
+</data>
