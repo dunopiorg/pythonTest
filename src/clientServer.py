@@ -24,7 +24,7 @@ msQuery =  'SELECT *'\
                 '  WHERE gameID = %s'\
                 '  ORDER BY gameID'
 
-myQuery = "INSERT INTO baseball.livetext_score_mix "\
+myQuery = "INSERT INTO baseball.ie_livetext_score_mix "\
     "VALUES (%s, %s, %s, %s, %s, %s, %s, %s,"\
           "%s, %s, %s, %s, %s, %s, %s, %s, %s,"\
           "%s, %s, %s, %s, %s, %s, %s, %s, %s,"\

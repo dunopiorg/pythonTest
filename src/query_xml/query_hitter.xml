@@ -16,7 +16,7 @@
 								, SUM(CASE WHEN HOW IN ('BB', 'IB') THEN 1 ELSE 0 END) AS BB
 								, SUM(CASE WHEN HOW IN ('KK','KN','KB','KW','KP') THEN 1 ELSE 0 END) AS SO
 								, HITNAME	
-			FROM baseball.gamecontapp_all
+			FROM baseball.gamecontapp
 			WHERE HITTER = '{1}'
 			AND GMKEY = '{0}'
 		) TODAY
@@ -125,7 +125,7 @@
 	
 	<query id = "get_hitter_continuous_record">
 		SELECT GMKEY, GDAY, HOW, PLACE, HITTER, HITNAME 
-        FROM  baseball.gamecontapp_all 
+        FROM  baseball.gamecontapp
         WHERE HITTER = '{0}' 
         AND GDAY &lt; '{1}' 
         ORDER BY GMKEY DESC, SERNO DESC 
@@ -206,7 +206,7 @@
         		, SUM(CASE WHEN LEFT(BCOUNT, 1) = 'F' THEN 1 ELSE 0 END) AS F_CNT  
         		, SUM(CASE WHEN LEFT(BCOUNT, 1) = 'H' THEN 1 ELSE 0 END) AS H_CNT  
         		, SUM(CASE WHEN LEFT(BCOUNT, 1) = 'T' THEN 1 ELSE 0 END) AS T_CNT	 
-        		from baseball.gamecontapp_all 
+        		from baseball.gamecontapp
         		where 1 = 1  
         		and bcount != ''  
         		GROUP BY GYEAR, HITTER, HITNAME  

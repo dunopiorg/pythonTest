@@ -20,7 +20,7 @@ def getLiveText(game_Id=None):
         ms_query = "SELECT *" \
                   "  FROM [BASEBALL_NEW].[dbo].[IE_LiveText_Score_MIX] where gyear = 2017 "
 
-        my_query = "INSERT INTO baseball.livetext_score_mix " \
+        my_query = "INSERT INTO baseball.ie_livetext_score_mix " \
                   "VALUES (%s, %s, %s, %s, %s, %s, %s, %s," \
                   "%s, %s, %s, %s, %s, %s, %s, %s, %s," \
                   "%s, %s, %s, %s, %s, %s, %s, %s, %s," \
@@ -282,7 +282,7 @@ def get_pitzone(gmkey=None):
         msQuery = 'SELECT *' \
                   "  FROM [BASEBALL_NEW].[dbo].[KBO_PitZone] WHERE GYEAR = '2016'"
 
-        myQuery = "INSERT INTO baseball.pitzone " \
+        myQuery = "INSERT INTO baseball.kbo_pitzone " \
                   "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 
         # MS Data Selection

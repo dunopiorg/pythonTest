@@ -342,7 +342,7 @@ class Record(object):
                 "			, SUM(CASE WHEN HOW = 'SH' THEN 1 ELSE 0 END) AS SH -- 희생 번트 " \
                 "			, SUM(CASE WHEN HOW = 'GR' AND PLACE IN ('0', '1', '2', '3') THEN 1 ELSE 0 END) AS GR " \
                 "			, SUM(CASE WHEN HOW = 'FL' AND PLACE IN ('0', '1', '2', '3') THEN 1 ELSE 0 END) AS FL " \
-                "	FROM baseball.gamecontapp_all " \
+                "	FROM baseball.gamecontapp " \
                 "	  WHERE 1 = 1  " \
                 "    AND GMKEY = '{1}'" \
                 "	  AND pitcher = '{0}' " \

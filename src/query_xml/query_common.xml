@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <data>
     <query id="get_pitzone_info">
-		SELECT ball, stuff, speed, zonex, zoney, x, y from baseball.pitzone 
+		SELECT ball, stuff, speed, zonex, zoney, x, y from baseball.kbo_pitzone
 		WHERE gmkey = '{0}' 
 		AND batorder = '{1}' 
 		AND ballcount = '{2}' 
@@ -53,7 +53,7 @@
 	
 	<query id="test_get_gamecontapp">
 		SELECT gmkey, gyear, tb, how, field, place, hitter, hitname, pitcher, pitname, catcher, catname, tscore, bscore, base1a, base2a, base2a
-		FROM baseball.gamecontapp_all
+		FROM baseball.gamecontapp
     </query>
 	
 	<query id="get_player_info">

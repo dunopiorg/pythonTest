@@ -111,7 +111,7 @@ class GameApp(object):
                 ", (SELECT NAME FROM baseball.person WHERE A.catcher = PCODE) AS catcher_name " \
                 ", (SELECT NAME FROM baseball.person WHERE A.runner = PCODE) AS runner_name " \
                 ", A.* " \
-                "FROM baseball.livetext_score_mix A " \
+                "FROM baseball.ie_livetext_score_mix A " \
                 "WHERE A.gameID = '%s' " \
                 "ORDER BY seqNo" % game_id
 
