@@ -1,6 +1,8 @@
 from enum import Enum
 from korean import Noun, l10n
 from lib import query_loader
+from lib import record
+from collections import defaultdict
 import pymysql.cursors
 import random
 import re
@@ -26,8 +28,7 @@ class MessageMaker(object):
         self.season_dict = {}
         self.total_dict = {}
         self.today_dict = {}
-        self.TEAM_KOR = {"WO": "넥센", "SS": "삼성", "SK": "SK", "OB": "두산"
-            , "NC": "NC", "LT": "롯데", "LG": "LG", "KT ": "KT", "HT": "기아", "HH": "한화"}
+        self.TEAM_KOR = record.Record().get_team_korean_names()
         self.SCORE_KR = {"0D": "동점", "1W": "1점차 이기고 있을 때", "1L": "1점차 지고 있을 때"
             , "WW": "이기고 있을 때", "LL": "지고 있을 때"}
         self.FLOAT_STATE = ['HRA', 'OBA', 'SLG']
@@ -65,7 +66,7 @@ class MessageMaker(object):
             param_dict = param[4]
             if param_dict['STATE'] not in self.FLOAT_STATE:
                 param_dict['RESULT'] = int(param_dict['RESULT'])
-            template_dict = MessageUnit.get_template_dict(group_id)
+            template_dict = MessageUnit.get_template_dict(group_id, 1)
 
             if state_split in template_dict:
                 template = template_dict[state_split]
@@ -87,7 +88,7 @@ class MessageMaker(object):
         sentence = []
         args_dict = {}
         record_dict = {}
-        template_dict = MessageUnit.get_template_dict(group_id)
+        template_dict = MessageUnit.get_template_dict(group_id, 1)
 
         for param in parameters:
             state_split = param[2]
@@ -146,7 +147,7 @@ class MessageMaker(object):
         args_dict = {}
         record_dict = {}
         text = ''
-        template_dict = MessageUnit.get_template_dict(group_id)
+        template_dict = MessageUnit.get_template_dict(group_id, 1)
 
         for param in parameters:
             state_split = param[2]
@@ -403,7 +404,7 @@ class MessageMaker(object):
                     if state in self.FLOAT_STATE:
                         state_result = str(data_dict['RESULT'])
                         if state_result:
-                            state_list.append('{0}{1}'.format(self.HITTER_STATE_KOR[state], state_result))
+                            state_list.append('{0} {1}'.format(self.HITTER_STATE_KOR[state], state_result))
                             if pos_neg == "POS":
                                 state_pos_list.append(state)
                             else:
@@ -498,7 +499,7 @@ class MessageMaker(object):
                         usable_list.append({'STATE_FINISH': {'state_finish': 'dummy'}})
 
             if usable_list:
-                sentence += re.sub("\s\s+", " ", self.get_template_sentence(group_id, usable_list, hitter))
+                sentence += re.sub("\s\s+", " ", self.get_template_sentence(group_id, usable_list))
                 sentence += '\n'
 
         if sentence:
@@ -515,7 +516,7 @@ class MessageMaker(object):
             state_split = param[2]
             param_dict = param[4]
             text = ''
-            template_dict = MessageUnit.get_template_dict(group_id)
+            template_dict = MessageUnit.get_template_dict(group_id, 1)
             state = param_dict['STATE']
 
             if param_dict['STATE'] in hit_list:
@@ -550,6 +551,38 @@ class MessageMaker(object):
 
         return '\n'.join(sentence)
 
+    def get_message_version_v0(self, event, parameters):
+        group_id = event
+        sentence = []
+        one_sentence = None
+
+        for param in parameters:
+            state_split = param[2]
+            param_dict = param[4]
+            text = ''
+            template_dict = MessageUnit.get_template_dict(group_id, config.VERSION_LEVEL)
+            state = param_dict['STATE']
+
+            if state_split in template_dict:
+                template = template_dict[state_split]
+
+            try:
+                # text = template.format(**param_dict)
+                text = l10n.Template(template).format(**param_dict)
+            except Exception as ex:
+                print(ex)
+
+            if text:
+                sentence.append(text)
+
+        if config.VERSION_LEVEL == 0:
+            one_sentence = MessageUnit.get_make_one_sentence(sentence)
+
+        if one_sentence:
+            return one_sentence
+        else:
+            return '\n'.join(sentence)
+
     def get_today_event_message(self, event, parameters):
         group_id = event
         state_dict = {}
@@ -572,7 +605,7 @@ class MessageMaker(object):
             # region TODAY SPLIT
             if event_split == "TODAY":
                 if 'PA' not in state_dict:
-                    state_dict['PA'] = "{0}{1}".format(pa, self.HITTER_STATE_KOR['PA'])
+                    state_dict['PA'] = "{0} {1}".format(pa, self.HITTER_STATE_KOR['PA'])
                 if state in self.FLOAT_STATE:
                     if state_result:
                         state_dict[state] = "이번 시즌 타율" + str(state_result)
@@ -581,7 +614,7 @@ class MessageMaker(object):
                     if state_val == 0 and state == "HIT":
                         state_dict[state] = '무안타'
                     elif state_val > 0:
-                        state_dict[state] = "{0}{1}".format(state_val, self.HITTER_STATE_KOR[state])
+                        state_dict[state] = "{0} {1}".format(state_val, self.HITTER_STATE_KOR[state])
             # endregion TODAY SPLIT
             # region FIRST SPLIT
             elif event_split == "FIRST":
@@ -593,13 +626,13 @@ class MessageMaker(object):
                 state_dict['STATE'] = self.HITTER_STATE_KOR[state]
                 if state not in self.FLOAT_STATE:
                     state_dict['RESULT'] = int(state_dict['RESULT'])
-                template_dict = MessageUnit.get_template_dict(group_id)
+                template_dict = MessageUnit.get_template_dict(group_id, 1)
                 state_dict['LEAGUE'] = template_dict['LEAGUE' + '_' + state_dict['LEAGUE']]
             elif event_split == "1UNIT":
                 state_dict = data_dict
                 # state_dict['STATE'] = "{state:을}".format(state=Noun(self.HITTER_STATE_KOR[state]))
                 state_dict['STATE'] = Noun(self.HITTER_STATE_KOR[state])
-                template_dict = MessageUnit.get_template_dict(group_id)
+                template_dict = MessageUnit.get_template_dict(group_id, 1)
                 state_dict['LEAGUE'] = template_dict['LEAGUE' + '_' + state_dict['LEAGUE']]
             # endregion FIRST SPLIT
 
@@ -618,14 +651,14 @@ class MessageMaker(object):
                         state_list.append(state_dict[state_name])
                 usable_list.append({'STATE': {'state': ','.join(state_list)}})
             elif event_split == "RANKER":
-                template_dict = MessageUnit.get_template_dict(group_id)
+                template_dict = MessageUnit.get_template_dict(group_id, 1)
                 if state_split in template_dict:
                     template = template_dict[state_split]
                     text = template.format(**state_dict)
                     if text:
                         return text
             elif event_split == "1UNIT":
-                template_dict = MessageUnit.get_template_dict(group_id)
+                template_dict = MessageUnit.get_template_dict(group_id, 1)
                 if state_split in template_dict:
                     template = template_dict[state_split]
                     text = template.format(**state_dict)
@@ -680,7 +713,7 @@ class MessageMaker(object):
             usable_list.append({'BASIC_FINISH': {'league': league}})
 
         if usable_list:
-            sentence += re.sub("\s\s+", " ", self.get_template_sentence(group_id, usable_list, hitter))
+            sentence += re.sub("\s\s+", " ", self.get_template_sentence(group_id, usable_list))
 
         if sentence:
             return sentence
@@ -694,7 +727,7 @@ class MessageMaker(object):
             state_split = param[2]
             param_dict = param[4]
             text = ''
-            template_dict = MessageUnit.get_template_dict(group_id)
+            template_dict = MessageUnit.get_template_dict(group_id, 1)
             only_text = ["0T", "0S", "FULL_COUNT", "WHEN_LOSS", "HOW_HP"]
             param_text = ["BALLINFO", "BALLINFO_BALL", "CURRENT_INFO", "CONTINUE_BALL", "BALL_STUFF_COUNT", "BALL_STUFF_COUNT_MANY"
                           "HOW_EVENT", "TEAM_INFO_T", "TEAM_INFO_B", "LINE_UP_INFO_T", "LINE_UP_INFO_B"]
@@ -737,8 +770,8 @@ class MessageMaker(object):
         else:
             return None
 
-    def get_template_sentence(self, group_id, param_list, player_id=None):
-        template_dict = MessageUnit.get_template_dict(group_id, player_id)
+    def get_template_sentence(self, group_id, param_list):
+        template_dict = MessageUnit.get_template_dict(group_id, 1)
 
         sentence = ''
         try:
@@ -869,36 +902,20 @@ class MessageUnit(object):
         return result
 
     @classmethod
-    def get_template(cls, group_id, player_id=None):
+    def get_template(cls, group_id, version_level=None):
         conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
                                password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
 
-        if player_id:
-            add_where = " AND(last_user=0 or last_user <> '{0}')".format(player_id)
-        else:
-            add_where = " AND 1 = 1"
+        if version_level is None:
+            version_level = 0
 
         query_format = cls.ql.get_query("query_message", "get_template")
-        query = query_format.format(group_id, add_where)
+        query = query_format.format(group_id, version_level)
 
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             cursor.execute(query)
             result = cursor.fetchall()
 
-        return result
-
-    @classmethod
-    def update_template_player_id(cls, group_id, player_id):
-        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
-                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
-
-        query_format = cls.ql.get_query("query_message", "update_template_player_id")
-        query = query_format.format(group_id, player_id)
-
-        with conn.cursor() as cursor:
-            cursor.execute(query)
-            result = cursor.fetchall()
-            conn.commit()
         return result
 
     @classmethod
@@ -912,16 +929,49 @@ class MessageUnit(object):
         return unit_list
 
     @classmethod
-    def get_template_dict(cls, group_id, player_id=None):
-        templates = cls.get_template(group_id, player_id)
-        # if player_id:
-        #     cls.update_template_player_id(group_id, player_id)
+    def get_template_dict(cls, group_id, version_level=None):
+        templates = cls.get_template(group_id, version_level)
         template_dict = {}
         for temp in templates:
             temp_list = temp['template'].split('#')
             template_dict[temp['state_split']] = random.choice(temp_list)
 
         return template_dict
+
+    @classmethod
+    def get_make_one_sentence(cls, data_list):
+        tree = lambda: defaultdict(tree)
+        data = tree()
+
+        for s in data_list:
+            cls.adder(data, s.split('|'))
+
+        t = cls.get_msg(data)
+        return t
+
+    @classmethod
+    def adder(cls, data_dict, source_list):
+        for source in source_list:
+            data_dict = data_dict[source]
+
+    @classmethod
+    def get_msg(cls, d):
+        temp_list = []
+        join_flag = False
+        for k, v in d.items():
+            if len(v) == 0:
+                temp_list.append(k)
+                join_flag = True
+            else:
+                temp_list.append(k.format(cls.get_msg(v)))
+                join_flag = False
+        if join_flag:
+            temp = ', '.join(temp_list)
+        else:
+            if temp_list[-1][-1] == ',':
+                temp_list[-1] = temp_list[-1][:-1]
+            temp = ' '.join(temp_list)
+        return temp
 
 
 # if __name__ == "__main__":

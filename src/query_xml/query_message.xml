@@ -10,15 +10,6 @@
 		SELECT *
 		FROM baseball.message_template
 		WHERE group_id = '{0}'
-		{1}
+        AND version_level = '{1}'
     </query>
-	
-	<query id="update_template_player_id">
-		UPDATE baseball.message_template
-		SET last_user = {1}
-		WHERE group_id = '{0}'
-		AND category = 'HITNAME';
-		COMMIT; 
-    </query>
-
 </data>

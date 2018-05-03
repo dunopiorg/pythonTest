@@ -57,7 +57,7 @@
     </query>
 	
 	<query id="get_player_info">
-		SELECT NAME, PCODE, TEAM, POSITION, POS, BACKNUM, BIRTH, HEIGHT, WEIGHT, CAREER, HITTYPE, INDATE, MONEY, CAREER2
+		SELECT NAME, PCODE, TEAM, T_ID, POSITION, POS, BACKNUM, BIRTH, HEIGHT, WEIGHT, CAREER, HITTYPE, INDATE, MONEY, CAREER2
 		FROM baseball.person
 		WHERE PCODE = '{0}'
     </query>
@@ -79,7 +79,7 @@
 	
 	<query id="get_li_rate">
 		SELECT ROUND(LI_RT, 3) AS VALUE
-		FROM matrix_detail
+		FROM baseball.matrix_detail
 		WHERE SEASON_ID = '{0}'
 		AND INN_NO = '{1}'
 		AND TB_SC = '{2}'
@@ -90,7 +90,7 @@
 	
 	<query id="get_max_li_rate">
 		SELECT ROUND(MAX(LI_RT), 3) AS VALUE
-		FROM record_matrix_mix
+		FROM baseball.record_matrix_mix
 		WHERE gameid = '{0}'
 		AND seqno &lt; '{1}'
 	</query>
@@ -101,9 +101,14 @@
 						, ROUND(WPA_RT, 3) AS WPA_RT
 						, ROUND(LI_RT, 3) AS LI_RT
 						, ROUND(RE_RT, 3) AS RE_RT
-		FROM record_matrix_mix
+		FROM baseball.record_matrix_mix
 		WHERE GAMEID = '{0}'
 		AND GYEAR = '{1}'
 		AND SEQNO = '{2}'
+    </query>
+	
+	<query id="get_team_kor_names">
+		SELECT team, team_kor
+		FROM baseball.team_name
     </query>
 </data>

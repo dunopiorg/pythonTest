@@ -5,8 +5,7 @@ import re
 class GameStatus(object):
 
     def __init__(self, game_key):
-        self.TEAM_KOR = {"WO": "넥센", "SS": "삼성", "SK": "SK", "OB": "두산",
-                         "NC": "NC", "LT": "롯데", "LG": "LG", "KT ": "kt", "HT": "기아", "HH": "한화"}
+        self.TEAM_KOR = record.Record().get_team_korean_names()
         self.game_key = game_key
         self.game_score = None
         self.gamecontapp_serno = 0
@@ -14,7 +13,7 @@ class GameStatus(object):
         self.tscore = 0
         self.bscore = 0
         self.inning = 1
-        self.base_player = []
+        self.base_player = ['', '', '']
 
         self.team_info = {}
         self.stadium_info_dict = {}
@@ -153,9 +152,9 @@ class GameStatus(object):
                 if b > 0:
                     for player in self.whole_selection_player[tb]:
                         if b == player['turn']:
-                            self.base_player.append(player['name'])
+                            self.base_player[i] = player['name']
                 else:
-                    self.base_player.append('')
+                    self.base_player[i] = ''
             # endregion
 
             # region 점수 상황 관련

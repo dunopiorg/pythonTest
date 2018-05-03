@@ -1,6 +1,7 @@
 from lib import record
 from korean import Noun
 from lib import game_status
+import config
 
 
 class Commentate(object):
@@ -9,8 +10,7 @@ class Commentate(object):
         self.BALL_STUFF = {'FAST': '패스트볼', 'CUTT': '커터', 'SLID': '슬라이더', 'CURV': '커브',
                        'CHUP': '체인지업', 'SPLI': '스플리터', 'SINK': '싱커볼', 'TWOS': '투심패스트볼',
                        'FORK': '포크볼', 'KNUC': '너클볼'}
-        self.TEAM_KOR = {"WO": "넥센", "SS": "삼성", "SK": "SK", "OB": "두산",
-                         "NC": "NC", "LT": "롯데", "LG": "LG", "KT ": "kt", "HT": "기아", "HH": "한화"}
+        self.TEAM_KOR = record.Record().get_team_korean_names()
         self.english_team = ['SK', 'NC', 'LG', 'KT']
         self.POSITION_WORD = {"1": "P", "2": "C", "3": "1B", "4": "2B", "5": "3B", "6": "SS"
                               , "7": "LF", "8": "CF", "9": "RF", "D": "DH"}
@@ -186,193 +186,229 @@ class Commentate(object):
         home_team = game_id[10:12]
         away_team = game_id[8:10]
 
-        # region 팀 시즌 정보
-        if seq_no == 0:
-            away_team_info = record.Record().get_teamrank_daily(self.TEAM_KOR[away_team])
-            if away_team_info:
-                away_team_info = away_team_info[0]
-                if away_team_info['GAME'] > 0:
-                    away_team_dict = data_dict.copy()
-                    away_team_dict['LEAGEU'] = 'SEASON'
-                    away_team_dict['TEAM_NAME'] = away_team_info['TEAM']
-                    if int(away_team_info['CONTINUE'][0]) > 1:
-                        away_team_dict['STATE_SPLIT'] = 'SEASON_TEAM_INFO_CONTINUE'
-                        away_team_dict['CONTINUE'] = '{0}연{1}'.format(away_team_info['CONTINUE'][0], away_team_info['CONTINUE'][1])
-                    else:
-                        away_team_dict['STATE_SPLIT'] = 'SEASON_TEAM_INFO'
-                    away_team_dict.update(away_team_info)
-                    result_list.append(away_team_dict)
-        elif bat_order == 0 and inning == 1 and tb == 'B':
-            home_team_info = record.Record().get_teamrank_daily(self.TEAM_KOR[home_team])
-            if home_team_info:
-                home_team_info = home_team_info[0]
-                if home_team_info['GAME'] > 0:
-                    home_team_dict = data_dict.copy()
-                    home_team_dict['LEAGEU'] = 'SEASON'
-                    home_team_dict['TEAM_NAME'] = home_team_info['TEAM']
-                    if int(home_team_info['CONTINUE'][0]) > 1:
-                        home_team_dict['STATE_SPLIT'] = 'SEASON_TEAM_INFO_CONTINUE'
-                        home_team_dict['CONTINUE'] = '{0}연{1}'.format(home_team_info['CONTINUE'][0], home_team_info['CONTINUE'][1])
-                    else:
-                        home_team_dict['STATE_SPLIT'] = 'SEASON_TEAM_INFO'
-                    home_team_dict.update(home_team_info)
-                    result_list.append(home_team_dict)
-        # endregion 팀 시즌 정보
+        # region Detail Version
+        if config.VERSION_LEVEL > 0:
+            # region 팀 시즌 정보
+            if seq_no == 0:
+                away_team_info = record.Record().get_teamrank_daily(self.TEAM_KOR[away_team])
+                if away_team_info:
+                    away_team_info = away_team_info[0]
+                    if away_team_info['GAME'] > 0:
+                        away_team_dict = data_dict.copy()
+                        away_team_dict['LEAGEU'] = 'SEASON'
+                        away_team_dict['TEAM_NAME'] = away_team_info['TEAM']
+                        if int(away_team_info['CONTINUE'][0]) > 1:
+                            away_team_dict['STATE_SPLIT'] = 'SEASON_TEAM_INFO_CONTINUE'
+                            away_team_dict['CONTINUE'] = '{0}연{1}'.format(away_team_info['CONTINUE'][0], away_team_info['CONTINUE'][1])
+                        else:
+                            away_team_dict['STATE_SPLIT'] = 'SEASON_TEAM_INFO'
+                        away_team_dict.update(away_team_info)
+                        result_list.append(away_team_dict)
+            elif bat_order == 0 and inning == 1 and tb == 'B':
+                home_team_info = record.Record().get_teamrank_daily(self.TEAM_KOR[home_team])
+                if home_team_info:
+                    home_team_info = home_team_info[0]
+                    if home_team_info['GAME'] > 0:
+                        home_team_dict = data_dict.copy()
+                        home_team_dict['LEAGEU'] = 'SEASON'
+                        home_team_dict['TEAM_NAME'] = home_team_info['TEAM']
+                        if int(home_team_info['CONTINUE'][0]) > 1:
+                            home_team_dict['STATE_SPLIT'] = 'SEASON_TEAM_INFO_CONTINUE'
+                            home_team_dict['CONTINUE'] = '{0}연{1}'.format(home_team_info['CONTINUE'][0], home_team_info['CONTINUE'][1])
+                        else:
+                            home_team_dict['STATE_SPLIT'] = 'SEASON_TEAM_INFO'
+                        home_team_dict.update(home_team_info)
+                        result_list.append(home_team_dict)
+            # endregion 팀 시즌 정보
 
-        # region 팀 대결 정보
-        if seq_no == 0:
-            team_vs_team_info = record.Record().get_team_vs_team(home_team, away_team, 2017)
-            if team_vs_team_info:
-                versus_info = team_vs_team_info[0]
-                versus_dict = data_dict.copy()
-                versus_dict['HOME_TEAM'] = self.TEAM_KOR[home_team]
-                versus_dict['AWAY_TEAM'] = self.TEAM_KOR[away_team]
-                versus_dict['STATE_SPLIT'] = 'VERSUS_TEAM'
-                if home_team in self.english_team:
-                    versus_dict['TEAM_NAME'] = '{name}는'.format(name=self.TEAM_KOR[home_team])
-                else:
-                    versus_dict['TEAM_NAME'] = '{name:는}'.format(name=Noun(self.TEAM_KOR[home_team]))
-                versus_dict.update(versus_info)
-                if versus_info['LOSS'] > versus_info['WIN']:
+            # region 팀 대결 정보
+            if seq_no == 0:
+                team_vs_team_info = record.Record().get_team_vs_team(home_team, away_team, 2017)
+                if team_vs_team_info:
+                    versus_info = team_vs_team_info[0]
+                    versus_dict = data_dict.copy()
+                    versus_dict['HOME_TEAM'] = self.TEAM_KOR[home_team]
+                    versus_dict['AWAY_TEAM'] = self.TEAM_KOR[away_team]
+                    versus_dict['STATE_SPLIT'] = 'VERSUS_TEAM'
                     if home_team in self.english_team:
-                        versus_dict['TEAM_NAME'] = '{name}는'.format(name=self.TEAM_KOR[away_team])
+                        versus_dict['TEAM_NAME'] = '{name}는'.format(name=self.TEAM_KOR[home_team])
                     else:
-                        versus_dict['TEAM_NAME'] = '{name:는}'.format(name=Noun(self.TEAM_KOR[away_team]))
-                    versus_dict['WIN'] = versus_info['LOSS']
-                    versus_dict['LOSS'] = versus_info['WIN']
-                elif versus_info['WIN'] == versus_info['LOSS']:
-                    versus_dict['STATE_SPLIT'] = 'VERSUS_TEAM_SAME'
-                result_list.append(versus_dict)
-        # endregion 팀 대결 정보
+                        versus_dict['TEAM_NAME'] = '{name:는}'.format(name=Noun(self.TEAM_KOR[home_team]))
+                    versus_dict.update(versus_info)
+                    if versus_info['LOSS'] > versus_info['WIN']:
+                        if home_team in self.english_team:
+                            versus_dict['TEAM_NAME'] = '{name}는'.format(name=self.TEAM_KOR[away_team])
+                        else:
+                            versus_dict['TEAM_NAME'] = '{name:는}'.format(name=Noun(self.TEAM_KOR[away_team]))
+                        versus_dict['WIN'] = versus_info['LOSS']
+                        versus_dict['LOSS'] = versus_info['WIN']
+                    elif versus_info['WIN'] == versus_info['LOSS']:
+                        versus_dict['STATE_SPLIT'] = 'VERSUS_TEAM_SAME'
+                    result_list.append(versus_dict)
+            # endregion 팀 대결 정보
 
-        # region 등판시 주루상황, 점수상황, 아웃상황
-        if bat_order > 1 and ball_count == 0 and text_style == 8:
-            self.continue_ball_count_b = 0  # 연속 볼
-            self.continue_ball_count_f = 0  # 연속 파울
-            self.continue_ball_stuff.clear()
-            if out_count == 0:
-                out = '노'
-            elif out_count == 1:
-                out = '원'
-            else:
-                out = '투'
-
-            if base_detail == '0B':
-                base = '없는 상황'
-            elif base_detail == '1B':
-                base = '1루'
-            elif base_detail == '2B':
-                base = '2루'
-            elif base_detail == '3B':
-                base = '3루'
-            elif base_detail == '12B':
-                base = '1,2루'
-            elif base_detail == '13B':
-                base = '1,3루'
-            elif base_detail == '23B':
-                base = '2,3루'
-            else:
-                base = '만루'
-
-            if score_detail == '0D':
-                score = '동점인 상황'
-            else:
-                if score_detail[1] == 'L':
-                    score_temp = " 지고 있는 상황"
+            # region 등판시 주루상황, 점수상황, 아웃상황
+            if bat_order > 1 and ball_count == 0 and text_style == 8:
+                self.continue_ball_count_b = 0  # 연속 볼
+                self.continue_ball_count_f = 0  # 연속 파울
+                self.continue_ball_stuff.clear()
+                if out_count == 0:
+                    out = '노'
+                elif out_count == 1:
+                    out = '원'
                 else:
-                    score_temp = " 이기고 있는 상황"
-                score = "{0}점차로 {1}".format(score_detail[0], score_temp)
+                    out = '투'
 
-            current_game = data_dict.copy()
-            current_game['LEAGUE'] = 'SEASON'
-            current_game['STATE_SPLIT'] = 'CURRENT_INFO'
-            current_game['out'] = out
-            current_game['base'] = base
-            current_game['score'] = score
+                if base_detail == '0B':
+                    base = '없는 상황'
+                elif base_detail == '1B':
+                    base = '1루'
+                elif base_detail == '2B':
+                    base = '2루'
+                elif base_detail == '3B':
+                    base = '3루'
+                elif base_detail == '12B':
+                    base = '1,2루'
+                elif base_detail == '13B':
+                    base = '1,3루'
+                elif base_detail == '23B':
+                    base = '2,3루'
+                else:
+                    base = '만루'
 
-            result_list.append(current_game)
-        # endregion
+                if score_detail == '0D':
+                    score = '동점인 상황'
+                else:
+                    if score_detail[1] == 'L':
+                        score_temp = " 지고 있는 상황"
+                    else:
+                        score_temp = " 이기고 있는 상황"
+                    score = "{0}점차로 {1}".format(score_detail[0], score_temp)
 
-        # region 홈인 후 다음 타자 등판 상황
+                current_game = data_dict.copy()
+                current_game['LEAGUE'] = 'SEASON'
+                current_game['STATE_SPLIT'] = 'CURRENT_INFO'
+                current_game['out'] = out
+                current_game['base'] = base
+                current_game['score'] = score
 
-        # endregion 홈인 후 다음 타자 등판 상황
+                result_list.append(current_game)
+            # endregion
 
-        # region 선수 정보
-        if text_style == 8:
-            hitter_info = record.Record().get_player_info(live_dict['hitter'])[0]
-            pitcher_info = record.Record().get_player_info(live_dict['pitcher'])[0]
+            # region 홈인 후 다음 타자 등판 상황
 
-            if hitter_info['CAREER2'] == pitcher_info['CAREER2']:
-                players_dict = data_dict.copy()
-                players_dict['HITTER'] = hitter_info['NAME']
-                players_dict['PITCHER'] = pitcher_info['NAME']
-                players_dict['CAREER'] = pitcher_info['CAREER2']
-                players_dict['STATE_SPLIT'] = 'SAME_CAREER'
-                result_list.append(players_dict)
+            # endregion 홈인 후 다음 타자 등판 상황
 
-            if hitter_info['BIRTH'][4:8] == game_id[4:8]:
-                birth_dict = data_dict.copy()
-                birth_dict['PLAYER'] = hitter_info['NAME']
-                birth_dict['STATE_SPLIT'] = 'PLAYER_BIRTHDAY'
-                result_list.append(birth_dict)
-            elif pitcher_info['BIRTH'][4:8] == game_id[4:8]:
-                birth_dict = data_dict.copy()
-                birth_dict['PLAYER'] = pitcher_info['NAME']
-                birth_dict['STATE_SPLIT'] = 'PLAYER_BIRTHDAY'
-                result_list.append(birth_dict)
-        # endregion 선수 정보
+            # region 선수 정보
+            if text_style == 8:
+                hitter_info = record.Record().get_player_info(live_dict['hitter'])[0]
+                pitcher_info = record.Record().get_player_info(live_dict['pitcher'])[0]
 
-        # region Ball Count 설명
-        if text_style == 1:
-            if ball_type == 'S' or ball_type == 'T':
-                strike_counting = full_count[1]
-                if strike_counting == 1:
-                    print("캐스터: 원스트라이크")
-                elif strike_counting == 2:
-                    print("캐스터: 투스트라이크")
-            elif ball_type == 'B':
-                ball_counting = full_count[0]
-                if ball_counting == 1:
-                    print("캐스터: 원볼")
-                elif ball_counting == 2:
-                    print("캐스터: 투볼")
-                elif ball_counting == 3:
-                    print("캐스터: 쓰리볼")
-        # endregion
+                if hitter_info['CAREER2'] == pitcher_info['CAREER2']:
+                    players_dict = data_dict.copy()
+                    players_dict['HITTER'] = hitter_info['NAME']
+                    players_dict['PITCHER'] = pitcher_info['NAME']
+                    players_dict['CAREER'] = pitcher_info['CAREER2']
+                    players_dict['STATE_SPLIT'] = 'SAME_CAREER'
+                    result_list.append(players_dict)
 
-        # region Full count
-        if full_count[0] == 2 and full_count[1] == 3 and text_style == 1:
-            full_count_dict = data_dict.copy()
-            full_count_dict['LEAGUE'] = 'SEASON'
-            full_count_dict['STATE_SPLIT'] = 'FULL_COUNT'
-            result_list.append(full_count_dict)
-        # endregion
+                if hitter_info['BIRTH'][4:8] == game_id[4:8]:
+                    birth_dict = data_dict.copy()
+                    birth_dict['PLAYER'] = hitter_info['NAME']
+                    birth_dict['STATE_SPLIT'] = 'PLAYER_BIRTHDAY'
+                    result_list.append(birth_dict)
+                elif pitcher_info['BIRTH'][4:8] == game_id[4:8]:
+                    birth_dict = data_dict.copy()
+                    birth_dict['PLAYER'] = pitcher_info['NAME']
+                    birth_dict['STATE_SPLIT'] = 'PLAYER_BIRTHDAY'
+                    result_list.append(birth_dict)
+            # endregion 선수 정보
 
-        # region 연속 볼, 연속 파울 설정
-        if ball_type == 'B' and text_style == 1:
-            self.continue_ball_count_b += 1
-            self.continue_ball_count_f = 0
-        elif ball_type == 'F' and text_style == 1:
-            self.continue_ball_count_f += 1
-            self.continue_ball_count_b = 0
-        else:
-            self.continue_ball_count_b = 0
-            self.continue_ball_count_f = 0
+            # region Ball Count 설명
+            if text_style == 1:
+                if ball_type == 'S' or ball_type == 'T':
+                    strike_counting = full_count[1]
+                    if strike_counting == 1:
+                        print("캐스터: 원스트라이크")
+                    elif strike_counting == 2:
+                        print("캐스터: 투스트라이크")
+                elif ball_type == 'B':
+                    ball_counting = full_count[0]
+                    if ball_counting == 1:
+                        print("캐스터: 원볼")
+                    elif ball_counting == 2:
+                        print("캐스터: 투볼")
+                    elif ball_counting == 3:
+                        print("캐스터: 쓰리볼")
+            # endregion
 
-        if 2 < self.continue_ball_count_b < 4:
-            continue_ball_dict = data_dict.copy()
-            continue_ball_dict['LEAGUE'] = 'SEASON'
-            continue_ball_dict['STATE_SPLIT'] = 'CONTINUE_BALL'
-            continue_ball_dict['type'] = '볼'
-            continue_ball_dict['count'] = self.continue_ball_count_b
-            result_list.append(continue_ball_dict)
-        elif self.continue_ball_count_f > 2:
-            continue_ball_dict = data_dict.copy()
-            continue_ball_dict['LEAGUE'] = 'SEASON'
-            continue_ball_dict['STATE_SPLIT'] = 'CONTINUE_BALL'
-            continue_ball_dict['type'] = '파울'
-            continue_ball_dict['count'] = self.continue_ball_count_f
-            result_list.append(continue_ball_dict)
+            # region Full count
+            if full_count[0] == 2 and full_count[1] == 3 and text_style == 1:
+                full_count_dict = data_dict.copy()
+                full_count_dict['LEAGUE'] = 'SEASON'
+                full_count_dict['STATE_SPLIT'] = 'FULL_COUNT'
+                result_list.append(full_count_dict)
+            # endregion
+
+            # region 연속 볼, 연속 파울 설정
+            if ball_type == 'B' and text_style == 1:
+                self.continue_ball_count_b += 1
+                self.continue_ball_count_f = 0
+            elif ball_type == 'F' and text_style == 1:
+                self.continue_ball_count_f += 1
+                self.continue_ball_count_b = 0
+            else:
+                self.continue_ball_count_b = 0
+                self.continue_ball_count_f = 0
+
+            if 2 < self.continue_ball_count_b < 4:
+                continue_ball_dict = data_dict.copy()
+                continue_ball_dict['LEAGUE'] = 'SEASON'
+                continue_ball_dict['STATE_SPLIT'] = 'CONTINUE_BALL'
+                continue_ball_dict['type'] = '볼'
+                continue_ball_dict['count'] = self.continue_ball_count_b
+                result_list.append(continue_ball_dict)
+            elif self.continue_ball_count_f > 2:
+                continue_ball_dict = data_dict.copy()
+                continue_ball_dict['LEAGUE'] = 'SEASON'
+                continue_ball_dict['STATE_SPLIT'] = 'CONTINUE_BALL'
+                continue_ball_dict['type'] = '파울'
+                continue_ball_dict['count'] = self.continue_ball_count_f
+                result_list.append(continue_ball_dict)
+            # endregion
+
+            # region 사구일 경우
+            if how == 'HP':
+                how_hp = data_dict.copy()
+                how_hp['LEAGUE'] = 'SEASON'
+                how_hp['STATE_SPLIT'] = 'HOW_HP'
+                result_list.append(how_hp)
+            # endregion
+
+            # region 매 이닝 시작시 어디 공격 점수는 몇점
+            if bat_order == 0:
+                inning_start_dict = data_dict.copy()
+                inning_start_dict['LEAGUE'] = 'SEASON'
+                inning_start_dict['STATE_SPLIT'] = 'START_INNING'
+                inning_start_dict['INNING'] = inning
+                inning_start_dict['TB'] = '회초' if tb == 'T' else '회말'
+                inning_start_dict['TEAM'] = self.TEAM_KOR[hit_team]
+                inning_start_dict['WHAT'] = '반격' if score_simple[1] == 'L' else '공격'
+                result_list.append(inning_start_dict)
+            # endregion
+        # endregion Detail Version
+
+        # region 공수 교체시
+        if bat_order == 0 and seq_no > 0:
+            if score_detail[1] == 'L':
+                when_loss = data_dict.copy()
+                when_loss['LEAGUE'] = 'SEASON'
+                if hit_team in self.english_team:
+                    when_loss['TEAM'] = '{team}가'.format(team=self.TEAM_KOR[hit_team])
+                else:
+                    when_loss['TEAM'] = '{team:이}'.format(team=Noun(self.TEAM_KOR[hit_team]))
+                when_loss['STATE_SPLIT'] = 'WHEN_LOSS'
+                result_list.append(when_loss)
         # endregion
 
         # region 연속 같은 볼
@@ -393,39 +429,6 @@ class Commentate(object):
                 result_list.append(ball_stuff_dict)
         # endregion
 
-        # region 사구일 경우
-        if how == 'HP':
-            how_hp = data_dict.copy()
-            how_hp['LEAGUE'] = 'SEASON'
-            how_hp['STATE_SPLIT'] = 'HOW_HP'
-            result_list.append(how_hp)
-        # endregion
-
-        # region 공수 교체시
-        if bat_order == 0 and seq_no > 0:
-            if score_detail[1] == 'L':
-                when_loss = data_dict.copy()
-                when_loss['LEAGUE'] = 'SEASON'
-                if hit_team in self.english_team:
-                    when_loss['TEAM'] = '{team}가'.format(team=self.TEAM_KOR[hit_team])
-                else:
-                    when_loss['TEAM'] = '{team:이}'.format(team=Noun(self.TEAM_KOR[hit_team]))
-                when_loss['STATE_SPLIT'] = 'WHEN_LOSS'
-                result_list.append(when_loss)
-        # endregion
-
-        # region 매 이닝 시작시 어디 공격 점수는 몇점
-        if bat_order == 0:
-            inning_start_dict = data_dict.copy()
-            inning_start_dict['LEAGUE'] = 'SEASON'
-            inning_start_dict['STATE_SPLIT'] = 'START_INNING'
-            inning_start_dict['INNING'] = inning
-            inning_start_dict['TB'] = '회초' if tb == 'T' else '회말'
-            inning_start_dict['TEAM'] = self.TEAM_KOR[hit_team]
-            inning_start_dict['WHAT'] = '반격' if score_simple[1] == 'L' else '공격'
-            result_list.append(inning_start_dict)
-        # endregion
-
         # region Max LI
         if inning > 5:
             max_li_rt = record.Record().get_max_li_rate(game_id, seq_no)[0]['VALUE']
@@ -443,7 +446,7 @@ class Commentate(object):
                 elif 6 <= self.max_li:
                     state_split = 'MAX_LI_DONE'
                 max_li = data_dict.copy()
-                max_li['HITTER'] = live_dict['hitname']
+                max_li['HITNAME'] = live_dict['hitname']
                 max_li['LEAGUE'] = 'SEASON'
                 max_li['STATE_SPLIT'] = state_split
                 result_list.append(max_li)

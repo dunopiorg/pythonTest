@@ -13,6 +13,9 @@ from korean import Noun
 import config
 import time
 import korean
+import os
+import logging
+import logging.handlers
 
 
 class GameApp(object):
@@ -36,10 +39,12 @@ class GameApp(object):
         self.HR_LIST = ['HR']
         self.BB_LIST = ['BB', 'IB']
         self.SO_LIST = ['KK', 'KN', 'KB', 'KW', 'KP']
+        self.SB_LIST = ['SB']
         self.PA_LIST = ['H1', 'H2', 'H3', 'HR', 'HI', 'HB', 'BB', 'IB', 'HP', 'KK', 'KN', 'KB'
 							,'KW','KP','IN','OB','IP','XX','SH','SF','FC','GD','TP','GR','BN','FL','LL','IF','FF']
-        self.TEAM_KOR_DICT = {"WO": "넥센", "SS": "삼성", "SK": "SK", "OB": "두산",
-                         "NC": "NC", "LT": "롯데", "LG": "LG", "KT ": "KT", "HT": "기아", "HH": "한화"}
+        self.hitter_how_dict = {'H1': ['HIT'], 'H2': ['HIT', 'H2'], 'H3': ['HIT', 'H3'], 'HR': ['HIT', 'HR'], 'HI': ['HIT'], 'HB': ['HIT'],
+                                'SB': ['SB']}
+        self.TEAM_KOR_DICT = record.Record().get_team_korean_names()
 
         # 기본 전역 변수
         self.prev_pitcher = None
@@ -73,10 +78,47 @@ class GameApp(object):
         self.score_table = score_table.ScoreTable()
         self.msg_teller = message_teller.MsgTeller()
         self.game_status = game_status.GameStatus(game_key)
-        self.logger = message_log.MsgLog()
+        self.msg_history = message_log.MsgLog()
+        self.logger = logging.getLogger('game_logger')
+        self.result_printer = logging.getLogger('result_logger')
 
         # initialize data
         self.set_category_score()
+        self.set_logger(self.logger)
+        self.set_result_printer(self.result_printer, game_key)
+
+    def set_logger(self, logger):
+        fomatter = logging.Formatter('[%(levelname)s|%(filename)s:%(lineno)s] %(asctime)s => %(message)s')
+        if config.RUN_MODE == 'DEBUG':
+            logger_level = logging.DEBUG
+            filename = config.DEBUG_LOG_FILENAME
+        elif config.RUN_MODE == 'RUN':
+            logger_level = logging.INFO
+            filename = config.RUN_LOG_FILENAME
+        else:
+            logger_level = logging.DEBUG
+            filename = config.DEBUG_LOG_FILENAME
+
+        os.makedirs(config.LOG_FOLDER, exist_ok=True)
+
+        file_handler = logging.FileHandler(config.LOG_FOLDER+filename)
+        stream_handler = logging.StreamHandler()
+
+        file_handler.setFormatter(fomatter)
+        stream_handler.setFormatter(fomatter)
+
+        logger.addHandler(file_handler)
+        # logger.addHandler(stream_handler)
+        logger.setLevel(logger_level)
+
+    def set_result_printer(self, result_printer, game_key):
+        os.makedirs(config.LOG_FOLDER, exist_ok=True)
+
+        file_handler = logging.FileHandler(config.LOG_FOLDER+game_key+'.md')
+        stream_handler = logging.StreamHandler()
+
+        result_printer.addHandler(file_handler)
+        result_printer.setLevel(logging.DEBUG)
 
     def set_category_score(self):
         """
@@ -126,6 +168,9 @@ class GameApp(object):
         :param live_text_dict: live text dictionary data
         :return: data parameters
         """
+        print("문자: " + live_text_dict['LiveText'])
+        self.result_printer.info("문자: {}".format(live_text_dict['LiveText']))
+
         result = {}
 
         result_pitcher = {}
@@ -152,31 +197,35 @@ class GameApp(object):
         if inning == 99:
             return None
         self.game_status.set_gamecontapp_info(hitter, pitcher, inning, how)
-
+        # region Detail Version
         # region 게임 시작 정보 (경기장, 심판, 날씨 등)
-        if seq_num == 0:
-            game_info_data = self.commentator.get_game_info(game_id)
-            if game_info_data:
-                self.set_score(self.COMMON_EVENT, game_info_data)
-            # team_info_data = self.commentator.get_team_info(self.game_status.team_info)
-            # if team_info_data:
-            #     self.set_score(self.COMMON_EVENT, team_info_data)
+        if config.VERSION_LEVEL > 0:
+            if seq_num == 0:
+                game_info_data = self.commentator.get_game_info(game_id)
+                if game_info_data:
+                    self.set_score(self.COMMON_EVENT, game_info_data)
+                # team_info_data = self.commentator.get_team_info(self.game_status.team_info)
+                # if team_info_data:
+                #     self.set_score(self.COMMON_EVENT, team_info_data)
         # endregion
-
+        # endregion Detail Version
+        # region Detail Version
         # region 게임 진행 중계 정보 (대부분)
-        if bat_order == 0 and inning == 1:
-            starting_line_data = self.commentator.get_starting_line_info(live_dict['tb'], self.game_status.starting_line_up)
-            if starting_line_data:
-                self.set_score(self.COMMON_EVENT, starting_line_data)
+        if config.VERSION_LEVEL > 0:
+            if bat_order == 0 and inning == 1:
+                starting_line_data = self.commentator.get_starting_line_info(live_dict['tb'], self.game_status.starting_line_up)
+                if starting_line_data:
+                    self.set_score(self.COMMON_EVENT, starting_line_data)
+
+            how_event_info = self.game_status.get_explain_how_event(hitter, pitcher, inning, how)
+            if how_event_info:
+                self.set_score(self.COMMON_EVENT, how_event_info)
+        # endregion
+        # endregion Detail Version
 
         current_game_info = self.commentator.get_current_game_info(live_dict)
         if current_game_info:
             self.set_score(self.COMMON_EVENT, current_game_info)
-
-        how_event_info = self.game_status.get_explain_how_event(hitter, pitcher, inning, how)
-        if how_event_info:
-            self.set_score(self.COMMON_EVENT, how_event_info)
-        # endregion
 
         # region [기록] 투수 등판 또는 교체시 투수 등록 및 투수의 기록을 가져온다.
         if pitcher:
@@ -184,16 +233,24 @@ class GameApp(object):
         if is_statring and pitcher not in self.pitcher_mound_list:  # 선발등판
             self.pitcher_mound_list.append(pitcher)
             self.curr_pitcher = player.Pitcher(pitcher)
-            pitcher_starting = self.get_pitcher_record_data(pitcher, live_dict['hitteam'])
+            if config.VERSION_LEVEL > 0:
+                pitcher_starting = self.get_pitcher_record_data(pitcher, live_dict['hitteam'])
+            else:
+                pitcher_starting = self.get_pitcher_record_data_v0(pitcher, live_dict['hitteam'])
             if pitcher_starting:
                 result_pitcher.update({self.PITCHER_STARTING: pitcher_starting})
         elif pitcher and pitcher not in self.pitcher_mound_list:
             self.pitcher_mound_list.append(pitcher)
             self.prev_pitcher = self.curr_pitcher
             self.curr_pitcher = player.Pitcher(pitcher)
-            pitcher_list = self.get_pitcher_record_data(pitcher, live_dict['hitteam'], batter)
-            if pitcher_list:
-                result_pitcher.update({self.PITCHER_ON_MOUND: pitcher_list})
+            if config.VERSION_LEVEL > 0:
+                pitcher_list = self.get_pitcher_record_data(pitcher, live_dict['hitteam'], batter)
+                if pitcher_list:
+                    result_pitcher.update({self.PITCHER_ON_MOUND: pitcher_list})
+            else:
+                pitcher_list = self.get_pitcher_record_data_v0(pitcher, live_dict['hitteam'])
+                if pitcher_list:
+                    result_pitcher.update({self.PITCHER_STARTING: pitcher_list})
         # endregion [기록] 투수 등판 또는 교체시 투수 등록 및 투수의 기록을 가져온다.
 
         # region [기록] 타자 등판 또는 교체시 타자 등록
@@ -209,20 +266,38 @@ class GameApp(object):
             today_record = self.get_hitter_basic_record_data(batter, game_id)
             if today_record:
                 result_today.update({self.HITTER_STARTING: today_record})
-            # HITTER의 상황별 기록
-            hitter_list = self.get_hitter_split_record_data(live_dict)
-            if hitter_list:
-                result_hitter.update({self.HITTER_STARTING_SPLIT: hitter_list})
+            # region Detail Version
+            if config.VERSION_LEVEL > 0:
+                # HITTER의 상황별 기록
+                hitter_list = self.get_hitter_split_record_data(live_dict)
+                if hitter_list:
+                    result_hitter.update({self.HITTER_STARTING_SPLIT: hitter_list})
+            # endregion Detail Version
             self.curr_hitter.set_prev_total_record()  #total 기록을 previous 기록으로 복사
+
+            # 득점권 상황에서 타율, 홈런 (상대팀, 상대선수)
+            if self.game_status.base_player[1] or self.game_status.base_player[2]:
+                # 득점권 상황에서 투수 기록
+                pitcher_score_chance_record = self.curr_pitcher.get_pitcher_vs_hitter_data_v2(batter, live_dict['hitteam'])
+                if pitcher_score_chance_record:
+                    result_today.update({self.PITCHER_EVENT: pitcher_score_chance_record})
+
+                # 득점권 상황에서 타자 기록
+                hitter_score_chance_record = self.curr_hitter.get_hitter_vs_team_data_v2(live_dict['pitteam'], event)
+                if hitter_score_chance_record:
+                    result_today.update({self.HITTER_STARTING: hitter_score_chance_record})
         # endregion [기록] 타자 등판 또는 교체시 타자 등록
 
+        # region Detail Version
         # region 구종 정보
-        if text_style == 1 and live_state_sc == 1 and ball_type != 'H' and ball_type != 'F':
-            ball_style_dict = self.commentator.get_ball_style_data(game_id, bat_order, ball_count,
-                                                       pitcher, hitter, self.curr_hitter.hit_type, pitname)
-            if ball_style_dict:
-                self.set_score(self.COMMON_EVENT, ball_style_dict)
+        if config.VERSION_LEVEL > 0:
+            if text_style == 1 and live_state_sc == 1 and ball_type != 'H' and ball_type != 'F':
+                ball_style_dict = self.commentator.get_ball_style_data(game_id, bat_order, ball_count,
+                                                           pitcher, hitter, self.curr_hitter.hit_type, pitname)
+                if ball_style_dict:
+                    self.set_score(self.COMMON_EVENT, ball_style_dict)
         # endregion
+        # endregion Detail Version
 
         # region 초구 정보
         if ball_count == 1 and ball_type not in ('F', 'H') and text_style == 1:
@@ -255,19 +330,37 @@ class GameApp(object):
                 self.curr_hitter.update_hitter_record(how_event, live_dict)  # update SO 기록
             # endregion Update Hitter Record
 
-            if how_event:
-                hitter_record = self.get_hitter_split_record_data(live_dict, how_event)
-                if hitter_record:
-                    result_hit_event.update({self.HITTER_EVENT: hitter_record})
+            # region Detail Version
+            if config.VERSION_LEVEL > 0:
+                if how_event:
+                    hitter_record = self.get_hitter_split_record_data(live_dict, how_event)
+                    if hitter_record:
+                        result_hit_event.update({self.HITTER_EVENT: hitter_record})
+            # endregion Detai Version
+
+        if how in self.hitter_how_dict:
+            for how_state in self.hitter_how_dict[how]:
+                hitter_event_record = self.get_hitter_how_event_data(live_dict, how_state)
+                if hitter_event_record:
+                    result_hit_event.update({self.HITTER_EVENT: hitter_event_record})
 
         if how in self.PA_LIST:
             self.curr_hitter.update_hitter_pa_record(live_dict)  # update PA count
+
+        # 도루 발생
+        if how == 'SB':
+            # 20홈런 20도루
+            club_2020_record = self.curr_hitter.get_season_hitter_20_20_record(game_id, hitter)
+            if club_2020_record:
+                result_today.update({self.HITTER_EVENT: today_record})
         # endregion [기록] Hitter How Event 발생
 
         # region [기록] Pitcher How Event
         if how:
-            pitcher_event = self.get_pitcher_record_data(pitcher, live_dict['hitteam'], batter, how)
-            # pitcher_event = self.curr_pitcher.get_how_event_data(how, hitter, live_dict['hitteam'])
+            if config.VERSION_LEVEL > 0:
+                pitcher_event = self.get_pitcher_record_data(pitcher, live_dict['hitteam'], batter, how)
+            else:
+                pitcher_event = self.get_pitcher_record_data_v0(pitcher, live_dict['hitteam'], batter, how)
             if pitcher_event:
                 result_pitcher.update({self.PITCHER_EVENT: pitcher_event})
         # endregion [기록] Pitcher How Event
@@ -318,18 +411,30 @@ class GameApp(object):
                 if parameter_list:
                     msg = None
                     if event == self.PITCHER_EVENT:
-                        msg = self.msg_maker.get_pitcher_message(event, parameter_list)
+                        if config.VERSION_LEVEL > 0:
+                            msg = self.msg_maker.get_pitcher_message(event, parameter_list)
+                        else:
+                            msg = self.msg_maker.get_message_version_v0(event, parameter_list)
                     elif event == self.PITCHER_STARTING:
-                        msg = self.msg_maker.get_pitcher_starting_message(event, parameter_list)
+                        if config.VERSION_LEVEL > 0:
+                            msg = self.msg_maker.get_pitcher_starting_message(event, parameter_list)
+                        else:
+                            msg = self.msg_maker.get_message_version_v0(event, parameter_list)
                     elif event == self.PITCHER_ON_MOUND:
                         msg = self.msg_maker.get_pitcher_on_mound_message(event, parameter_list)
                     elif event == self.HITTER_EVENT:
-                        msg = self.msg_maker.get_hit_event_message_new(event, parameter_list)
-                    elif event == self.HITTER_STARTING:
-                        if parameter_list[0][3] == self.HITTER_STARTING + "_BASIC":
-                            msg = self.msg_maker.get_today_basic_event_message(event, parameter_list)
+                        if config.VERSION_LEVEL > 0:
+                            msg = self.msg_maker.get_hit_event_message_new(event, parameter_list)
                         else:
-                            msg = self.msg_maker.get_today_event_message(event, parameter_list)
+                            msg = self.msg_maker.get_message_version_v0(event, parameter_list)
+                    elif event == self.HITTER_STARTING:
+                        if config.VERSION_LEVEL > 0:
+                            if parameter_list[0][3] == self.HITTER_STARTING + "_BASIC":
+                                msg = self.msg_maker.get_today_basic_event_message(event, parameter_list)
+                            else:
+                                msg = self.msg_maker.get_today_event_message(event, parameter_list)
+                        else:
+                            msg = self.msg_maker.get_message_version_v0(event, parameter_list)
                     elif event == self.HITTER_STARTING_SPLIT:
                         #  msg = self.msg_maker.get_hitter_message(parameter_list)
                         # msg = self.msg_maker.get_hitter_split_message(event, parameter_list)
@@ -365,13 +470,15 @@ class GameApp(object):
             message_dict = self.msg_teller.say()
             if message_dict:
                 if message_dict['log_kind'] == self.COMMON_EVENT:
-                    self.logger.insert_log(message_dict)
+                    self.msg_history.insert_log(message_dict)
                     print("캐스터: ", message_dict['message'].rstrip('\n'))
+                    self.result_printer.info("#### 캐스터: {}".format(message_dict['message'].rstrip('\n')))
                 else:
-                    msg_count = self.logger.get_count(message_dict)[0]
+                    msg_count = self.msg_history.get_count(message_dict)[0]
                     if int(msg_count['count']) == 0:
-                        self.logger.insert_log(message_dict)
+                        self.msg_history.insert_log(message_dict)
                         print("캐스터: ", message_dict['message'].rstrip('\n'))
+                        self.result_printer.info("#### 캐스터: {}".format(message_dict['message'].rstrip('\n')))
     # endregion
 
     # region 기능 관련 Functions
@@ -592,9 +699,6 @@ class GameApp(object):
 
         pre_scored_list = self.pre_score_generator(event, data_list)
 
-        # region History 관리
-        # endregion
-
         for data_dict in pre_scored_list:
             if event == self.HITTER_STARTING_SPLIT or event == self.HITTER_EVENT:
                 score = self.hitter_score_generator(data_dict)
@@ -608,6 +712,7 @@ class GameApp(object):
                 score = self.common_score_generator(data_dict)
 
             if score:
+                self.logger.info("Score: %.2f, Param: %s" %(score, str(data_dict)))
                 try:
                     score_data.append([score, event, data_dict["STATE_SPLIT"], data_dict["DATA_GROUP"], data_dict])
                 except Exception as ex:
@@ -616,7 +721,7 @@ class GameApp(object):
             self.put_score_table(score_data)
 
     def pre_score_generator(self, subject, data_list):
-        if subject == self.HITTER_STARTING_SPLIT or subject == self.HITTER_EVENT:
+        if subject == self.HITTER_STARTING_SPLIT or (subject == self.HITTER_EVENT and config.VERSION_LEVEL > 0):
             state_group_data = {}
             compare_temp_list = []
             new_data_list = []
@@ -743,14 +848,14 @@ class GameApp(object):
             new_data_list = list(new_data_dict.values())
             # add group code
             for data_dict in new_data_list:
-                data_dict["DATA_GROUP"] = self.PITCHER_EVENT + "_" + data_dict['STATE_SPLIT']
+                data_dict["DATA_GROUP"] = subject + "_" + data_dict['STATE_SPLIT']
             return new_data_list
         elif subject == self.PITCHER_STARTING or subject == self.PITCHER_ON_MOUND:
             # 기록이 0이상인 시즌 기록
             # 시즌 기록과 비교해서 상당히 차이나는 기록만?
             new_data_list = []
             for data_dict in data_list:
-                if data_dict['LEAGUE'] == self.SEASON and data_dict['STATE'] == "STARTING":
+                if (data_dict['LEAGUE'] == self.SEASON and data_dict['STATE'] == "STARTING") or config.VERSION_LEVEL == 0:
                     new_data_list.append(data_dict)
                 else:
                     if data_dict['LEAGUE'] == self.SEASON:
@@ -762,14 +867,14 @@ class GameApp(object):
             for new_data_dict in new_data_list:
                 new_data_dict["DATA_GROUP"] = subject + "_" + new_data_dict['STATE_SPLIT']
             return new_data_list
-        elif subject == self.HITTER_STARTING: #todo
+        elif subject == self.HITTER_STARTING or (subject == self.HITTER_EVENT and config.VERSION_LEVEL == 0): #
             new_data_list = []
             for data_dict in data_list:
                 if data_dict['LEAGUE'] == self.SEASON or data_dict['LEAGUE'] == 'TODAY':
                     new_data_list.append(data_dict)
             # add Today group code
             for data_dict in new_data_list:
-                data_dict["DATA_GROUP"] = self.HITTER_STARTING + "_" + data_dict['STATE_SPLIT']
+                data_dict["DATA_GROUP"] = subject  + "_" + data_dict['STATE_SPLIT']
             return new_data_list
         else:
             # add Common  group code
@@ -785,26 +890,118 @@ class GameApp(object):
     def get_hitter_basic_record_data(self, hitter, game_id):
         result_list = []
         rank_basic_record = []
+        event_list = ['HIT', 'HR', 'RBI', 'OB']
+        # region Detail Version
+        if config.VERSION_LEVEL > 0:
+            today_record = self.curr_hitter.get_hitter_today_data(game_id)
+            if today_record:
+                result_list.extend(today_record)
+        # endregion Detail Version
 
-        today_record = self.curr_hitter.get_hitter_today_data(game_id)
-        if today_record:
-            result_list.extend(today_record)
-
-        basic_record = self.curr_hitter.get_hitter_basic_data(hitter)
-        if basic_record:
-            if config.hitter_basic:
+        # region Detail Version
+        if config.VERSION_LEVEL > 0:
+            basic_record = self.curr_hitter.get_hitter_basic_data(hitter)
+            if basic_record:
                 result_list.extend(basic_record)
-            nine_record = self.curr_hitter.get_nine_record(basic_record)
-            if nine_record:
-                result_list.extend(nine_record)
 
-            ranker_record = self.curr_hitter.get_ranker_record(basic_record)
-            if ranker_record:
-                result_list.extend(ranker_record)
+                nine_record = self.curr_hitter.get_nine_record(basic_record)
+                if nine_record:
+                    result_list.extend(nine_record)
 
+
+                if config.VERSION_LEVEL > 0:
+                    ranker_record = self.curr_hitter.get_ranker_record(basic_record)
+                    if ranker_record:
+                        result_list.extend(ranker_record)
+        # endregion Detail Version
+
+        # 통산 100단위 하나 남은 기록
+        total_one_left_record = self.curr_hitter.get_total_hitter_one_left_data()
+        if total_one_left_record:
+            result_list.extend(total_one_left_record)
+
+        # 시즌 10단위 하나 남은 기록
+        season_one_left_record = self.curr_hitter.get_season_hitter_one_left_data()
+        if season_one_left_record:
+            result_list.extend(season_one_left_record)
+
+        # 시즌기록 순위권
+        season_ranker_record = self.curr_hitter.get_season_hitter_ranker_data()
+        if season_ranker_record:
+            result_list.extend(season_ranker_record)
+
+        # 역대 기록 순위권
+        total_ranker_record = self.curr_hitter.get_total_hitters_ranker_data()
+        if total_ranker_record:
+            result_list.extend(total_ranker_record)
+
+        # 역대 출장 기록
         hitter_game_number = self.curr_hitter.get_hitter_game_number(hitter)
         if hitter_game_number:
             result_list.extend(hitter_game_number)
+
+        for event in event_list:
+            n_continue_record = self.curr_hitter.get_hitter_n_continue_data(game_id, event)
+            if n_continue_record:
+                result_list.extend(n_continue_record)
+            # 상대선수와의 홈런, 타율 기록
+            # 득점권 상황에서 타율, 홈런 (상대팀, 상대선수)
+            if self.game_status.base_player[1] or self.game_status.base_player[2]:
+                hitter_pitcher_hr_hra = self.curr_hitter.get_hitter_vs_pitcher_data_v2(self.curr_pitcher.player_code,
+                                                                                       self.curr_pitcher.player_info['T_ID'], event)
+                if hitter_pitcher_hr_hra:
+                    result_list.extend(hitter_pitcher_hr_hra)
+
+                hitter_team_hr_hra = self.curr_hitter.get_hitter_vs_team_data_v2(self.curr_pitcher.player_info['T_ID'], event)
+                if hitter_team_hr_hra:
+                    result_list.extend(hitter_team_hr_hra)
+
+        # 사이클링히트
+        cycling_hit_record = self.curr_hitter.get_hitter_cyclinghit(game_id)
+        if cycling_hit_record:
+            result_list.extend(cycling_hit_record)
+
+        # 20홈런 20도루
+        club_2020_record = self.curr_hitter.get_season_hitter_20_20_record(game_id, hitter)
+        if club_2020_record:
+            result_list.extend(club_2020_record)
+
+        return result_list
+
+    def get_hitter_how_event_data(self, live_dict, how_state):
+        hitter = live_dict['hitter']
+        hitter_name = live_dict['hitname']
+        pitcher = live_dict['pitcher']
+        pit_team = live_dict['pitteam']
+        score = live_dict['score']
+        base = live_dict['base']
+        game_id = live_dict['game_id']
+        result_list = []
+
+        # 시즌 10단위 기록
+        season_10_units_record = self.curr_hitter.get_season_hitter_10_units_data(game_id)
+        if season_10_units_record:
+            result_list.extend(season_10_units_record)
+
+        # 통산 100단위 기록
+        total_100_units_record = self.curr_hitter.get_total_hitter_100_units_data(game_id)
+        if total_100_units_record:
+            result_list.extend(total_100_units_record)
+
+        # 연속기록
+        n_continue_record = self.curr_hitter.get_hitter_n_continue_data(game_id, how_state)
+        if n_continue_record:
+            result_list.extend(n_continue_record)
+
+        # hitter vs pitteam 기록
+        hitter_vs_team_record = self.curr_hitter.get_hitter_vs_team_how_event_data(pit_team, how_state)
+        if hitter_vs_team_record:
+            result_list.extend(hitter_vs_team_record)
+
+        # 선점 기록
+        season_first_record = self.curr_hitter.get_hitter_season_first_data(game_id, how_state)
+        if season_first_record:
+            result_list.extend(season_first_record)
 
         return result_list
 
@@ -875,9 +1072,9 @@ class GameApp(object):
             if hitter_base_record:
                 result_list.extend(hitter_base_record)
 
-            if event and event in ['HIT', 'HR', 'RBI']:
+            if event and event in ['HIT', 'HR', 'H2', 'H3', 'RBI']:
                 # N 경기 연속기록 / N 타석 연속기록
-                n_continue_record = self.curr_hitter.get_hitter_n_continue_data(game_id, hitter_name, event)
+                n_continue_record = self.curr_hitter.get_hitter_n_continue_data(game_id, event)
                 if n_continue_record:
                     result_list.extend(n_continue_record)
 
@@ -910,6 +1107,37 @@ class GameApp(object):
             pitcher_game_number = self.curr_pitcher.get_pitcher_game_number(pitcher)
             if pitcher_game_number:
                 result_list.extend(pitcher_game_number)
+
+            # 통산 100단위 하나 남은 기록
+            pitcher_total_one_left_record = self.curr_pitcher.get_total_pitcher_one_left_data()
+            if pitcher_total_one_left_record:
+                result_list.extend(pitcher_total_one_left_record)
+
+            # 시즌 10단위 하나 남은 기록
+            pitcher_season_one_left_record = self.curr_pitcher.get_season_pitcher_one_left_data()
+            if pitcher_season_one_left_record:
+                result_list.extend(pitcher_season_one_left_record)
+
+            # 시즌기록 순위권
+            pitcher_season_ranker_record = self.curr_pitcher.get_season_pitcher_ranker_data(self.game_status.game_key)
+            if pitcher_season_ranker_record:
+                result_list.extend(pitcher_season_ranker_record)
+
+            # 역대 기록 순위권
+            pitcher_total_ranker_record = self.curr_pitcher.get_total_pitcher_ranker_data(hitter_name=self.curr_hitterr.player_info['NAME'])
+            if pitcher_total_ranker_record:
+                result_list.extend(pitcher_total_ranker_record)
+
+            # 연속 기록
+            pitcher_n_continue_record = self.curr_pitcher.get_pitcher_n_continue_data(self.game_status.game_key)
+            if pitcher_n_continue_record:
+                result_list.extend(pitcher_n_continue_record)
+
+            # 득점권 상황에서 타율, 홈런 (상대팀, 상대선수)
+            if self.game_status.base_player[1] or self.game_status.base_player[2]:
+                pitcher_score_chance_record = self.curr_hitter.get_hitter_vs_team_data_v2(self.curr_pitcher.player_info['T_ID'], event)
+                if pitcher_score_chance_record:
+                    result_list.extend(pitcher_score_chance_record)
         else:
             if state_event in how_dict:
                 basic_record = self.curr_pitcher.get_pitcher_basic_data(pitcher, how_dict[state_event])
@@ -935,6 +1163,54 @@ class GameApp(object):
             return result_list
         else:
             return None
+
+    def get_pitcher_record_data_v0(self, pitcher, hit_team, hitter=None, state_event=None):
+        result_list = []
+        how_dict = {'KK': 'SO', 'KN': 'SO', 'KB': 'SO', 'KW': 'SO', 'KP': 'SO',
+                    # 'H1': 'HIT', 'H2': 'HIT', 'H3': 'HIT', 'HR': 'HIT', 'HI': 'HIT', 'HB': 'HIT',
+                    # 'HR': 'HR',
+                    # 'BB': 'BB', 'IB': 'BB',
+                    # 'HP': 'HP'
+                    }
+
+        if state_event is None:
+            # N경기 출장
+            pitcher_game_number = self.curr_pitcher.get_pitcher_game_number(pitcher)
+            if pitcher_game_number:
+                result_list.extend(pitcher_game_number)
+
+            # 시즌기록 순위권
+            pitcher_season_ranker_record = self.curr_pitcher.get_season_pitcher_ranker_data(
+                self.game_status.game_key)
+            if pitcher_season_ranker_record:
+                result_list.extend(pitcher_season_ranker_record)
+
+        if state_event is None:
+            hitter_name = None
+        else:
+            hitter_name = self.curr_hitter.player_info['NAME']
+
+        # 역대 기록 순위권
+        pitcher_total_ranker_record = self.curr_pitcher.get_total_pitcher_ranker_data(hitter_name=hitter_name, how_state=state_event)
+        if pitcher_total_ranker_record:
+            result_list.extend(pitcher_total_ranker_record)
+
+        # 통산 100단위 하나 남은 기록
+        pitcher_total_one_left_record = self.curr_pitcher.get_total_pitcher_one_left_data(state_event)
+        if pitcher_total_one_left_record:
+            result_list.extend(pitcher_total_one_left_record)
+
+        # 시즌 10단위 하나 남은 기록
+        pitcher_season_one_left_record = self.curr_pitcher.get_season_pitcher_one_left_data(state_event)
+        if pitcher_season_one_left_record:
+            result_list.extend(pitcher_season_one_left_record)
+
+        # 연속 기록
+        pitcher_n_continue_record = self.curr_pitcher.get_pitcher_n_continue_data(self.game_status.game_key, state_event)
+        if pitcher_n_continue_record:
+            result_list.extend(pitcher_n_continue_record)
+
+        return result_list
     # endregion
 
     # region 메시지 관련 함수

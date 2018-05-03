@@ -104,4 +104,98 @@
 		WHERE PCODE = '{}'
 	</query>
 	
+	<!-- 투수 시즌별 데이터 -->
+	<query id="get_pitcher_total_record">
+		SELECT PCODE, GYEAR, TEAM, ERA, GAMENUM, CG, SHO, W, L, SV, HOLD, BF, INN, INN2, HIT, HR, BB, HP, KK, R, ER, WAR, INNG, INNK, QS, OPS, WHIP, INNB, KK_BB_RT, PA_BB_RT, PA_KK_RT, WPA, WRA, INN_FLAG
+		FROM baseball.pittotal
+		WHERE PCODE = '{PCODE}'
+		AND GYEAR &lt; YEAR(CURDATE())
+		ORDER BY GYEAR DESC
+	</query>
+	
+	<!-- 실시간 시즌 순위 데이터 -->
+	<query id="get_pitcher_season_realtime_record">
+		SELECT PCODE, SUM(GAMENUM) AS GAMENUM, SUM(W) AS W, SUM(HR) AS HR, ROUND(SUM(INNING)/3) AS INNING, SUM(HIT) AS HIT
+		, SUM(HR) AS HR, SUM(BB) AS BB, SUM(HP) AS HP, SUM(KK) AS KK, SUM(ER) AS ER, SUM(SEASON_ERA) AS ERA
+		FROM (
+			SELECT PCODE, GAMENUM, W, ROUND(INN2/3, 1) AS INNING, HIT, HR, BB, HP, KK, ER, 0 AS SEASON_ERA
+				FROM baseball.pittotal
+			WHERE gyear = 2017
+			GROUP BY pcode
+			UNION ALL
+			SELECT PLAYERID AS PCODE, 1 AS GAMENUM, 0 AS W, INNING, HIT, HR, BB, HBP AS HP, SO AS KK, ER, SEASON_ERA
+				FROM baseball.ie_pitcherrecord
+			WHERE GAMEID LIKE '{DATE}%'
+			AND GYEAR = 2017
+			GROUP BY PLAYERID
+		) A
+		GROUP BY PCODE
+	</query>
+	
+	<!-- 실시간 통산 순위 데이터 -->
+	<query id="get_pitcher_total_realtime_record">
+		SELECT PCODE, SUM(GAMENUM) AS GAMENUM, SUM(W) AS W, SUM(HR) AS HR, ROUND(SUM(INNING)/3) AS INNING, SUM(HIT) AS HIT
+		, SUM(HR) AS HR, SUM(BB) AS BB, SUM(HP) AS HP, SUM(KK) AS KK, SUM(ER) AS ER, SUM(SEASON_ERA) AS ERA
+		FROM (
+			SELECT PCODE, GAMENUM, W, ROUND(INN2/3, 1) AS INNING, HIT, HR, BB, HP, KK, ER, 0 AS SEASON_ERA
+				FROM baseball.pittotal
+			WHERE gyear = 9999
+			GROUP BY pcode
+			UNION ALL
+			SELECT PLAYERID AS PCODE, 1 AS GAMENUM, 0 AS W, INNING, HIT, HR, BB, HBP AS HP, SO AS KK, ER, SEASON_ERA
+				FROM baseball.ie_pitcherrecord
+			WHERE GAMEID LIKE '{DATE}%'
+			AND GYEAR = 2017
+			GROUP BY PLAYERID
+		) A
+		GROUP BY PCODE
+	</query>
+	
+	<!-- 통산 모든 투수 데이터 -->
+	<query id="get_total_pitchers_record">
+		SELECT PCODE, AVG(ERA) AS ERA, SUM(GAMENUM) AS GAMENUM, SUM(CG) AS CG, SUM(SHO) AS SHO, SUM(W) AS W, SUM(L) AS L, SUM(SV) AS SV
+		, SUM(HOLD) AS HOLD, SUM(BF) AS BF, ROUND(SUM(INN2)/3) AS INNING, SUM(HIT) AS HIT, SUM(HR) AS HR, SUM(BB) AS BB, SUM(HP) AS HP, SUM(KK) AS KK
+		, SUM(R) AS R, SUM(ER) AS ER
+			FROM baseball.pittotal
+		GROUP BY PCODE
+	</query>
+	
+	<!-- 통산 모든 투수 자세한 데이터 -->
+	<query id="get_total_pitchers_detail_record">
+		SELECT PCODE, SUM(CG) AS CG, SUM(SHO) AS SHO,
+			SUM(CASE WHEN CG = 1 AND WLS = 'W' THEN 1 ELSE 0 END) AS CG_W,  
+			SUM(CASE WHEN SHO = 1 AND WLS = 'W' THEN 1 ELSE 0 END) AS SHO_W, 
+			SUM(CASE WHEN WLS = 'W' THEN 1 ELSE 0 END) AS W, 
+			SUM(CASE WHEN WLS = 'L' THEN 1 ELSE 0 END) AS L, 
+			SUM(CASE WHEN WLS = 'S' THEN 1 ELSE 0 END) AS SV, 
+			SUM(HOLD) AS HOLD, SUM(ROUND(INN2/3, 1)) AS INNING, SUM(BF) AS BF, 
+			SUM(HIT) AS HIT, SUM(H2) AS H2, SUM(H3) AS H3, SUM(HR) AS HR, SUM(BB) AS BB, SUM(HP) AS HP, 
+			SUM(KK) AS KK, SUM(WP) AS WP, SUM(BK) AS BK, SUM(ERR) AS ERR, SUM(R) AS R, SUM(ER) AS ER
+		FROM baseball.pitcher
+		WHERE PCODE NOT IN ('B', 'T')
+		GROUP BY PCODE
+	</query>
+	
+	<!-- 투수 데이터 -->
+	<query id="get_pitcher_record">
+		SELECT GMKEY, GDAY, TB, START, QUIT, PCODE, CG, SHO, WLS, HOLD, INN2, BF, PA, AB
+						, HIT, H2, H3, HR, SB, CS, SH, SF, BB, IB, HP, KK, GD, WP, BK, ERR, R, ER, SCORE
+						, (CASE WHEN CG = 1 AND WLS = 1 THEN 1 ELSE 0 END) AS CG_W
+						, (CASE WHEN CG = 1 AND WLS = 1 THEN 1 ELSE 0 END) AS SHO_W
+						, (CASE WHEN WLS = 'W' THEN 1 ELSE 0 END) AS W
+						, (CASE WHEN WLS = 'L' THEN 1 ELSE 0 END) AS L
+						, (CASE WHEN WLS = 'S' THEN 1 ELSE 0 END) AS SV
+		FROM baseball.pitcher
+		WHERE pcode = '{PCODE}'
+	</query>
+	
+	<!-- 투수 gamecontapp 데이터 -->
+	<query id="get_pitcher_continue_record">
+		SELECT GMKEY, GDAY, SERNO, TURN, HOW, FIELD, PLACE, HITTER, HITNAME
+		FROM baseball.gamecontapp
+		WHERE PITCHER = '{PCODE}'
+		AND GDAY &lt; '{DATE}'
+		ORDER BY GMKEY DESC, SERNO DESC
+		LIMIT 50
+	</query>
 </data>

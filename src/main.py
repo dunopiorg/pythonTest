@@ -2,6 +2,7 @@ import queue
 import time
 import socket
 import threading
+import config
 
 from lib import tcpSocket
 from lib import game_app
@@ -46,8 +47,8 @@ if __name__ == "__main__":
     except Exception as e:
         server.close()
     """
-    game_id = '20170912OBNC0'  # 20170926HHLT0 20170914SKOB0
-    sleep_second = 1
+    game_id = '20170609SSHH0'  # 20170914SKOB0  20170912OBNC0 20170926HHLT0
+    sleep_second = config.SLEEP_TIME
     gm_app = game_app.GameApp(game_id)
 
     msg_thread = threading.Thread(target=gm_app.message_thread, name='Message Thread')
@@ -57,7 +58,6 @@ if __name__ == "__main__":
     # Test Start ------------------------------------
     game_live_tuple = gm_app.test_live_data(game_id)
     for game_live_dict in game_live_tuple:
-        print("문자: " + game_live_dict['LiveText'])
         result = gm_app.get_what_info(game_live_dict)
 
         if result:

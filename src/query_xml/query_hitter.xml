@@ -129,6 +129,7 @@
         WHERE HITTER = '{0}' 
         AND GDAY &lt; '{1}' 
         ORDER BY GMKEY DESC, SERNO DESC 
+		LIMIT 1000
 	</query>
 	
 	<query id = "update_hitter_count_record">
@@ -216,23 +217,124 @@
         ) AAA 
         WHERE HITTER = '{0}' 
 	</query>
-	
-	<query id="get_hitter_gamenum_cnt">
-		SELECT COUNT(GAMENUM) AS GAMENUM
-		FROM 
-		(
-			SELECT PCODE, ROUND(SUM(GAMENUM)/2) AS GAMENUM
-			FROM baseball.battotal A
-			GROUP BY PCODE
-		) A
-		WHERE GAMENUM >= {}
-	</query>
-	
+		
 	<query id="get_hitter_gamenum">
 		SELECT ROUND(SUM(GAMENUM)/2) + 1 AS GAMENUM
 		FROM baseball.battotal
 		WHERE PCODE = '{}'
 	</query>
-
+	
+	<!-- 실시간 시즌 순위 데이터 -->
+	<query id="get_all_hitters_season_realtime_record">
+		SELECT PCODE, SUM(GAMENUM) AS GAMENUM, SUM(HR) AS HR, SUM(RUN) AS RUN, SUM(HIT) AS HIT, SUM(H2) AS H2, SUM(H3) AS H3, SUM(RBI) AS RBI, SUM(SB) AS SB
+		FROM (
+			SELECT PCODE, HR, GAMENUM, RUN, HIT, H2, H3, RBI, SB
+				FROM baseball.battotal
+			WHERE gyear = 2017
+			UNION ALL
+			SELECT PLAYERID AS PCODE, HR, 1 AS GAMENUM, RUN, H1 + H2 + H3 + HR AS HIT
+			, H2, H3, RBI, STEAL AS SB
+				FROM baseball.ie_batterrecord
+			WHERE GAMEID LIKE '{DATE}%'
+			AND GYEAR = 2017
+			GROUP BY PLAYERID
+		) A
+		GROUP BY PCODE
+	</query>
+	
+	<!-- 실시간 시즌 순위 데이터 -->
+	<query id="get_hitter_season_realtime_record">
+		SELECT PCODE, SUM(GAMENUM) AS GAMENUM, SUM(HR) AS HR, SUM(RUN) AS RUN, SUM(HIT) AS HIT
+						, SUM(H2) AS H2, SUM(H3) AS H3, SUM(RBI) AS RBI, SUM(SB) AS SB, SUM(OB) AS OB
+		FROM (
+			SELECT PCODE, HR, GAMENUM, RUN, HIT, H2, H3, RBI, SB, (HIT + BB) as OB
+				FROM baseball.battotal
+			WHERE gyear = 2017
+			AND PCODE = '{PCODE}'
+			UNION ALL
+			SELECT PLAYERID AS PCODE, HR, 1 AS GAMENUM, RUN, H1 + H2 + H3 + HR AS HIT
+			, H2, H3, RBI, STEAL AS SB, H1 + H2 + H3 + HR + BB AS OB
+				FROM baseball.ie_batterrecord
+			WHERE GAMEID LIKE '{DATE}%'
+			AND GYEAR = 2017
+			AND PLAYERID = '{PCODE}'
+			GROUP BY PLAYERID
+		) A
+		GROUP BY PCODE
+	</query>
+	
+	<!-- 타자 시즌별 데이터 -->
+	<query id="get_hitter_total_record">
+		SELECT PCODE, GYEAR, TEAM, HRA, GAMENUM, AB, RUN, HIT, H2, H3, HR, TB, RBI, SB, CS, SH, SF, BB, HP, KK, GD, ERR, SCORE
+							, WPA, WAR, ISOP, BABIP, OBP, SLG, PA_FLAG, WRC_PLUS, WOBA, OPS
+		FROM baseball.battotal
+		WHERE PCODE = '{PCODE}'
+		AND GYEAR &lt; YEAR(CURDATE())
+		ORDER BY GYEAR DESC
+	</query>
+	<!-- 타자 시즌별 데이터 (실시간) *S2I 에서 데이터가 들어올 때 변경할 것!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	SELECT PCODE, GYEAR, HRA, SUM(GAMENUM) AS GAMENUM, SUM(RUN) AS RUM, SUM(HIT) AS HIT, SUM(H2) AS H2, SUM(H3) AS H3, SUM(HR) AS HR
+					, SUM(RBI) AS RBI, SUM(SB) AS SB, SUM(CS) AS CS, SUM(SH) AS SH, SUM(SF) AS SF, SUM(BB) AS BB, SUM(HP) AS HP, SUM(KK) AS KK
+	FROM 
+	(
+		SELECT PCODE, GYEAR, ROUND(HRA, 3) AS HRA, GAMENUM, RUN, HIT, H2, H3, HR, RBI, SB, CS, SH, SF, BB, HP, KK
+		FROM baseball.battotal
+		WHERE PCODE = 78224
+		AND GYEAR <= 2017
+		UNION ALL
+		SELECT PLAYERID, GYEAR, ROUND(SEASON_HRA, 3) AS HRA, 1 AS GAMENUM, RUN, (H1+H2+H3+HR) AS HIT, H2, H3, HR, RBI, STEAL AB, CS, SH, SF, BB, HBP AS HP
+						, SO AS KK
+		FROM baseball.ie_batterrecord
+		WHERE GAMEID = '20170912OBNC0'
+		AND PLAYERID = 78224
+	) A
+	GROUP BY GYEAR
+	ORDER BY GYEAR DESC
+	-->
+	
+	<!-- 상대팀 대결 데이터 -->
+	<query id="get_hitter_vs_team_how_record">
+		SELECT GYEAR, PCODE, OPP_T_ID, PA_CN, AB_CN, HIT_CN, H2_CN, H3_CN, HR_CN, RBI_CN, RUN_CN, SB_CN
+							, BBHP_CN, KK_CN, GD_CN, HRA_RT, OBP_RT, SLG_RT, OPS_RT
+		FROM baseball.battotal_vsteam
+		WHERE pcode = '{HITTER}'
+		AND opp_t_id = '{TEAM}'
+		AND gyear = 2017
+	</query>
+	
+	<!-- 통산 상대선수와 대결 데이터 -->
+	<query id = "get_hitter_vs_pitcher_how_record">
+		SELECT HOW
+		FROM baseball.gamecontapp
+		WHERE hitter = '{HITTER}'
+		AND pitcher = '{PITCHER}'
+	</query>
+	
+	<!-- 실시간 선수 오늘 경기 기록 데이터 -->
+	<query id = "get_hitter_today_game_record">
+		SELECT POSITIONNAME, PLAYERNAME, PLAYERID, OAB, RUN, H1, H2, H3, HR, RBI, STEAL
+						, CS, SH, SF, BB, HBP, SO, DP, TP, SEASON_HRA, BHOME
+		FROM ie_batterrecord
+		WHERE GAMEID = '{GAMEID}'
+		AND PLAYERID = '{PLAYERID}'
+		ORDER BY SEQNO DESC
+	</query>
+	
+	<!-- 이번시즌 모든 타자 데이터 -->
+	<query id="get_season_hitters_total_record">
+		SELECT PCODE,  TEAM, HRA, GAMENUM, AB, RUN, HIT, H2, H3, HR, TB, RBI, SB, CS, SH, SF, BB, HP, KK, GD, ERR, SCORE
+							, WPA, WAR, ISOP, BABIP, OBP, SLG, PA_FLAG, WRC_PLUS, WOBA, OPS
+		FROM baseball.battotal
+		WHERE GYEAR = 2017
+	</query>
+	
+	<!-- 통산 모든 타자 데이터 -->
+	<query id="get_total_hitters_record">
+		SELECT PCODE, ROUND(HRA, 3) AS HRA, RUN, HIT, H2, H3
+						, HR, RBI, SB, OBP, SLG
+		FROM baseball.battotal
+		WHERE GYEAR = 9999
+	</query>
+	
 </data>
 

@@ -13,8 +13,11 @@ class Record(object):
     _PASSWORD = config.DB_PASSWORD
     _DB = config.DB_NAME
     _PORT = config.DB_PORT
-    # ql = query_loader.QueryLoader('../query_xml')
-    ql = query_loader.QueryLoader()
+    if config.RUN_PATH is None:
+        ql = query_loader.QueryLoader()
+    else:
+        ql = query_loader.QueryLoader('../query_xml')
+
 
     def __init__(self):
         self._HOST = config.DB_HOST
@@ -24,6 +27,71 @@ class Record(object):
         self._PORT = config.DB_PORT
 
     # region 조건표에 따른 타자기록을 가져온다.
+    @classmethod
+    def get_season_hitters_total_df(cls):
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_hitter", "get_season_hitters_total_record")
+        query = query_format.format()
+
+        df = pd.read_sql(query, conn)
+        conn.close()
+        return df
+
+    @classmethod
+    def get_total_hitters_df(cls):
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_hitter", "get_total_hitters_record")
+        query = query_format.format()
+
+        df = pd.read_sql(query, conn)
+        conn.close()
+        return df
+
+    @classmethod
+    def get_hitter_total_df(cls, hitter_code):
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_hitter", "get_hitter_total_record")
+        query = query_format.format(PCODE=hitter_code)
+
+        df = pd.read_sql(query, conn)
+        conn.close()
+        return df
+
+    @classmethod
+    def get_all_hitters_season_realtime_record(cls, game_key):
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+        date = game_key[0:8]
+        query_format = cls.ql.get_query("query_hitter", "get_all_hitters_season_realtime_record")
+        query = query_format.format(DATE=date)
+
+        df = pd.read_sql(query, conn)
+        conn.close()
+        return df
+
+    @classmethod
+    def get_hitter_season_realtime_record(cls, game_key, hitter_code):
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+        date = game_key[0:8]
+        query_format = cls.ql.get_query("query_hitter", "get_hitter_season_realtime_record")
+        query = query_format.format(DATE=date, PCODE=hitter_code)
+
+        df = pd.read_sql(query, conn)
+        conn.close()
+        return df
+
+    @classmethod
+    def get_hitter_season_record(cls, hitter_code):
+        # todo 180416 조건표가 정해지면 생각해 볼 것
+        pass
+
     @classmethod
     def get_hitter_today_record(cls, game_key, hitter_code):
         """
@@ -259,24 +327,40 @@ class Record(object):
         return result
 
     @classmethod
-    def get_hitter_gamenum_cnt(cls, counter):
-        """
-        역대 couter 이상 출장기록 개수
-        :param counter:
-        :return:
-        """
+    def get_hitter_vs_pitcher_df(cls, hitter_code, pitcher_code):
         conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
                                password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
 
-        query_format = cls.ql.get_query("query_hitter", "get_hitter_gamenum_cnt")
-        query = query_format.format(counter)
+        query_format = cls.ql.get_query("query_hitter", "get_hitter_vs_pitcher_how_record")
+        query = query_format.format(HITTER=hitter_code, PITCHER=pitcher_code)
 
-        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
-            cursor.execute(query)
-            result = cursor.fetchall()
-
+        df = pd.read_sql(query, conn)
         conn.close()
-        return result
+        return df
+
+    @classmethod
+    def get_hitter_vs_team_df(cls, hitter_code, pitcher_team):
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_hitter", "get_hitter_vs_team_how_record")
+        query = query_format.format(HITTER=hitter_code, TEAM=pitcher_team)
+
+        df = pd.read_sql(query, conn)
+        conn.close()
+        return df
+
+    @classmethod
+    def get_hitter_today_game_df(cls, game_key, hitter_code):
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_hitter", "get_hitter_today_game_record")
+        query = query_format.format(GAMEID=game_key, PLAYERID=hitter_code)
+
+        df = pd.read_sql(query, conn)
+        conn.close()
+        return df
     # endregion
 
     # region 타자기록 Update
@@ -309,6 +393,107 @@ class Record(object):
     # endregion
 
     # region 조건표에 따른 투수기록을 가져온다.
+    @classmethod
+    def get_pitcher_df(cls, pitcher_code):
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_pitcher", "get_pitcher_record")
+        query = query_format.format(PCODE=pitcher_code)
+
+        df = pd.read_sql(query, conn)
+        conn.close()
+        return df
+
+    @classmethod
+    def get_pitcher_continuous_record(cls, game_id, pitcher_code):
+        """
+        연속 경기를 가져온다.
+        :param hitter_code:
+        :return:
+        """
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_pitcher", "get_pitcher_continue_record")
+        query = query_format.format(PCODE=pitcher_code, DATE=game_id[0:8])  # datetime.now().year
+
+        result_list = []
+
+        df = pd.read_sql(query, conn)
+        df_to_dict = df.to_dict('records')
+        if df_to_dict:
+            result_list.extend(df_to_dict)
+
+        conn.close()
+        return result_list
+
+    @classmethod
+    def get_pitcher_continuous_record_v0(cls, game_id, pitcher_code):
+        """
+        연속 경기를 가져온다.
+        :param hitter_code:
+        :return:
+        """
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_pitcher", "get_pitcher_continue_record")
+        query = query_format.format(PCODE=pitcher_code, DATE=game_id[0:8])  # datetime.now().year
+
+        df = pd.read_sql(query, conn)
+
+        conn.close()
+        return df
+
+    @classmethod
+    def get_total_pitchers_detail_df(cls):
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_pitcher", "get_total_pitchers_detail_record")
+        query = query_format.format()
+
+        df = pd.read_sql(query, conn)
+        conn.close()
+        return df
+
+    @classmethod
+    def get_total_pitchers_df(cls):
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_pitcher", "get_total_pitchers_record")
+        query = query_format.format()
+
+        df = pd.read_sql(query, conn)
+        conn.close()
+        return df
+
+    @classmethod
+    def get_pitcher_season_realtime_record(cls, game_key):
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+        date = game_key[0:8]
+        query_format = cls.ql.get_query("query_pitcher", "get_pitcher_season_realtime_record")
+        query = query_format.format(DATE=date)
+
+        df = pd.read_sql(query, conn)
+        conn.close()
+        return df
+
+    @classmethod
+    def get_pitcher_total_df(cls, hitter_code):
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_pitcher", "get_pitcher_total_record")
+        query = query_format.format(PCODE=hitter_code)
+
+        df = pd.read_sql(query, conn)
+        conn.close()
+        return df
+
     @classmethod
     def get_pitcher_today_record(cls, game_key, pitcher_code):
         """
@@ -704,7 +889,23 @@ class Record(object):
             result = cursor.fetchall()
 
         return result
-    # endregion
+
+    @classmethod
+    def get_team_korean_names(cls):
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_common", "get_team_kor_names")
+        query = query_format.format()
+
+        df = pd.read_sql(query, conn)
+        conn.close()
+
+        if df.empty:
+            return None
+        else:
+            return df.set_index('team').transpose().to_dict('records')[0]
+    # endregion 기타 Functions
 
     @classmethod
     def test_get_gamecontapp(cls):
@@ -722,7 +923,7 @@ class Record(object):
 
 if __name__ == "__main__":
     record = Record()
-
+    record.get_hitter_total_record(76249)
     # record.get_pitcher_basic_total_record(60263)
 
     # start_time = time.time()
