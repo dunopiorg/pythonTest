@@ -1,11 +1,24 @@
 import os
 
 hitter_basic = False
-DB_HOST = 'localhost'
-DB_USER = 'root'
-DB_PASSWORD = 'lab2ai64'
-DB_NAME = 'baseball'
-DB_PORT = 3307
+
+if 'USER' in os.environ:
+    SYSTEM_ENV = 'SERVER'
+else:
+    SYSTEM_ENV = 'LOCAL'
+
+if SYSTEM_ENV == 'LOCAL':
+    DB_HOST = 'localhost'
+    DB_USER = 'root'
+    DB_PASSWORD = 'lab2ai64'
+    DB_NAME = 'baseball'
+    DB_PORT = 3307
+else:
+    DB_HOST = 'myrds.cqqe2lakgloq.ap-northeast-2.rds.amazonaws.com'
+    DB_USER = 'lab2ai'
+    DB_PASSWORD = 'lab2ailab2ai'
+    DB_NAME = 'baseball'
+    DB_PORT = 3306
 
 LOG_FOLDER = './log/'
 DEBUG_LOG_FILENAME = 'test_log.txt'
@@ -23,6 +36,15 @@ if current_path[-1] == 'lib':
     RUN_PATH = 'TEST'
 
 
+    
+    
+    
+    
+    
+    
+    
+# 연습
+    
 from collections import defaultdict
 import pprint
 
@@ -83,4 +105,4 @@ def get_msg_v0(d):
     return temp
 
 t = get_msg(data)
-print(t)
+# print(t)
