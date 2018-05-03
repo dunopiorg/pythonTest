@@ -56,6 +56,7 @@ class GameApp(object):
         self.common_category_score = {}
         self.starting_category_score = {}
         self.pitcher_mound_list =[]
+        self.game_thread = 0
 
         # 기본 전역 상수
         self.LEAGUE_SEASON_SCORE = 4
@@ -400,7 +401,7 @@ class GameApp(object):
         Queue 에서 뺀 후에 Decreasing 한다. [Thread]
         :return:
         """
-        while True:
+        while self.game_thread == 1:
             if self.score_table.is_ready():
                 parameter_list = []
                 event_group = ''
@@ -466,7 +467,7 @@ class GameApp(object):
             self.msg_teller.put_rear(msg_dict)  #Queue의 마지막에 넣는다.
 
     def message_thread(self):
-        while True:
+        while self.game_thread == 1:
             message_dict = self.msg_teller.say()
             if message_dict:
                 if message_dict['log_kind'] == self.COMMON_EVENT:
