@@ -56,7 +56,7 @@ class GameApp(object):
         self.common_category_score = {}
         self.starting_category_score = {}
         self.pitcher_mound_list =[]
-        self.game_thread = 0
+        self.game_thread = 1
 
         # 기본 전역 상수
         self.LEAGUE_SEASON_SCORE = 4
