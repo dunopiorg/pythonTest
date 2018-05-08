@@ -1,15 +1,8 @@
-import queue
 import time
-import socket
 import threading
 import config
 import argparse
-import argparse
-from lib import tcpSocket
 from lib import game_app
-
-# Message Queue 생성
-# recv_broadcast_queue = queue.Queue()
 
 # Program Start
 if __name__ == "__main__":
