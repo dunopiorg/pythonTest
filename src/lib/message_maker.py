@@ -2,6 +2,7 @@ from enum import Enum
 from korean import Noun, l10n
 from lib import query_loader
 from lib import record
+from lib import connect_gsheet
 from collections import defaultdict
 import pymysql.cursors
 import random
@@ -41,6 +42,7 @@ class MessageMaker(object):
                                   "HIT": "피안타 {}개", "HR": "피홈런 {}개", "PB": "범타 {}개", "HP": "사구 {}개", "SO": "삼진 {}개", "BB": "볼넷 {}개"}
         self.PITCHER_STATE_ORDER = ["NO_HIT", "SHO", "CG_W", "CG_L", "WINS", "LOSSES", "QS", "HOLDS", "SAVES",
                                     "HIT", "HR", "HP", "PB", "SO", "BB"]
+        self.df_template = connect_gsheet.Gspread().get_df_template() #todo
 
 
     def set_player_info(self, personal_dict, today_record_list, total_record_list):
@@ -560,11 +562,17 @@ class MessageMaker(object):
             state_split = param[2]
             param_dict = param[4]
             text = ''
-            template_dict = MessageUnit.get_template_dict(group_id, config.VERSION_LEVEL)
-            state = param_dict['STATE']
+            # template_dict = MessageUnit.get_template_dict(group_id, config.VERSION_LEVEL)
+            # state = param_dict['STATE']
+            query_string = "group_id == '%s' and state_split == '%s' and version_level == %s" % (group_id, state_split, config.VERSION_LEVEL)
 
-            if state_split in template_dict:
-                template = template_dict[state_split]
+            if not self.df_template.query(query_string).empty:
+                template = self.df_template.query(query_string).template.values[0]
+            else:
+                continue
+
+            # if state_split in template_dict:
+            #     template = template_dict[state_split]
 
             try:
                 # text = template.format(**param_dict)
@@ -575,7 +583,7 @@ class MessageMaker(object):
             if text:
                 sentence.append(text)
 
-        if config.VERSION_LEVEL == 0:
+        if config.VERSION_LEVEL == 0 and sentence:
             one_sentence = MessageUnit.get_make_one_sentence(sentence)
 
         if one_sentence:
