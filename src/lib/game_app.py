@@ -379,7 +379,7 @@ class GameApp(object):
     # endregion
 
     # region Score Table Queue Functions
-    def put_score_table(self, msg):
+    def put_message_maker(self, msg):
         """
         Score Table 에 넣는다.
         :param msg: 생성된 Message
@@ -396,7 +396,7 @@ class GameApp(object):
                 self.score_table.set_async(0)
                 break
 
-    def score_thread(self):
+    def message_maker_thread(self):
         """
         Queue 에서 뺀 후에 Decreasing 한다. [Thread]
         :return:
@@ -442,7 +442,6 @@ class GameApp(object):
                         msg = self.msg_maker.get_hitter_split_message_v2(event, parameter_list)
                     elif event == self.COMMON_EVENT:
                         msg = self.msg_maker.get_common_message(event, parameter_list)
-
                     if msg:
                         if event == self.PITCHER_EVENT or event == self.PITCHER_STARTING or event == self.PITCHER_ON_MOUND:
                             subject = self.curr_pitcher.player_code
@@ -464,22 +463,24 @@ class GameApp(object):
         if is_front:
             self.msg_teller.put_front(msg_dict)  #Queue의 가장 앞에 넣는다.
         else:
-            self.msg_teller.put_rear(msg_dict)  #Queue의 마지막에 넣는다.
+            # Message History 중복 검사 후 Queue에 넣는다.
+            if msg_dict['log_kind'] == self.COMMON_EVENT:
+                self.msg_teller.put_rear(msg_dict)  # Queue의 마지막에 넣는다.
+            else:
+                msg_count = self.msg_history.get_count(msg_dict)[0]
+                if int(msg_count['count']) == 0:
+                    self.msg_teller.put_rear(msg_dict)  #Queue의 마지막에 넣는다.
 
-    def message_thread(self):
+    def message_printer_thread(self):
         while self.game_thread == 1:
             message_dict = self.msg_teller.say()
             if message_dict:
-                if message_dict['log_kind'] == self.COMMON_EVENT:
-                    self.msg_history.insert_log(message_dict)
-                    print("캐스터: ", message_dict['message'].rstrip('\n'))
-                    self.result_printer.info("#### 캐스터: {}".format(message_dict['message'].rstrip('\n')))
-                else:
-                    msg_count = self.msg_history.get_count(message_dict)[0]
-                    if int(msg_count['count']) == 0:
-                        self.msg_history.insert_log(message_dict)
-                        print("캐스터: ", message_dict['message'].rstrip('\n'))
-                        self.result_printer.info("#### 캐스터: {}".format(message_dict['message'].rstrip('\n')))
+                self.msg_history.insert_log(message_dict)
+                self.result_printer.info("#### ".format(message_dict['message'].rstrip('\n')))
+                print(message_dict['message'].rstrip('\n'))
+                if message_dict['log_kind'] == self.HITTER_STARTING:
+                    self.msg_teller.remove_items(message_dict['log_kind'], message_dict['subject'])
+            time.sleep(config.SLEEP_TIME/2)
     # endregion
 
     # region 기능 관련 Functions
@@ -677,14 +678,20 @@ class GameApp(object):
                 league_score = self.LEAGUE_SEASON_SCORE
 
             state_split = data_dict['STATE_SPLIT']
+            state = data_dict['STATE']
 
             if state_split in self.starting_category_score:
-                state_score_val = self.starting_category_score.get(state_split)
+                split_score_val = self.starting_category_score.get(state_split)
+            else:
+                split_score_val = 0.1
+
+            if state in self.starting_category_score:
+                state_score_val = self.starting_category_score.get(state)
             else:
                 state_score_val = 0.1
 
-        if state_score_val != 0:
-            result = round(event_score + (state_score_val * league_score), 3)
+        if state_score_val > 0:
+            result = round(event_score + ((state_score_val+split_score_val) * league_score), 3)
 
         return result
 
@@ -719,7 +726,7 @@ class GameApp(object):
                 except Exception as ex:
                     print(ex)
         if score_data:
-            self.put_score_table(score_data)
+            self.put_message_maker(score_data)
 
     def pre_score_generator(self, subject, data_list):
         if subject == self.HITTER_STARTING_SPLIT or (subject == self.HITTER_EVENT and config.VERSION_LEVEL > 0):

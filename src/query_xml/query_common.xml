@@ -111,4 +111,9 @@
 		SELECT team, team_kor
 		FROM baseball.team_name
     </query>
+
+	<query id="get_category_score">
+		SELECT event, state_split, category, score
+		FROM baseball.event_score
+    </query>
 </data>

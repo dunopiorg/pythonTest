@@ -171,6 +171,7 @@ class Hitter(Player):
         N게임, 타석, 시즌 연속 기록 데이터를 생성한다.
         :return:
         """
+        # HIT 안타, HR 홈런, H2 2루타, H3 3루타, RBI 타점 OB 출루, SB 도루
         state_dict = {'HIT': ['H1', 'H2', 'H3', 'HR', 'HI', 'HB'], 'HR': ['HR'], 'H2': ['H2'], 'H3': ['H3'],
                       'RBI': ['E', 'R', 'H'], 'OB': ['H1', 'H2', 'H3', 'HR', 'HI', 'HB', 'BB'], 'SB': ['SB']}
         n_pa_count_dict = {'HIT': 3, 'HR': 2, 'H2': 2, 'H3': 2, 'RBI': 2, 'OB': 4, 'SB': 1}
@@ -280,7 +281,10 @@ class Hitter(Player):
                 set_season_dict['RESULT'] = n_season_counter
                 set_season_dict['COUNT'] = state_count
                 set_season_dict['STATE'] = state
-                set_season_dict['STATE_KOR'] = self.KOREAN_DICT[state]
+                if state in ['H2', 'H3']:
+                    set_season_dict['STATE_KOR'] = "{} {}개".format(self.KOREAN_DICT[state], state_count)
+                else:
+                    set_season_dict['STATE_KOR'] = "{}{}".format(state_count, self.KOREAN_DICT[state])
                 set_season_dict['SEASON_COUNT'] = df_hitter_total_realtime.iloc[0][state_col]
                 set_season_dict['STATE_SPLIT'] = "NSEASON_CONTINUE"
                 result.append(set_season_dict)
@@ -475,11 +479,11 @@ class Hitter(Player):
                 set_ranker_dict['RESULT'] = hitter_record
                 set_ranker_dict['RANK'] = hitter_rank
                 if state == 'RUN' or state == 'RBI':
-                    set_ranker_dict['STATE_KOR'] = "{0} {1}으로"  .format(hitter_record, self.KOREAN_DICT[state])
+                    set_ranker_dict['STATE_KOR'] = "{0}{1}"  .format(hitter_record, self.KOREAN_DICT[state])
                 elif state == 'HRA':
-                    set_ranker_dict['STATE_KOR'] = "타율 {hra:로}".format(hra=Noun(str(hitter_record)))
+                    set_ranker_dict['STATE_KOR'] = "타율 {0}".format(str(hitter_record))
                 else:
-                    set_ranker_dict['STATE_KOR'] = "{0} {1}개로" .format(self.KOREAN_DICT[state], hitter_record)
+                    set_ranker_dict['STATE_KOR'] = "{0} {1}개" .format(self.KOREAN_DICT[state], hitter_record)
                 set_ranker_dict['STATE'] = state
                 set_ranker_dict['STATE_SPLIT'] = 'RANKER_SEASON'
                 result_list.append(set_ranker_dict)
@@ -505,10 +509,13 @@ class Hitter(Player):
             set_nine_dict = data_dict.copy()
             set_nine_dict['RESULT'] = state_value + 1
             if state == 'RUN' or state == 'RBI':
-                set_nine_dict['STATE_KOR'] = "{0} {1}을"  .format(state_value, self.KOREAN_DICT[state])
+                set_nine_dict['STATE_KOR'] = "{0}{1}"  .format(state_value, self.KOREAN_DICT[state])
             else:
-                set_nine_dict['STATE_KOR'] = "{0} {1}개를" .format(self.KOREAN_DICT[state], state_value)
-            set_nine_dict['STATE_KOR2'] = self.KOREAN_DICT[state]
+                set_nine_dict['STATE_KOR'] = "{0} {1}개" .format(self.KOREAN_DICT[state], state_value)
+            if state == 'H2' or state == 'H3':
+                set_nine_dict['STATE_KOR2'] = "{0} {1}".format(state_value + 1, self.KOREAN_DICT[state])
+            else:
+                set_nine_dict['STATE_KOR2'] = "{0}{1}".format(state_value + 1, self.KOREAN_DICT[state])
             set_nine_dict['STATE'] = state
             set_nine_dict['STATE_SPLIT'] = 'SEASON_ONE_LEFT'
             result_list.append(set_nine_dict)
@@ -533,10 +540,13 @@ class Hitter(Player):
             set_nine_dict = data_dict.copy()
             set_nine_dict['RESULT'] = state_value + 1
             if state == 'RUN' or state == 'RBI':
-                set_nine_dict['STATE_KOR'] = "{0} {1}을"  .format(state_value, self.KOREAN_DICT[state])
+                set_nine_dict['STATE_KOR'] = "{0}{1}"  .format(state_value, self.KOREAN_DICT[state])
             else:
-                set_nine_dict['STATE_KOR'] = "{0} {1}개를" .format(self.KOREAN_DICT[state], state_value)
-            set_nine_dict['STATE_KOR2'] =self.KOREAN_DICT[state]
+                set_nine_dict['STATE_KOR'] = "{0} {1}개" .format(self.KOREAN_DICT[state], state_value)
+            if state == 'H2' or state == 'H3':
+                set_nine_dict['STATE_KOR2'] = "{0} {1}".format(state_value + 1, self.KOREAN_DICT[state])
+            else:
+                set_nine_dict['STATE_KOR2'] = "{0}{1}".format(state_value + 1, self.KOREAN_DICT[state])
             set_nine_dict['STATE'] = state
             set_nine_dict['STATE_SPLIT'] = 'TOTAL_ONE_LEFT'
             result_list.append(set_nine_dict)
@@ -565,7 +575,7 @@ class Hitter(Player):
                 set_nine_dict = data_dict.copy()
                 set_nine_dict['RESULT'] = state_value
                 if state == 'RUN' or state == 'RBI':
-                    set_nine_dict['STATE_KOR'] = "{0} {1}"  .format(state_value, self.KOREAN_DICT[state])
+                    set_nine_dict['STATE_KOR'] = "{0}{1}"  .format(state_value, self.KOREAN_DICT[state])
                 else:
                     set_nine_dict['STATE_KOR'] = "{0} {1}개째" .format(self.KOREAN_DICT[state], state_value)
                 set_nine_dict['STATE_KOR2'] = self.KOREAN_DICT[state]
@@ -597,7 +607,7 @@ class Hitter(Player):
                 set_nine_dict = data_dict.copy()
                 set_nine_dict['RESULT'] = state_value
                 if state == 'RUN' or state == 'RBI':
-                    set_nine_dict['STATE_KOR'] = "{0} {1}"  .format(state_value, self.KOREAN_DICT[state])
+                    set_nine_dict['STATE_KOR'] = "{0}{1}"  .format(state_value, self.KOREAN_DICT[state])
                 else:
                     set_nine_dict['STATE_KOR'] = "{0} {1}개째" .format(self.KOREAN_DICT[state], state_value)
                 set_nine_dict['STATE_KOR2'] = self.KOREAN_DICT[state]
@@ -623,18 +633,21 @@ class Hitter(Player):
         for state in state_list:
             df_hitters = df_total_hitters.sort_values(by=state, ascending=False).reset_index()
             hitter_rank = df_hitters[df_hitters['PCODE'] == str(self.player_code)].index[0] + 1
-            hitter_record = df_hitters.iloc[hitter_rank - 1][state]
+            if state == 'HRA':
+                hitter_record = df_hitters.iloc[hitter_rank - 1][state]
+            else:
+                hitter_record = df_hitters.iloc[hitter_rank - 1][state].astype(int)
 
             if hitter_rank <= 30:
                 set_ranker_dict = data_dict.copy()
                 set_ranker_dict['RESULT'] = hitter_record
                 set_ranker_dict['RANK'] = hitter_rank
                 if state == 'RUN' or state == 'RBI':
-                    set_ranker_dict['STATE_KOR'] = "{0} {1}으로"  .format(hitter_record, self.KOREAN_DICT[state])
+                    set_ranker_dict['STATE_KOR'] = "{0}{1}"  .format(hitter_record, self.KOREAN_DICT[state])
                 elif state == 'HRA':
-                    set_ranker_dict['STATE_KOR'] = "타율{hra:로}".format(hra=Noun(str(hitter_record)))
+                    set_ranker_dict['STATE_KOR'] = "타율 {0}".format(str(hitter_record))
                 else:
-                    set_ranker_dict['STATE_KOR'] = "{0} {1}개로" .format(self.KOREAN_DICT[state], hitter_record)
+                    set_ranker_dict['STATE_KOR'] = "{0} {1}개" .format(self.KOREAN_DICT[state], hitter_record)
                 set_ranker_dict['STATE'] = state
                 set_ranker_dict['STATE_SPLIT'] = 'RANKER_TOTAL'
                 result_list.append(set_ranker_dict)

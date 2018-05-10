@@ -27,7 +27,7 @@ RUN_LOG_FILENAME = 'run_log.txt'
 RUN_MODE = 'DEBUG'  # 'RUN'
 
 VERSION_LEVEL = 0  # 0 (SKT 옥수수), 1 (해설자)
-SLEEP_TIME = 0
+SLEEP_TIME = 2
 
 # 쿼리 load path 설정
 current_path = os.getcwd().split('\\')

@@ -736,9 +736,6 @@ class MessageMaker(object):
             param_dict = param[4]
             text = ''
             template_dict = MessageUnit.get_template_dict(group_id, 1)
-            only_text = ["0T", "0S", "FULL_COUNT", "WHEN_LOSS", "HOW_HP"]
-            param_text = ["BALLINFO", "BALLINFO_BALL", "CURRENT_INFO", "CONTINUE_BALL", "BALL_STUFF_COUNT", "BALL_STUFF_COUNT_MANY"
-                          "HOW_EVENT", "TEAM_INFO_T", "TEAM_INFO_B", "LINE_UP_INFO_T", "LINE_UP_INFO_B"]
 
             if state_split in template_dict:
                 template = template_dict[state_split]

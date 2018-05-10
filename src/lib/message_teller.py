@@ -55,3 +55,10 @@ class MsgTeller(object):
         if self.get_size() > 0:
             data = self.pop()
             return data
+
+    def remove_items(self, log_kind, player_id):
+        if self.get_size() > 0:
+            for i, item_dict in enumerate(self.q):
+                if item_dict['log_kind'] == log_kind and item_dict['subject'] == player_id:
+                    self.q[i] = None
+            self.delete_none()

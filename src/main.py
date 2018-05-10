@@ -16,10 +16,10 @@ if __name__ == "__main__":
     sleep_second = config.SLEEP_TIME
     gm_app = game_app.GameApp(game_id)
 
-    msg_thread = threading.Thread(target=gm_app.message_thread, name='Message Thread')
+    msg_thread = threading.Thread(target=gm_app.message_printer_thread, name='Message Thread')
     msg_thread.start()
     
-    caster_thread = threading.Thread(target=gm_app.score_thread, name='Score Table Thread')
+    caster_thread = threading.Thread(target=gm_app.message_maker_thread, name='Score Table Thread')
     caster_thread.start()
     # Test Start ------------------------------------
     game_live_tuple = gm_app.test_live_data(game_id)

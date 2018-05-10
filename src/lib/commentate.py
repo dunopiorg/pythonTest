@@ -36,7 +36,7 @@ class Commentate(object):
             first_ball_info = first_ball_data[0]
 
             if ball_type == 'S':
-                if first_ball_info['T_CNT_RNK'] < 30:
+                if first_ball_info['T_CNT_RNK'] < 10:
                     first_ball_dict = data_dict.copy()
                     first_ball_dict['HITNAME'] = first_ball_info['HITNAME']
                     first_ball_dict['RANK'] = 1
@@ -46,7 +46,7 @@ class Commentate(object):
                     result.append(first_ball_dict)
 
             elif ball_type == 'T':
-                if first_ball_info['S_CNT_RNK'] < 30:
+                if first_ball_info['S_CNT_RNK'] < 20:
                     first_ball_dict = data_dict.copy()
                     first_ball_dict['HITNAME'] = first_ball_info['HITNAME']
                     first_ball_dict['RANK'] = 1
@@ -185,6 +185,7 @@ class Commentate(object):
         year = live_dict['gyear']
         home_team = game_id[10:12]
         away_team = game_id[8:10]
+        curr_li_rt = record.Record().get_li_rate(year, inning, tb, out_count, base_detail, score_detail)[0]['VALUE']
 
         # region Detail Version
         if config.VERSION_LEVEL > 0:
@@ -399,7 +400,7 @@ class Commentate(object):
         # endregion Detail Version
 
         # region 공수 교체시
-        if bat_order == 0 and seq_no > 0:
+        if bat_order == 0 and seq_no > 0 and curr_li_rt > 1:
             if score_detail[1] == 'L':
                 when_loss = data_dict.copy()
                 when_loss['LEAGUE'] = 'SEASON'
@@ -432,7 +433,6 @@ class Commentate(object):
         # region Max LI
         if inning > 5:
             max_li_rt = record.Record().get_max_li_rate(game_id, seq_no)[0]['VALUE']
-            curr_li_rt = record.Record().get_li_rate(year, inning, tb, out_count, base_detail, score_detail)[0]['VALUE']
 
             if self.max_li < max_li_rt:
                 self.max_li = max_li_rt
@@ -445,6 +445,8 @@ class Commentate(object):
                     state_split = 'MAX_LI_PEAK'
                 elif 6 <= self.max_li:
                     state_split = 'MAX_LI_DONE'
+                else:
+                    state_split = 'MAX_LI'
                 max_li = data_dict.copy()
                 max_li['HITNAME'] = live_dict['hitname']
                 max_li['LEAGUE'] = 'SEASON'
@@ -454,25 +456,20 @@ class Commentate(object):
 
         # region WPA 변화량에 따른 승리 확률
         if inning > 3 and how in self.WPA_HOW_KOR:
-            record_matrix_dict = None
             record_matrix = record.Record().get_record_matrix_mix(game_id, year, seq_no)
             if record_matrix:
-                record_matrix_dict = record_matrix[0]
+                wpa_rt = record_matrix[0]['WPA_RT']
+                after_we_rt = record_matrix[0]['AFTER_WE_RT']
 
-            if record_matrix_dict and record_matrix_dict['WPA_RT'] > 0.1:
-                wpa_rt = record_matrix_dict['WPA_RT']
-                after_we_rt = record_matrix_dict['AFTER_WE_RT']
-                before_we_rt = record_matrix_dict['BEFORE_WE_RT']
+                if abs(wpa_rt) > 0.1 and ((tb == 'T' and wpa_rt < 0) or (tb == 'B' and wpa_rt > 0)):
+                    home_after_we_rt = round(after_we_rt * 100)
+                    away_after_we_rt = round((1 - after_we_rt) * 100)
+                    wpa_rt = round(wpa_rt * 100)
 
-                home_after_we_rt = round(after_we_rt * 100)
-                away_after_we_rt = round((1 - after_we_rt) * 100)
-                wpa_rt = round(wpa_rt * 100)
-
-                if (tb == 'T' and after_we_rt - before_we_rt < 0) or (tb == 'B' and after_we_rt - before_we_rt > 0):
                     wpa_rate = data_dict.copy()
                     wpa_rate['LEAGUE'] = 'SEASON'
                     wpa_rate['STATE_SPLIT'] = 'WPA_RATE'
-                    wpa_rate['HOW'] = "{state:이}".format(state=Noun(self.WPA_HOW_KOR[how]))
+                    wpa_rate['HOW'] = self.WPA_HOW_KOR[how]
                     if tb == 'T':
                         wpa_rate['TEAM'] = self.TEAM_KOR[away_team]
                     else:
