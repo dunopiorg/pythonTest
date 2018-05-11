@@ -46,7 +46,7 @@ class Commentate(object):
                     result.append(first_ball_dict)
 
             elif ball_type == 'T':
-                if first_ball_info['S_CNT_RNK'] < 20:
+                if first_ball_info['S_CNT_RNK'] < 10:
                     first_ball_dict = data_dict.copy()
                     first_ball_dict['HITNAME'] = first_ball_info['HITNAME']
                     first_ball_dict['RANK'] = 1
@@ -461,7 +461,7 @@ class Commentate(object):
                 wpa_rt = record_matrix[0]['WPA_RT']
                 after_we_rt = record_matrix[0]['AFTER_WE_RT']
 
-                if abs(wpa_rt) > 0.1 and ((tb == 'T' and wpa_rt < 0) or (tb == 'B' and wpa_rt > 0)):
+                if abs(wpa_rt) > 0.1 and ((tb == 'T' and wpa_rt < 0) or (tb == 'B' and wpa_rt > 0)) and ((tb == 'B' and after_we_rt > 0.5) or (tb == 'T' and after_we_rt < 0.5)):
                     home_after_we_rt = round(after_we_rt * 100)
                     away_after_we_rt = round((1 - after_we_rt) * 100)
                     wpa_rt = round(wpa_rt * 100)

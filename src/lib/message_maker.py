@@ -749,7 +749,8 @@ class MessageMaker(object):
                                            ump2=param_dict['UMP2'], ump3=param_dict['UMP3'], mois=param_dict['MOIS'])
                 else:
                     try:
-                        text = template.format(**param_dict)
+                        # text = template.format(**param_dict)
+                        text = l10n.Template(template).format(**param_dict)
                     except Exception as ex:
                         print(ex)
 
