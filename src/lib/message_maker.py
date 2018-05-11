@@ -42,7 +42,7 @@ class MessageMaker(object):
                                   "HIT": "피안타 {}개", "HR": "피홈런 {}개", "PB": "범타 {}개", "HP": "사구 {}개", "SO": "삼진 {}개", "BB": "볼넷 {}개"}
         self.PITCHER_STATE_ORDER = ["NO_HIT", "SHO", "CG_W", "CG_L", "WINS", "LOSSES", "QS", "HOLDS", "SAVES",
                                     "HIT", "HR", "HP", "PB", "SO", "BB"]
-        self.df_template = connect_gsheet.Gspread().get_df_template() #todo
+        self.df_template = connect_gsheet.Gspread().get_df_template()
 
 
     def set_player_info(self, personal_dict, today_record_list, total_record_list):
