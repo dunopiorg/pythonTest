@@ -449,7 +449,7 @@ class GameApp(object):
             message_dict = self.msg_teller.say()
             if message_dict:
                 self.msg_history.insert_log(message_dict)
-                self.result_printer.info("#### ".format(message_dict['message'].rstrip('\n')))
+                self.result_printer.info("#### {}".format(message_dict['message'].rstrip('\n')))
                 print(message_dict['message'].rstrip('\n'))
                 if message_dict['log_kind'] == self.HITTER_STARTING:
                     self.msg_teller.remove_items(message_dict['log_kind'], message_dict['subject'])
