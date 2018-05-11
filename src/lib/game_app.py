@@ -51,10 +51,10 @@ class GameApp(object):
         self.prev_hitter = None
         self.curr_hitter = None
         self.curr_pitcher = None
-        self.hitter_category_score = {}
-        self.pitcher_category_score = {}
-        self.common_category_score = {}
-        self.starting_category_score = {}
+        self.hitter_catg_score = {}
+        self.pitcher_catg_score = {}
+        self.common_event_catg_score = {}
+        self.hitter_starting_catg_score = {}
         self.pitcher_mound_list =[]
         self.game_thread = 1
 
@@ -126,19 +126,18 @@ class GameApp(object):
         이벤트 카테고리 별 점수
         :return:  category score dictionary
         """
+        category_score = self.recorder.get_category_score()
         db_my_conn = db.MySqlConnector(host=self.HOST, port=self.PORT, user=self.USER, pw=self.PASSWORD,
                                        db=self.DB)
         query = "select event, state_split, category, score from baseball.event_score"
         rows = db_my_conn.select(query, True)
         for row in rows:
-            if row["event"] == self.HITTER_STARTING_SPLIT:
-                self.hitter_category_score.update({row["category"]: row["score"], "state_split": row["state_split"]})
-            elif row["event"] == self.PITCHER_EVENT:
-                self.pitcher_category_score.update({row["category"]: row["score"], "state_split": row["state_split"]})
+            if row["event"] == self.HITTER_STARTING or row["event"] == self.HITTER_STARTING_SPLIT or row["event"] == self.HITTER_EVENT:
+                self.hitter_catg_score.update({row["category"]: row["score"], "state_split": row["state_split"]})
+            elif row["event"] == self.PITCHER_STARTING or row["event"] == self.PITCHER_EVENT:
+                self.pitcher_catg_score.update({row["category"]: row["score"], "state_split": row["state_split"]})
             elif row["event"] == self.COMMON_EVENT:
-                self.common_category_score.update({row["category"]: row["score"], "state_split": row["state_split"]})
-            elif row["event"] == self.HITTER_STARTING:
-                self.starting_category_score.update({row["category"]: row["score"], "state_split": row["state_split"]})
+                self.common_event_catg_score.update({row["category"]: row["score"], "state_split": row["state_split"]})
 
     @classmethod
     def test_live_data(cls, game_id):
@@ -560,138 +559,49 @@ class GameApp(object):
         return result_dict
 
     # region 점수 관련 함수
-    def hitter_score_generator(self, data_dict):
+    def score_generator(self, data_dict, score_dict):
         """
         scoring parameters
         :param data_dict:
         :return:  계산된 score
         """
-        state_list = ['HIT', 'H2', 'H3', 'RBI', 'BB', 'SO']
         result = None
-        state_score_val = 0
+        state_val = 0
+        state_split_val = 0
         rank_score = 0
         league_score = 0
         rate_score = 0
         state_pa_val = 0
-        state_result = 1
+
+        if 'RANK' in data_dict:
+            rank = data_dict['RANK']
+            rank_score = log(rank, 0.8) + 20
+
+        if 'RATE_SCORE' in data_dict:
+            rate_score = data_dict['RATE_SCORE']
+
+        if 'LEAGUE' in data_dict and data_dict['LEAGUE'] == 'ALL':
+            league_score = self.LEAGUE_ALL_SCORE
+        else:
+            league_score = self.LEAGUE_SEASON_SCORE
 
         if 'STATE' in data_dict:
-            if 'LEAGUE' in data_dict and data_dict['LEAGUE'] == 'ALL':
-                league_score = self.LEAGUE_ALL_SCORE
-            else:
-                league_score = self.LEAGUE_SEASON_SCORE
-
-            if 'RANK' in data_dict:
-                rank = data_dict['RANK']
-                rank_score = log(rank, 0.8) + 20
-
-            if 'RATE_SCORE' in data_dict:
-                rate_score = data_dict['RATE_SCORE']
-
             state = data_dict['STATE']
 
-            if state in self.hitter_category_score:
-                if state in state_list:
-                    state_result_val = data_dict['RESULT']
-                    try:
-                        state_pa_val = data_dict['PA']
-                    except Exception as e:
-                        print(e, data_dict)
-
-                    if state_pa_val > 0:
-                        state_result = state_result_val / state_pa_val
-                else:
-                    state_result = data_dict['RESULT']
-
-                state_score_val = self.hitter_category_score.get(state)
+            if state in score_dict:
+                state_val = score_dict.get(state)
             else:
-                state_score_val = 0.1
+                state_val = 0.1
 
-        if state_score_val != 0:
-            result = round((rate_score + rank_score + (state_score_val * league_score)) * state_result, 3)
-
-        return result
-
-    def pitcher_score_generator(self, data_dict):
-        result = None
-        state_score_val = 0
-        rank_score = 0
-        league_score = 0
-        if 'STATE' in data_dict:
-            if 'LEAGUE' in data_dict and data_dict['LEAGUE'] == 'ALL':
-                league_score = self.LEAGUE_ALL_SCORE
-            else:
-                league_score = self.LEAGUE_SEASON_SCORE
-
-            if 'RANK' in data_dict:
-                rank = data_dict['RANK']
-                rank_score = log(rank, 0.8) + 20
-
-            state = data_dict['STATE']
-
-            if state in self.pitcher_category_score:
-                state_score_val = self.pitcher_category_score.get(state)
-            else:
-                state_score_val = 0.1
-
-        if state_score_val != 0:
-            result = round(rank_score + (state_score_val * league_score), 3)
-
-        return result
-
-    def common_score_generator(self, data_dict):
-        result = None
-        state_score_val = 0
-        rank_score = 0
-        league_score = 0
-        if 'STATE' in data_dict:
-            if 'LEAGUE' in data_dict and data_dict['LEAGUE'] == 'ALL':
-                league_score = self.LEAGUE_ALL_SCORE
-            else:
-                league_score = self.LEAGUE_SEASON_SCORE
-
-            if 'RANK' in data_dict:
-                rank = data_dict['RANK']
-                rank_score = log(rank, 0.8) + 20
-
-            state = data_dict['STATE']
-
-            if state in self.common_category_score:
-                state_score_val = self.common_category_score.get(state)
-            else:
-                state_score_val = 0.1
-
-        if state_score_val != 0:
-            result = round(rank_score + (state_score_val * league_score), 3)
-
-        return result
-
-    def starting_score_generator(self, data_dict):
-        result = None
-        state_score_val = 0
-        league_score = 0
-        event_score = 100
-        if 'STATE' in data_dict:
-            if 'LEAGUE' in data_dict and data_dict['LEAGUE'] == 'ALL':
-                league_score = self.LEAGUE_ALL_SCORE
-            else:
-                league_score = self.LEAGUE_SEASON_SCORE
-
+        if 'STATE_SPLIT' in data_dict:
             state_split = data_dict['STATE_SPLIT']
-            state = data_dict['STATE']
 
-            if state_split in self.starting_category_score:
-                split_score_val = self.starting_category_score.get(state_split)
+            if state_split in score_dict:
+                state_split_val = score_dict.get(state_split)
             else:
-                split_score_val = 0.1
+                state_split_val = 0.1
 
-            if state in self.starting_category_score:
-                state_score_val = self.starting_category_score.get(state)
-            else:
-                state_score_val = 0.1
-
-        if state_score_val > 0:
-            result = round(event_score + ((state_score_val+split_score_val) * league_score), 3)
+        result = round(rate_score + rank_score + ((state_val + state_split_val) * league_score), 3)
 
         return result
 
@@ -708,16 +618,7 @@ class GameApp(object):
         pre_scored_list = self.pre_score_generator(event, data_list)
 
         for data_dict in pre_scored_list:
-            if event == self.HITTER_STARTING_SPLIT or event == self.HITTER_EVENT:
-                score = self.hitter_score_generator(data_dict)
-            elif event == self.PITCHER_EVENT:
-                score = self.pitcher_score_generator(data_dict)
-            elif event == self.COMMON_EVENT:
-                score = self.common_score_generator(data_dict)
-            elif event == self.HITTER_STARTING:
-                score = self.starting_score_generator(data_dict)
-            else:
-                score = self.common_score_generator(data_dict)
+            score = self.score_generator(data_dict, event)
 
             if score:
                 self.logger.info("Score: %.2f, Param: %s" %(score, str(data_dict)))
