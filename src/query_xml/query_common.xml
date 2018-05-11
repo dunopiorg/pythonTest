@@ -113,7 +113,18 @@
     </query>
 
 	<query id="get_category_score">
-		SELECT event, state_split, category, score
+		SELECT event_name, state_split, category, score
 		FROM baseball.event_score
+    </query>
+
+    <query id="get_live_text">
+        SELECT (SELECT NAME FROM baseball.person WHERE A.pitcher = PCODE) AS PITCHER_NAME
+                        , (SELECT NAME FROM baseball.person WHERE A.batter = PCODE) AS batter_name
+                        , (SELECT NAME FROM baseball.person WHERE A.catcher = PCODE) AS catcher_name
+                        , (SELECT NAME FROM baseball.person WHERE A.runner = PCODE) AS runner_name
+                        , A.*
+        FROM baseball.ie_livetext_score_mix A
+        WHERE A.gameID = '{0}'
+        ORDER BY seqNo
     </query>
 </data>

@@ -1,6 +1,3 @@
-from datetime import datetime
-from math import exp, log
-from lib import DBConnection as db
 from lib import message_maker
 from lib import player
 from lib import record
@@ -9,22 +6,13 @@ from lib import message_teller
 from lib import score_table
 from lib import game_status
 from lib import message_log
-from korean import Noun
 import config
 import time
-import korean
 import os
 import logging
-import logging.handlers
 
 
 class GameApp(object):
-    __HOST = config.DB_HOST
-    __USER = config.DB_USER
-    __PASSWORD = config.DB_PASSWORD
-    __DB = config.DB_NAME
-    __PORT = config.DB_PORT
-
     # region Initialize 필요한 정보
     def __init__(self, game_key):
         # database connection 상수 정보
@@ -127,38 +115,23 @@ class GameApp(object):
         :return:  category score dictionary
         """
         category_score = self.recorder.get_category_score()
-        db_my_conn = db.MySqlConnector(host=self.HOST, port=self.PORT, user=self.USER, pw=self.PASSWORD,
-                                       db=self.DB)
-        query = "select event, state_split, category, score from baseball.event_score"
-        rows = db_my_conn.select(query, True)
-        for row in rows:
-            if row["event"] == self.HITTER_STARTING or row["event"] == self.HITTER_STARTING_SPLIT or row["event"] == self.HITTER_EVENT:
-                self.hitter_catg_score.update({row["category"]: row["score"], "state_split": row["state_split"]})
-            elif row["event"] == self.PITCHER_STARTING or row["event"] == self.PITCHER_EVENT:
-                self.pitcher_catg_score.update({row["category"]: row["score"], "state_split": row["state_split"]})
-            elif row["event"] == self.COMMON_EVENT:
-                self.common_event_catg_score.update({row["category"]: row["score"], "state_split": row["state_split"]})
+        if category_score:
+            for row in category_score:
+                if row["event_name"] == self.HITTER_STARTING or row["event_name"] == self.HITTER_STARTING_SPLIT or row["event_name"] == self.HITTER_EVENT:
+                    self.hitter_catg_score.update({row["category"]: row["score"], "state_split": row["state_split"]})
+                elif row["event_name"] == self.PITCHER_STARTING or row["event_name"] == self.PITCHER_EVENT or row["event_name"] == self.PITCHER_ON_MOUND:
+                    self.pitcher_catg_score.update({row["category"]: row["score"], "state_split": row["state_split"]})
+                elif row["event_name"] == self.COMMON_EVENT:
+                    self.common_event_catg_score.update({row["category"]: row["score"], "state_split": row["state_split"]})
 
     @classmethod
     def test_live_data(cls, game_id):
         """
-        Live가 아닌 Local Test를 위한 함수. getLiveData()로 대체될 것.
+        Live가 아닌 Local Test를 위한 함수. 나중에 수정 필요!
         :param game_id:
         :return:
         """
-        db_my_conn = db.MySqlConnector(host=cls.__HOST, port=cls.__PORT,
-                                       user=cls.__USER, pw=cls.__PASSWORD, db=cls.__DB)
-        query = "SELECT (SELECT NAME FROM baseball.person WHERE A.pitcher = PCODE) AS PITCHER_NAME " \
-                ", (SELECT NAME FROM baseball.person WHERE A.batter = PCODE) AS batter_name " \
-                ", (SELECT NAME FROM baseball.person WHERE A.catcher = PCODE) AS catcher_name " \
-                ", (SELECT NAME FROM baseball.person WHERE A.runner = PCODE) AS runner_name " \
-                ", A.* " \
-                "FROM baseball.ie_livetext_score_mix A " \
-                "WHERE A.gameID = '%s' " \
-                "ORDER BY seqNo" % game_id
-
-        live_data = db_my_conn.select(query, True)
-        return live_data
+        return record.Record().get_live_text(game_id)
     # endregion
 
     # region 게임진행 Functions
@@ -559,7 +532,7 @@ class GameApp(object):
         return result_dict
 
     # region 점수 관련 함수
-    def score_generator(self, data_dict, score_dict):
+    def score_generator(self, data_dict, event_name):
         """
         scoring parameters
         :param data_dict:
@@ -572,6 +545,13 @@ class GameApp(object):
         league_score = 0
         rate_score = 0
         state_pa_val = 0
+
+        if event_name == self.HITTER_EVENT or event_name == self.HITTER_STARTING_SPLIT or event_name == self.HITTER_STARTING:
+            score_dict = self.hitter_catg_score
+        elif event_name == self.PITCHER_STARTING or event_name == self.PITCHER_EVENT or event_name == self.PITCHER_ON_MOUND:
+            score_dict = self.pitcher_catg_score
+        else:
+            score_dict = self.common_event_catg_score
 
         if 'RANK' in data_dict:
             rank = data_dict['RANK']
@@ -1132,5 +1112,4 @@ class GameApp(object):
         for key, value_dict in data.items():
             self.set_score(key, value_dict)
     # endregion
-
     # endregion

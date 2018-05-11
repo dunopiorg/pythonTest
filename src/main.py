@@ -22,8 +22,8 @@ if __name__ == "__main__":
     caster_thread = threading.Thread(target=gm_app.message_maker_thread, name='Score Table Thread')
     caster_thread.start()
     # Test Start ------------------------------------
-    game_live_tuple = gm_app.test_live_data(game_id)
-    for game_live_dict in game_live_tuple:
+    game_live_list = gm_app.test_live_data(game_id)
+    for game_live_dict in game_live_list:
         result = gm_app.get_what_info(game_live_dict)
 
         if result:

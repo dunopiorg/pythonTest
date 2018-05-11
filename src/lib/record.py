@@ -919,6 +919,20 @@ class Record(object):
             result = cursor.fetchall()
 
         return result
+
+    @classmethod
+    def get_live_text(cls, game_key):
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_common", "get_live_text")
+        query = query_format.format(game_key)
+
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
+
+        return result
     # endregion 기타 Functions
 
     @classmethod
