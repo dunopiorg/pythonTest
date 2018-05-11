@@ -4,7 +4,7 @@
     <bookmark url="file://$PROJECT_DIR$/lib/player.py" line="1501" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="78a3ffa2-cc51-441d-8d58-d4b8fdbaebbb" name="Default" comment="">
+    <list default="true" id="78a3ffa2-cc51-441d-8d58-d4b8fdbaebbb" name="Default" comment="SKB 샘플 준비 버전">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/game_app.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/game_app.py" afterDir="false" />
     </list>
@@ -20,12 +20,13 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="450">
-      <file leaf-file-name="game_app.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="game_app.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/lib/game_app.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="344">
-              <caret line="847" column="57" lean-forward="true" selection-start-line="847" selection-start-column="57" selection-end-line="847" selection-end-column="57" />
+            <state relative-caret-position="176">
+              <caret line="8" column="20" selection-start-line="8" selection-start-column="20" selection-end-line="8" selection-end-column="20" />
               <folding>
+                <element signature="e#598#624#0" />
                 <element signature="e#1133#1298#0" />
                 <element signature="e#1330#1484#0" />
                 <element signature="e#3159#4006#0" />
@@ -33,10 +34,10 @@
                 <element signature="e#3438#3512#0" />
                 <element signature="e#3539#3616#0" />
                 <element signature="e#4076#4344#0" />
+                <element signature="e#4388#5477#0" />
                 <element signature="e#4388#4469#1" />
                 <element signature="e#5542#6459#0" />
                 <element signature="e#5542#5656#1" />
-                <element signature="e#5834#6372#0" />
                 <element signature="e#6558#6685#1" />
                 <element signature="e#7797#7820#0" />
                 <element signature="e#7829#7862#0" />
@@ -50,9 +51,6 @@
                 <element signature="e#9192#9240#0" />
                 <element signature="e#11299#11322#0" />
                 <element signature="e#11380#11587#0" />
-                <element signature="e#12475#12498#0" />
-                <element signature="e#12507#12521#0" />
-                <element signature="e#12571#12977#0" />
                 <element signature="e#12672#12977#0" />
                 <element signature="e#13379#13412#0" />
                 <element signature="e#13474#14851#0" />
@@ -71,25 +69,42 @@
                 <element signature="e#15335#15546#0" />
                 <element signature="e#15601#15632#0" />
                 <element signature="e#15661#16025#0" />
+                <element signature="e#16388#16424#0" />
+                <element signature="e#16469#16854#0" />
+                <element signature="e#16892#20401#0" />
                 <element signature="e#18187#18438#0" />
                 <element signature="e#18576#18875#0" />
                 <element signature="e#19087#19336#0" />
                 <element signature="e#19087#19145#0" />
+                <element signature="e#20423#20461#0" />
+                <element signature="e#20529#20689#0" />
                 <element signature="e#20791#20974#0" />
+                <element signature="e#21051#21414#0" />
                 <element signature="e#21636#24550#0" />
+                <element signature="e#28801#30040#0" />
+                <element signature="e#30105#38486#0" />
+                <element signature="e#38508#38525#0" />
+                <element signature="e#38595#41891#0" />
                 <element signature="e#38699#38722#0" />
                 <element signature="e#38957#38980#0" />
                 <element signature="e#39030#39559#0" />
+                <element signature="e#41964#43290#0" />
+                <element signature="e#43373#46693#0" />
+                <element signature="e#46715#46732#0" />
+                <element signature="e#46830#50552#0" />
+                <element signature="e#50654#52620#0" />
+                <element signature="e#52642#52660#0" />
+                <element signature="e#52704#52890#0" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="player.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="player.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lib/player.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="300">
-              <caret line="959" column="50" lean-forward="true" selection-start-line="959" selection-start-column="50" selection-end-line="959" selection-end-column="50" />
+            <state relative-caret-position="-2318">
+              <caret line="978" column="55" lean-forward="true" selection-start-line="978" selection-start-column="55" selection-end-line="978" selection-end-column="55" />
               <folding>
                 <element signature="e#0#22#0" expanded="true" />
                 <element signature="e#254#320#0" />
@@ -118,8 +133,8 @@
       <file leaf-file-name="record.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lib/record.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="234">
-              <caret line="54" column="8" selection-start-line="54" selection-start-column="8" selection-end-line="54" selection-end-column="8" />
+            <state relative-caret-position="350">
+              <caret line="923" column="21" selection-start-line="923" selection-start-column="8" selection-end-line="923" selection-end-column="21" />
               <folding>
                 <element signature="e#464#641#0" />
                 <element signature="e#743#1107#0" />
@@ -234,8 +249,8 @@
       <file leaf-file-name="main.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="192">
-              <caret line="21" column="66" selection-start-line="21" selection-start-column="66" selection-end-line="21" selection-end-column="66" />
+            <state relative-caret-position="350">
+              <caret line="24" column="40" selection-start-line="24" selection-start-column="40" selection-end-line="24" selection-end-column="40" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
               </folding>
@@ -276,8 +291,8 @@
       <file leaf-file-name="query_common.xml" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/query_xml/query_common.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="188">
-              <caret line="108" column="4" lean-forward="true" selection-start-line="108" selection-start-column="4" selection-end-line="108" selection-end-column="4" />
+            <state relative-caret-position="706">
+              <caret line="129" column="7" lean-forward="true" selection-start-line="129" selection-start-column="7" selection-end-line="129" selection-end-column="7" />
             </state>
           </provider>
         </entry>
@@ -302,36 +317,36 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>pop</find>
-      <find>time</find>
-      <find>TOTAL_ONE_LEFT</find>
-      <find>time.</find>
-      <find>= self.HITTER_STARTING_SPLIT</find>
-      <find>self.HITTER_STARTING_SPLIT</find>
-      <find>0S</find>
-      <find>get_hitter_first_ball</find>
-      <find>초구</find>
-      <find>only_text</find>
-      <find>param_text</find>
-      <find>WHEN_LOSS</find>
-      <find>get_li_rate</find>
-      <find>STATE</find>
-      <find>hitter_category_score</find>
-      <find>get_hitter_today_record</find>
-      <find>state</find>
-      <find>'STATE'</find>
-      <find>SEASON_ONE_LEFT</find>
-      <find>NSEASON_CONTINUE</find>
       <find>self.COMMON_EVENT</find>
       <find>self.hitter_category_score</find>
       <find>self.pitcher_category_score</find>
       <find>self.hitter_starting_catg_score</find>
       <find>record.</find>
       <find>self.HITTER_STARTING</find>
-      <find>self.hitter_catg_score</find>
       <find>hitter_catg_score</find>
       <find>state_list</find>
       <find>get_hitter_total_record</find>
+      <find>self.hitter_catg_score</find>
+      <find>common_event_catg_score</find>
+      <find>get_category_score</find>
+      <find>db.</find>
+      <find>handlers</find>
+      <find>korean</find>
+      <find>time</find>
+      <find>Noun</find>
+      <find>message_log</find>
+      <find>datetime</find>
+      <find>log</find>
+      <find>log.</find>
+      <find>os</find>
+      <find>os.</find>
+      <find>getLiveData</find>
+      <find>__HOST</find>
+      <find>__USER</find>
+      <find>__PASSWORD</find>
+      <find>__DB</find>
+      <find>__PORT</find>
+      <find>HIT_LIST</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -378,16 +393,16 @@
         <option value="$PROJECT_DIR$/query_xml/query_pitcher.xml" />
         <option value="$PROJECT_DIR$/query_xml/query_hitter.xml" />
         <option value="$PROJECT_DIR$/localdb_setting.py" />
-        <option value="$PROJECT_DIR$/main.py" />
         <option value="$PROJECT_DIR$/gsheet.py" />
         <option value="$PROJECT_DIR$/lib/connect_gsheet.py" />
         <option value="$PROJECT_DIR$/config.py" />
         <option value="$PROJECT_DIR$/lib/message_teller.py" />
         <option value="$PROJECT_DIR$/lib/message_maker.py" />
         <option value="$PROJECT_DIR$/lib/commentate.py" />
+        <option value="$PROJECT_DIR$/lib/player.py" />
         <option value="$PROJECT_DIR$/lib/record.py" />
         <option value="$PROJECT_DIR$/query_xml/query_common.xml" />
-        <option value="$PROJECT_DIR$/lib/player.py" />
+        <option value="$PROJECT_DIR$/main.py" />
         <option value="$PROJECT_DIR$/lib/game_app.py" />
       </list>
     </option>
@@ -676,7 +691,21 @@
       <option name="project" value="LOCAL" />
       <updated>1525942896933</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="SKB 샘플 준비 버전">
+      <created>1526000288169</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1526000288169</updated>
+    </task>
+    <task id="LOCAL-00015" summary="SKB 샘플 준비 버전">
+      <created>1526001655810</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1526001655810</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="TodoView">
@@ -695,13 +724,13 @@
       <window_info content_ui="combo" id="Project" order="0" weight="0.16314678" />
       <window_info anchor="bottom" id="TODO" order="7" sideWeight="0.49690142" weight="0.23561947" />
       <window_info anchor="bottom" id="Event Log" order="6" sideWeight="0.37064415" side_tool="true" weight="0.3119469" />
-      <window_info active="true" anchor="bottom" id="Find" order="1" sideWeight="0.5810364" visible="true" weight="0.16814159" />
+      <window_info anchor="bottom" id="Find" order="1" sideWeight="0.5810364" weight="0.16814159" />
       <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4977778" weight="0.29515418" />
       <window_info anchor="bottom" id="Version Control" order="10" sideWeight="0.6440866" weight="0.32781458" />
       <window_info anchor="bottom" id="Python Console" order="11" weight="0.29867256" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.15417106" />
       <window_info anchor="bottom" id="Terminal" order="9" weight="0.32807016" />
-      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.62935585" weight="0.3119469" />
+      <window_info active="true" anchor="bottom" id="Debug" order="3" sideWeight="0.62935585" visible="true" weight="0.6073009" />
       <window_info id="Favorites" order="2" side_tool="true" weight="0.11742007" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
@@ -780,33 +809,28 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/lib/game_app.py</url>
-          <line>454</line>
+          <line>428</line>
           <option name="timeStamp" value="1624" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/lib/game_app.py</url>
-          <line>732</line>
+          <line>713</line>
           <option name="timeStamp" value="1625" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/lib/game_app.py</url>
-          <line>674</line>
+          <line>655</line>
           <option name="timeStamp" value="1626" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/lib/game_app.py</url>
-          <line>627</line>
+          <line>608</line>
           <option name="timeStamp" value="1627" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/lib/game_app.py</url>
-          <line>128</line>
-          <option name="timeStamp" value="1628" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/lib/game_app.py</url>
-          <line>278</line>
-          <option name="timeStamp" value="1629" />
+          <line>254</line>
+          <option name="timeStamp" value="1633" />
         </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
@@ -819,7 +843,7 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="1630" />
+      <option name="time" value="1634" />
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
@@ -1119,6 +1143,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="88">
           <caret line="4" column="17" selection-start-line="4" selection-start-column="17" selection-end-line="4" selection-end-column="17" />
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -1204,16 +1231,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="192">
-          <caret line="21" column="66" selection-start-line="21" selection-start-column="66" selection-end-line="21" selection-end-column="66" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/config.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="225">
@@ -1225,13 +1242,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="44">
           <caret line="2" column="23" lean-forward="true" selection-start-line="2" selection-start-column="23" selection-end-line="2" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/query_xml/query_common.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="188">
-          <caret line="108" column="4" lean-forward="true" selection-start-line="108" selection-start-column="4" selection-end-line="108" selection-end-column="4" />
         </state>
       </provider>
     </entry>
@@ -1259,10 +1269,17 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/query_xml/query_common.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="706">
+          <caret line="129" column="7" lean-forward="true" selection-start-line="129" selection-start-column="7" selection-end-line="129" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/lib/record.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="234">
-          <caret line="54" column="8" selection-start-line="54" selection-start-column="8" selection-end-line="54" selection-end-column="8" />
+        <state relative-caret-position="350">
+          <caret line="923" column="21" selection-start-line="923" selection-start-column="8" selection-end-line="923" selection-end-column="21" />
           <folding>
             <element signature="e#464#641#0" />
             <element signature="e#743#1107#0" />
@@ -1364,73 +1381,20 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/game_app.py">
+    <entry file="file://$PROJECT_DIR$/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="344">
-          <caret line="847" column="57" lean-forward="true" selection-start-line="847" selection-start-column="57" selection-end-line="847" selection-end-column="57" />
+        <state relative-caret-position="350">
+          <caret line="24" column="40" selection-start-line="24" selection-start-column="40" selection-end-line="24" selection-end-column="40" />
           <folding>
-            <element signature="e#1133#1298#0" />
-            <element signature="e#1330#1484#0" />
-            <element signature="e#3159#4006#0" />
-            <element signature="e#3309#3386#0" />
-            <element signature="e#3438#3512#0" />
-            <element signature="e#3539#3616#0" />
-            <element signature="e#4076#4344#0" />
-            <element signature="e#4388#4469#1" />
-            <element signature="e#5542#6459#0" />
-            <element signature="e#5542#5656#1" />
-            <element signature="e#5834#6372#0" />
-            <element signature="e#6558#6685#1" />
-            <element signature="e#7797#7820#0" />
-            <element signature="e#7829#7862#0" />
-            <element signature="e#7912#8309#0" />
-            <element signature="e#7945#8309#0" />
-            <element signature="e#8123#8200#0" />
-            <element signature="e#8373#8396#0" />
-            <element signature="e#8405#8431#0" />
-            <element signature="e#8481#8953#0" />
-            <element signature="e#8532#8757#0" />
-            <element signature="e#9192#9240#0" />
-            <element signature="e#11299#11322#0" />
-            <element signature="e#11380#11587#0" />
-            <element signature="e#12475#12498#0" />
-            <element signature="e#12507#12521#0" />
-            <element signature="e#12571#12977#0" />
-            <element signature="e#12672#12977#0" />
-            <element signature="e#13379#13412#0" />
-            <element signature="e#13474#14851#0" />
-            <element signature="e#13537#13566#0" />
-            <element signature="e#13620#14120#0" />
-            <element signature="e#13671#13788#0" />
-            <element signature="e#13851#13963#0" />
-            <element signature="e#14006#14120#0" />
-            <element signature="e#14175#14283#0" />
-            <element signature="e#14338#14446#0" />
-            <element signature="e#14505#14528#0" />
-            <element signature="e#14586#14813#0" />
-            <element signature="e#14620#14813#0" />
-            <element signature="e#14905#15165#0" />
-            <element signature="e#14965#15165#0" />
-            <element signature="e#15335#15546#0" />
-            <element signature="e#15601#15632#0" />
-            <element signature="e#15661#16025#0" />
-            <element signature="e#18187#18438#0" />
-            <element signature="e#18576#18875#0" />
-            <element signature="e#19087#19336#0" />
-            <element signature="e#19087#19145#0" />
-            <element signature="e#20791#20974#0" />
-            <element signature="e#21636#24550#0" />
-            <element signature="e#38699#38722#0" />
-            <element signature="e#38957#38980#0" />
-            <element signature="e#39030#39559#0" />
+            <element signature="e#0#11#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/player.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="300">
-          <caret line="959" column="50" lean-forward="true" selection-start-line="959" selection-start-column="50" selection-end-line="959" selection-end-column="50" />
+        <state relative-caret-position="-2318">
+          <caret line="978" column="55" lean-forward="true" selection-start-line="978" selection-start-column="55" selection-end-line="978" selection-end-column="55" />
           <folding>
             <element signature="e#0#22#0" expanded="true" />
             <element signature="e#254#320#0" />
@@ -1451,6 +1415,84 @@
             <element signature="e#5188#5335#1" />
             <element signature="e#5589#5903#0" />
             <element signature="e#5589#5734#1" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/game_app.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="176">
+          <caret line="8" column="20" selection-start-line="8" selection-start-column="20" selection-end-line="8" selection-end-column="20" />
+          <folding>
+            <element signature="e#598#624#0" />
+            <element signature="e#1133#1298#0" />
+            <element signature="e#1330#1484#0" />
+            <element signature="e#3159#4006#0" />
+            <element signature="e#3309#3386#0" />
+            <element signature="e#3438#3512#0" />
+            <element signature="e#3539#3616#0" />
+            <element signature="e#4076#4344#0" />
+            <element signature="e#4388#5477#0" />
+            <element signature="e#4388#4469#1" />
+            <element signature="e#5542#6459#0" />
+            <element signature="e#5542#5656#1" />
+            <element signature="e#6558#6685#1" />
+            <element signature="e#7797#7820#0" />
+            <element signature="e#7829#7862#0" />
+            <element signature="e#7912#8309#0" />
+            <element signature="e#7945#8309#0" />
+            <element signature="e#8123#8200#0" />
+            <element signature="e#8373#8396#0" />
+            <element signature="e#8405#8431#0" />
+            <element signature="e#8481#8953#0" />
+            <element signature="e#8532#8757#0" />
+            <element signature="e#9192#9240#0" />
+            <element signature="e#11299#11322#0" />
+            <element signature="e#11380#11587#0" />
+            <element signature="e#12672#12977#0" />
+            <element signature="e#13379#13412#0" />
+            <element signature="e#13474#14851#0" />
+            <element signature="e#13537#13566#0" />
+            <element signature="e#13620#14120#0" />
+            <element signature="e#13671#13788#0" />
+            <element signature="e#13851#13963#0" />
+            <element signature="e#14006#14120#0" />
+            <element signature="e#14175#14283#0" />
+            <element signature="e#14338#14446#0" />
+            <element signature="e#14505#14528#0" />
+            <element signature="e#14586#14813#0" />
+            <element signature="e#14620#14813#0" />
+            <element signature="e#14905#15165#0" />
+            <element signature="e#14965#15165#0" />
+            <element signature="e#15335#15546#0" />
+            <element signature="e#15601#15632#0" />
+            <element signature="e#15661#16025#0" />
+            <element signature="e#16388#16424#0" />
+            <element signature="e#16469#16854#0" />
+            <element signature="e#16892#20401#0" />
+            <element signature="e#18187#18438#0" />
+            <element signature="e#18576#18875#0" />
+            <element signature="e#19087#19336#0" />
+            <element signature="e#19087#19145#0" />
+            <element signature="e#20423#20461#0" />
+            <element signature="e#20529#20689#0" />
+            <element signature="e#20791#20974#0" />
+            <element signature="e#21051#21414#0" />
+            <element signature="e#21636#24550#0" />
+            <element signature="e#28801#30040#0" />
+            <element signature="e#30105#38486#0" />
+            <element signature="e#38508#38525#0" />
+            <element signature="e#38595#41891#0" />
+            <element signature="e#38699#38722#0" />
+            <element signature="e#38957#38980#0" />
+            <element signature="e#39030#39559#0" />
+            <element signature="e#41964#43290#0" />
+            <element signature="e#43373#46693#0" />
+            <element signature="e#46715#46732#0" />
+            <element signature="e#46830#50552#0" />
+            <element signature="e#50654#52620#0" />
+            <element signature="e#52642#52660#0" />
+            <element signature="e#52704#52890#0" />
           </folding>
         </state>
       </provider>

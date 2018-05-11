@@ -6,6 +6,7 @@ from lib import message_teller
 from lib import score_table
 from lib import game_status
 from lib import message_log
+from math import log
 import config
 import time
 import os
