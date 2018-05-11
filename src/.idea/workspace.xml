@@ -6,7 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="78a3ffa2-cc51-441d-8d58-d4b8fdbaebbb" name="Default" comment="SKB 샘플 준비 버전">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/player.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/player.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/commentate.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/commentate.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/log/20170914SKOB0.md" beforeDir="false" afterPath="$PROJECT_DIR$/log/20170914SKOB0.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/log/test_log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/log/test_log.txt" afterDir="false" />
     </list>
@@ -95,11 +95,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="player.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="player.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lib/player.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="285">
-              <caret line="1523" column="55" lean-forward="true" selection-start-line="1523" selection-start-column="55" selection-end-line="1523" selection-end-column="55" />
+            <state relative-caret-position="417">
+              <caret line="1529" column="24" lean-forward="true" selection-start-line="1529" selection-start-column="24" selection-end-line="1529" selection-end-column="24" />
               <folding>
                 <element signature="e#0#22#0" expanded="true" />
                 <element signature="e#254#320#0" />
@@ -253,11 +253,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="commentate.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="commentate.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/lib/commentate.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="269">
-              <caret line="47" column="34" lean-forward="true" selection-start-line="47" selection-start-column="34" selection-end-line="47" selection-end-column="34" />
+            <state relative-caret-position="327">
+              <caret line="471" column="60" lean-forward="true" selection-start-line="471" selection-start-column="60" selection-end-line="471" selection-end-column="60" />
               <folding>
                 <element signature="e#8194#8217#0" />
               </folding>
@@ -345,9 +345,9 @@
       <find>####</find>
       <find>Enum</find>
       <find>l10n</find>
-      <find>wpa</find>
       <find>초구</find>
       <find>RESULT</find>
+      <find>wpa</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -403,14 +403,14 @@
         <option value="$PROJECT_DIR$/config.py" />
         <option value="$PROJECT_DIR$/lib/game_app.py" />
         <option value="$PROJECT_DIR$/lib/message_maker.py" />
-        <option value="$PROJECT_DIR$/lib/commentate.py" />
         <option value="$PROJECT_DIR$/lib/player.py" />
+        <option value="$PROJECT_DIR$/lib/commentate.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="42" />
-    <option name="y" value="-31" />
+    <option name="x" value="-112" />
+    <option name="y" value="-35" />
     <option name="width" value="2293" />
     <option name="height" value="1092" />
   </component>
@@ -734,7 +734,14 @@
       <option name="project" value="LOCAL" />
       <updated>1526011939270</updated>
     </task>
-    <option name="localTasksCounter" value="20" />
+    <task id="LOCAL-00020" summary="SKB 샘플 준비 버전">
+      <created>1526021166800</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1526021166800</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="TodoView">
@@ -1392,16 +1399,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/commentate.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="269">
-          <caret line="47" column="34" lean-forward="true" selection-start-line="47" selection-start-column="34" selection-end-line="47" selection-end-column="34" />
-          <folding>
-            <element signature="e#8194#8217#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/lib/message_maker.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="159">
@@ -1485,8 +1482,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/player.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="285">
-          <caret line="1523" column="55" lean-forward="true" selection-start-line="1523" selection-start-column="55" selection-end-line="1523" selection-end-column="55" />
+        <state relative-caret-position="417">
+          <caret line="1529" column="24" lean-forward="true" selection-start-line="1529" selection-start-column="24" selection-end-line="1529" selection-end-column="24" />
           <folding>
             <element signature="e#0#22#0" expanded="true" />
             <element signature="e#254#320#0" />
@@ -1507,6 +1504,16 @@
             <element signature="e#5188#5335#1" />
             <element signature="e#5589#5903#0" />
             <element signature="e#5589#5734#1" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/commentate.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="327">
+          <caret line="471" column="60" lean-forward="true" selection-start-line="471" selection-start-column="60" selection-end-line="471" selection-end-column="60" />
+          <folding>
+            <element signature="e#8194#8217#0" />
           </folding>
         </state>
       </provider>

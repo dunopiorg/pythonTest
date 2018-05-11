@@ -461,25 +461,26 @@ class Commentate(object):
                 wpa_rt = record_matrix[0]['WPA_RT']
                 after_we_rt = record_matrix[0]['AFTER_WE_RT']
 
-                if abs(wpa_rt) > 0.1 and ((tb == 'T' and wpa_rt < 0) or (tb == 'B' and wpa_rt > 0)) and ((tb == 'B' and after_we_rt > 0.5) or (tb == 'T' and after_we_rt < 0.5)):
-                    home_after_we_rt = round(after_we_rt * 100)
-                    away_after_we_rt = round((1 - after_we_rt) * 100)
-                    wpa_rt = round(wpa_rt * 100)
+                if abs(wpa_rt) > 0.1:
+                    if (tb == 'T' and wpa_rt < 0 and after_we_rt < 0.5) or (tb == 'B' and wpa_rt > 0 and after_we_rt > 0.5):
+                        home_after_we_rt = round(after_we_rt * 100)
+                        away_after_we_rt = round((1 - after_we_rt) * 100)
+                        wpa_rt = round(wpa_rt * 100)
 
-                    wpa_rate = data_dict.copy()
-                    wpa_rate['LEAGUE'] = 'SEASON'
-                    wpa_rate['STATE_SPLIT'] = 'WPA_RATE'
-                    wpa_rate['HOW'] = self.WPA_HOW_KOR[how]
-                    if tb == 'T':
-                        wpa_rate['TEAM'] = self.TEAM_KOR[away_team]
-                    else:
-                        wpa_rate['TEAM'] = self.TEAM_KOR[home_team]
-                    wpa_rate['WPA_RT'] = wpa_rt
-                    wpa_rate['HOME_TEAM'] = self.TEAM_KOR[home_team]
-                    wpa_rate['AWAY_TEAM'] = self.TEAM_KOR[away_team]
-                    wpa_rate['HOME_WE_RT'] = home_after_we_rt
-                    wpa_rate['AWAY_WE_RT'] = away_after_we_rt
-                    result_list.append(wpa_rate)
+                        wpa_rate = data_dict.copy()
+                        wpa_rate['LEAGUE'] = 'SEASON'
+                        wpa_rate['STATE_SPLIT'] = 'WPA_RATE'
+                        wpa_rate['HOW'] = self.WPA_HOW_KOR[how]
+                        if tb == 'T':
+                            wpa_rate['TEAM'] = self.TEAM_KOR[away_team]
+                        else:
+                            wpa_rate['TEAM'] = self.TEAM_KOR[home_team]
+                        wpa_rate['WPA_RT'] = wpa_rt
+                        wpa_rate['HOME_TEAM'] = self.TEAM_KOR[home_team]
+                        wpa_rate['AWAY_TEAM'] = self.TEAM_KOR[away_team]
+                        wpa_rate['HOME_WE_RT'] = home_after_we_rt
+                        wpa_rate['AWAY_WE_RT'] = away_after_we_rt
+                        result_list.append(wpa_rate)
         # endregion WPA 변화량에 따른 승리 확률
         return result_list
 
