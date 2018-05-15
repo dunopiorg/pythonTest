@@ -172,12 +172,12 @@ class Hitter(Player):
         :return:
         """
         # HIT 안타, HR 홈런, H2 2루타, H3 3루타, RBI 타점 OB 출루, SB 도루
-        state_dict = {'HIT': ['H1', 'H2', 'H3', 'HR', 'HI', 'HB'], 'HR': ['HR'], 'H2': ['H2'], 'H3': ['H3'],
+        state_dict = {'HIT': ['H1', 'HI', 'HB'], 'HR': ['HR'], 'H2': ['H2'], 'H3': ['H3'],
                       'RBI': ['E', 'R', 'H'], 'OB': ['H1', 'H2', 'H3', 'HR', 'HI', 'HB', 'BB'], 'SB': ['SB']}
         n_pa_count_dict = {'HIT': 3, 'HR': 2, 'H2': 2, 'H3': 2, 'RBI': 2, 'OB': 4, 'SB': 1}
-        n_game_count_dict = {'HIT': 3, 'HR': 2, 'H2': 2, 'H3': 2, 'RBI': 4, 'OB': 10, 'SB': 1}
+        n_game_count_dict = {'HIT': 3, 'HR': 2, 'H2': 2, 'H3': 2, 'RBI': 4, 'OB': 100, 'SB': 1}
         how_many_season_dict = {'HIT': 2, 'RBI': 2, 'HR': 2, 'OB': 3, 'H2': 2, 'H3': 2, 'SB': 2}
-        n_season_dict = {'HIT': [150, 100], 'RBI': [100], 'HR': [30, 20, 10], 'OB': [100], 'H2': [30, 20, 10], 'H3': [30, 20, 10], 'SB': [200, 300, 400, 500, 600]}
+        n_season_dict = {'HIT': [150, 100], 'RBI': [100], 'HR': [30, 20, 10], 'OB': [200, 100], 'H2': [30, 20, 10], 'H3': [30, 20, 10], 'SB': [600, 500, 400, 300, 200]}
 
         data_dict = {'HITTER': self.player_code, 'HITNAME': self.player_info['NAME'], 'OPPONENT': 'ALL',
                      'LEAGUE': 'SEASON', 'PITCHER': 'NA', 'PITNAME': 'NA', 'PITTEAM': 'NA', 'RANK': 1}
@@ -229,7 +229,6 @@ class Hitter(Player):
             set_dict['STATE_SPLIT'] = "NGAME_CONTINUE"
             set_dict['SEASON_COUNT'] = df_hitter_total_realtime.iloc[0][state]
             set_dict['PA'] = len(all_game_list)
-            set_dict['RATE'] = n_game_counter / len(all_game_list)  # todo rate 값이 필요한가?
             result.append(set_dict)
         # endregion NGAME 구하기
 
@@ -259,7 +258,6 @@ class Hitter(Player):
             set_dict['STATE_SPLIT'] = "NPA_CONTINUE"
             set_dict['SEASON_COUNT'] = df_hitter_total_realtime.iloc[0][state_col]
             set_dict['PA'] = len(all_game_list)
-            set_dict['RATE'] = n_pa_counter / len(all_game_list)  # todo rate 값이 필요한가?
             result.append(set_dict)
         # endregion NPA 구하기
 
@@ -490,17 +488,22 @@ class Hitter(Player):
 
         return result_list
 
-    def get_season_hitter_one_left_data(self):
+    def get_season_hitter_one_left_data(self, how):
         data_dict = {'HITTER': self.player_code, 'HITNAME': self.player_info['NAME'], 'OPPONENT': 'ALL',
                      'LEAGUE': 'SEASON', 'PITCHER': 'NA', 'PITNAME': 'NA', 'PITTEAM': 'NA', 'RANK': 1}
-        state_list = ['HIT', 'H2', 'H3', 'RUN', 'RBI', 'HR']
+        if how in ['H1', 'H2', 'H3', 'HR', 'HI', 'HB']:
+            state_list = [how, 'RUN', 'RBI']
+        else:
+            state_list = [how]
 
         result_list = []
 
-        if self.df_hitter_all_season.empty:
+        df_hitter_total = self.recorder.get_hitter_total_df(self.player_code)
+
+        if df_hitter_total.empty:
             return None
         else:
-            df_hitter_total = self.df_hitter_all_season.loc[[0]]
+            df_hitter_total = df_hitter_total.loc[[0]]
 
         df_state = df_hitter_total[state_list]
         nine_record_dict = df_state[df_state % 10 == 9].dropna(axis=1).to_dict('records')[0]
@@ -516,23 +519,33 @@ class Hitter(Player):
                 set_nine_dict['STATE_KOR2'] = "{0} {1}".format(state_value + 1, self.KOREAN_DICT[state])
             else:
                 set_nine_dict['STATE_KOR2'] = "{0}{1}".format(state_value + 1, self.KOREAN_DICT[state])
+            if state == 'RUN':
+                set_nine_dict['LEFT'] = "한 점"
+            elif state == 'RBI':
+                set_nine_dict['LEFT'] = "한 타점"
+            else:
+                set_nine_dict['LEFT'] = "한 개"
             set_nine_dict['STATE'] = state
             set_nine_dict['STATE_SPLIT'] = 'SEASON_ONE_LEFT'
             result_list.append(set_nine_dict)
 
         return result_list
 
-    def get_total_hitter_one_left_data(self):
+    def get_total_hitter_one_left_data(self, how):
         data_dict = {'HITTER': self.player_code, 'HITNAME': self.player_info['NAME'], 'OPPONENT': 'ALL',
                      'LEAGUE': 'SEASON', 'PITCHER': 'NA', 'PITNAME': 'NA', 'PITTEAM': 'NA', 'RANK': 1}
-        state_list = ['HIT', 'H2', 'H3', 'RUN', 'RBI', 'HR']
+
+        if how in ['H1', 'H2', 'H3', 'HR', 'HI', 'HB']:
+            state_list = [how, 'RUN', 'RBI']
+        else:
+            state_list = [how]
 
         result_list = []
-
-        if self.df_hitter_all_season.empty:
+        df_hitter_total = self.recorder.get_hitter_total_df(self.player_code)
+        if df_hitter_total.empty:
             return None
 
-        df_state = self.df_hitter_all_season[state_list]
+        df_state = df_hitter_total[state_list]
         df_state = df_state.sum().to_frame().transpose()
         nine_record_dict = df_state[df_state % 10 == 99].dropna(axis=1).to_dict('records')[0]
 
@@ -547,16 +560,26 @@ class Hitter(Player):
                 set_nine_dict['STATE_KOR2'] = "{0} {1}".format(state_value + 1, self.KOREAN_DICT[state])
             else:
                 set_nine_dict['STATE_KOR2'] = "{0}{1}".format(state_value + 1, self.KOREAN_DICT[state])
+            if state == 'RUN':
+                set_nine_dict['LEFT'] = "한 점"
+            elif state == 'RBI':
+                set_nine_dict['LEFT'] = "한 타점"
+            else:
+                set_nine_dict['LEFT'] = "한 개"
             set_nine_dict['STATE'] = state
             set_nine_dict['STATE_SPLIT'] = 'TOTAL_ONE_LEFT'
             result_list.append(set_nine_dict)
 
         return result_list
 
-    def get_season_hitter_10_units_data(self, game_key):
+    def get_season_hitter_event_10_units(self, game_key, how):
         data_dict = {'HITTER': self.player_code, 'HITNAME': self.player_info['NAME'], 'OPPONENT': 'ALL',
                      'LEAGUE': 'SEASON', 'PITCHER': 'NA', 'PITNAME': 'NA', 'PITTEAM': 'NA', 'RANK': 1}
-        state_dict = {'HIT': 50, 'H2': 10, 'H3': 10, 'RUN': 30, 'RBI': 30, 'HR': 10}
+        state_dict = {'HIT': 50, 'H2': 10, 'H3': 10, 'HR': 10, 'RUN': 30, 'RBI': 30}
+        if how in ['H1', 'H2', 'H3', 'HR', 'HI', 'HB']:
+            state_list = [how, 'RUN', 'RBI']
+        else:
+            state_list = [how]
 
         result_list = []
 
@@ -567,7 +590,7 @@ class Hitter(Player):
         else:
             df_hitter_total = df_hitter_total.astype(int)
 
-        df_state = df_hitter_total[list(state_dict)]
+        df_state = df_hitter_total[state_list]
         nine_record_dict = df_state[df_state % 10 == 0].dropna(axis=1).to_dict('records')[0]
 
         for state, state_value in nine_record_dict.items():
@@ -577,7 +600,7 @@ class Hitter(Player):
                 if state == 'RUN' or state == 'RBI':
                     set_nine_dict['STATE_KOR'] = "{0}{1}"  .format(state_value, self.KOREAN_DICT[state])
                 else:
-                    set_nine_dict['STATE_KOR'] = "{0} {1}개째" .format(self.KOREAN_DICT[state], state_value)
+                    set_nine_dict['STATE_KOR'] = "{0}개의 {1}" .format(state_value, self.KOREAN_DICT[state])
                 set_nine_dict['STATE_KOR2'] = self.KOREAN_DICT[state]
                 set_nine_dict['STATE'] = state
                 set_nine_dict['STATE_SPLIT'] = 'SEASON_10_UNITS'
@@ -585,11 +608,14 @@ class Hitter(Player):
 
         return result_list
 
-    def get_total_hitter_100_units_data(self, game_key):
+    def get_total_hitter_100_units_data(self, game_key, how):
         data_dict = {'HITTER': self.player_code, 'HITNAME': self.player_info['NAME'], 'OPPONENT': 'ALL',
                      'LEAGUE': 'SEASON', 'PITCHER': 'NA', 'PITNAME': 'NA', 'PITTEAM': 'NA', 'RANK': 1}
         state_dict = {'HIT': 300, 'H2': 100, 'H3': 100, 'RUN': 30, 'RBI': 100, 'HR': 100}
-
+        if how in ['H1', 'H2', 'H3', 'HR', 'HI', 'HB']:
+            state_list = [how, 'RUN', 'RBI']
+        else:
+            state_list = [how]
         result_list = []
 
         df_hitter_total = self.recorder.get_all_hitters_season_realtime_record(game_key)
@@ -599,7 +625,7 @@ class Hitter(Player):
         else:
             df_hitter_total = df_hitter_total.astype(int)
 
-        df_state = df_hitter_total[list(state_dict)]
+        df_state = df_hitter_total[state_list]
         nine_record_dict = df_state[df_state % 100 == 0].dropna(axis=1).to_dict('records')[0]
 
         for state, state_value in nine_record_dict.items():
@@ -609,7 +635,7 @@ class Hitter(Player):
                 if state == 'RUN' or state == 'RBI':
                     set_nine_dict['STATE_KOR'] = "{0}{1}"  .format(state_value, self.KOREAN_DICT[state])
                 else:
-                    set_nine_dict['STATE_KOR'] = "{0} {1}개째" .format(self.KOREAN_DICT[state], state_value)
+                    set_nine_dict['STATE_KOR'] = "{0}개의 {1}" .format(state_value, self.KOREAN_DICT[state])
                 set_nine_dict['STATE_KOR2'] = self.KOREAN_DICT[state]
                 set_nine_dict['STATE'] = state
                 set_nine_dict['STATE_SPLIT'] = 'TOTAL_100_UNITS'
@@ -1298,7 +1324,7 @@ class Pitcher(Player):
                 set_ranker_dict = data_dict.copy()
                 set_ranker_dict['RESULT'] = pitcher_record
                 set_ranker_dict['RANK'] = pitcher_rank
-                set_ranker_dict['STATE_KOR'] = "{0} {1}" .format(str(pitcher_record), self.KOREAN_STATE_DICT[state])
+                set_ranker_dict['STATE_KOR'] = "{0}{1}" .format(str(pitcher_record), self.KOREAN_STATE_DICT[state])
                 set_ranker_dict['STATE'] = state
                 set_ranker_dict['STATE_SPLIT'] = 'RANKER_SEASON'
                 result_list.append(set_ranker_dict)
@@ -1501,18 +1527,20 @@ class Pitcher(Player):
                 for i in range(df_pitcher_years.shape[0]):
                     if i == state_counter and df_pitcher_years.iloc[i][state_col] >= 10:
                         state_counter += 1
-                        year_string = "%d%s" % (df_pitcher_years.iloc[i][state_col], self.KOREAN_STATE_DICT[state_col])
+                        year_string = "%d" % (df_pitcher_years.iloc[i][state_col])
                         state_record_list.append(year_string)
                         state_year_list.append(df_pitcher_years.iloc[i]['GYEAR'])
                     else:
                         break
 
                 if state_counter >= state_count:
-                    state_result = ', '.join(state_record_list[:-1])
+                    # state_result = ', '.join(state_record_list[:-1])
+                    state_result = ', '.join(state_record_list)
                     set_n_season_dict = data_dict.copy()
                     set_n_season_dict['NSEASON'] = state_counter
                     set_n_season_dict['YEAR_RESULT'] = '{0}~{1}'.format(state_year_list[-1], state_year_list[0][2:4])
-                    set_n_season_dict['STATE_RESULT'] = "{state_result:와} ".format(state_result=Noun(state_result)) + state_record_list[-1]
+                    # set_n_season_dict['STATE_RESULT'] = "{state_result:와} ".format(state_result=Noun(state_result)) + state_record_list[-1]
+                    set_n_season_dict['STATE_RESULT'] = "{0}{1}".format(state_result, self.KOREAN_STATE_DICT[state_col])
                     set_n_season_dict['STATE'] = state_col
                     set_n_season_dict['STATE_KOR'] = self.KOREAN_STATE_DICT[state_col]
                     set_n_season_dict['STATE_SPLIT'] = "NSEASON_CONTINUE"
@@ -1603,5 +1631,5 @@ class Pitcher(Player):
 if __name__ == "__main__":
     hitter = Hitter(78224)
     pitcher = Pitcher(60263)
-    result_how = hitter.get_season_hitter_10_units_data('20170912OBNC0')
+    result_how = hitter.get_season_hitter_event_10_units('20170912OBNC0')
     print(result_how)

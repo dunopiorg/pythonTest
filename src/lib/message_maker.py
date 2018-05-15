@@ -953,6 +953,7 @@ class MessageUnit(object):
             cls.adder(data, s.split('|'))
 
         t = cls.get_msg(data)
+        t = l10n.proofread(t)
         return t
 
     @classmethod

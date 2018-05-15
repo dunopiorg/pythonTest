@@ -186,6 +186,8 @@ class Commentate(object):
         home_team = game_id[10:12]
         away_team = game_id[8:10]
         curr_li_rt = record.Record().get_li_rate(year, inning, tb, out_count, base_detail, score_detail)[0]['VALUE']
+        if self.max_li < curr_li_rt:
+            self.max_li = curr_li_rt
 
         # region Detail Version
         if config.VERSION_LEVEL > 0:
@@ -430,15 +432,9 @@ class Commentate(object):
                 result_list.append(ball_stuff_dict)
         # endregion
 
-        # region Max LI
-        if inning > 5:
-            max_li_rt = record.Record().get_max_li_rate(game_id, seq_no)[0]['VALUE']
-
-            if self.max_li < max_li_rt:
-                self.max_li = max_li_rt
-
-            if self.max_li < curr_li_rt:
-                self.max_li = curr_li_rt
+        # region Max LI 등판시
+        if inning > 5 and text_style == 8:
+            if self.max_li == curr_li_rt:
                 if self.max_li < 3:
                     state_split = 'MAX_LI_MIDDLE'
                 elif 3 <= self.max_li < 6:
@@ -452,14 +448,15 @@ class Commentate(object):
                 max_li['LEAGUE'] = 'SEASON'
                 max_li['STATE_SPLIT'] = state_split
                 result_list.append(max_li)
-        # endregion Max LI
+        # endregion Max LI 등판시
 
         # region WPA 변화량에 따른 승리 확률
         if inning > 3 and how in self.WPA_HOW_KOR:
             record_matrix = record.Record().get_record_matrix_mix(game_id, year, seq_no)
             if record_matrix:
-                wpa_rt = record_matrix[0]['WPA_RT']
                 after_we_rt = record_matrix[0]['AFTER_WE_RT']
+                before_we_rt = record_matrix[0]['BEFORE_WE_RT']
+                wpa_rt = after_we_rt - before_we_rt
 
                 if abs(wpa_rt) > 0.1:
                     if (tb == 'T' and wpa_rt < 0 and after_we_rt < 0.5) or (tb == 'B' and wpa_rt > 0 and after_we_rt > 0.5):

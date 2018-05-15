@@ -213,7 +213,7 @@ class GameApp(object):
                 pitcher_starting = self.get_pitcher_record_data_v0(pitcher, live_dict['hitteam'])
             if pitcher_starting:
                 result_pitcher.update({self.PITCHER_STARTING: pitcher_starting})
-        elif pitcher and pitcher not in self.pitcher_mound_list:
+        elif pitcher and pitcher not in self.pitcher_mound_list and text_style == 2:
             self.pitcher_mound_list.append(pitcher)
             self.prev_pitcher = self.curr_pitcher
             self.curr_pitcher = player.Pitcher(pitcher)
@@ -312,8 +312,13 @@ class GameApp(object):
                         result_hit_event.update({self.HITTER_EVENT: hitter_record})
             # endregion Detai Version
 
-        if how in self.hitter_how_dict:
-            for how_state in self.hitter_how_dict[how]:
+            how_state = ''
+            if how in ['H1', 'HI', 'HB']:
+                how_state = 'HIT'
+            elif how in ['H2', 'H3', 'HR', 'SB']:
+                how_state = how
+
+            if how_state:
                 hitter_event_record = self.get_hitter_how_event_data(live_dict, how_state)
                 if hitter_event_record:
                     result_hit_event.update({self.HITTER_EVENT: hitter_event_record})
@@ -780,7 +785,7 @@ class GameApp(object):
     def get_hitter_basic_record_data(self, hitter, game_id):
         result_list = []
         rank_basic_record = []
-        event_list = ['HIT', 'HR', 'RBI', 'OB']
+        event_list = ['HIT', 'H2', 'H3', 'HR', 'RBI', 'OB']
         # region Detail Version
         if config.VERSION_LEVEL > 0:
             today_record = self.curr_hitter.get_hitter_today_data(game_id)
@@ -869,7 +874,7 @@ class GameApp(object):
         result_list = []
 
         # 시즌 10단위 기록
-        season_10_units_record = self.curr_hitter.get_season_hitter_10_units_data(game_id)
+        season_10_units_record = self.curr_hitter.get_season_hitter_event_10_units(game_id, how_state)
         if season_10_units_record:
             result_list.extend(season_10_units_record)
 
@@ -877,6 +882,16 @@ class GameApp(object):
         total_100_units_record = self.curr_hitter.get_total_hitter_100_units_data(game_id)
         if total_100_units_record:
             result_list.extend(total_100_units_record)
+
+        # 통산 100단위 하나 남은 기록
+        total_one_left_record = self.curr_hitter.get_total_hitter_one_left_data(how_state)
+        if total_one_left_record:
+            result_list.extend(total_one_left_record)
+
+        # 시즌 10단위 하나 남은 기록
+        season_one_left_record = self.curr_hitter.get_season_hitter_one_left_data(how_state)
+        if season_one_left_record:
+            result_list.extend(season_one_left_record)
 
         # 연속기록
         n_continue_record = self.curr_hitter.get_hitter_n_continue_data(game_id, how_state)
