@@ -488,10 +488,13 @@ class Hitter(Player):
 
         return result_list
 
-    def get_season_hitter_one_left_data(self, how):
+    def get_season_hitter_one_left_data(self, how=None):
         data_dict = {'HITTER': self.player_code, 'HITNAME': self.player_info['NAME'], 'OPPONENT': 'ALL',
                      'LEAGUE': 'SEASON', 'PITCHER': 'NA', 'PITNAME': 'NA', 'PITTEAM': 'NA', 'RANK': 1}
-        if how in ['H1', 'H2', 'H3', 'HR', 'HI', 'HB']:
+
+        if how is None:
+            state_list = ['HIT', 'H2', 'H3', 'RUN', 'RBI', 'HR']
+        elif how in ['H1', 'H2', 'H3', 'HR', 'HI', 'HB']:
             state_list = [how, 'RUN', 'RBI']
         else:
             state_list = [how]
@@ -531,11 +534,13 @@ class Hitter(Player):
 
         return result_list
 
-    def get_total_hitter_one_left_data(self, how):
+    def get_total_hitter_one_left_data(self, how=None):
         data_dict = {'HITTER': self.player_code, 'HITNAME': self.player_info['NAME'], 'OPPONENT': 'ALL',
                      'LEAGUE': 'SEASON', 'PITCHER': 'NA', 'PITNAME': 'NA', 'PITTEAM': 'NA', 'RANK': 1}
 
-        if how in ['H1', 'H2', 'H3', 'HR', 'HI', 'HB']:
+        if how is None:
+            state_list = ['HIT', 'H2', 'H3', 'RUN', 'RBI', 'HR']
+        elif how in ['H1', 'H2', 'H3', 'HR', 'HI', 'HB']:
             state_list = [how, 'RUN', 'RBI']
         else:
             state_list = [how]

@@ -117,4 +117,4 @@ def get_msg_v0(d):
 
 t = get_msg(data)
 t = l10n.proofread(t)
-print(t)
+# print(t)

@@ -980,7 +980,7 @@ class GameApp(object):
         result_list = []
 
         # 시즌 10단위 기록
-        season_10_units_record = self.curr_hitter.get_season_hitter_10_units_data(game_id)
+        season_10_units_record = self.curr_hitter.get_season_hitter_event_10_units(game_id)
         if season_10_units_record:
             result_list.extend(season_10_units_record)
 

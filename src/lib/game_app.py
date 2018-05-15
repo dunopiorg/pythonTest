@@ -879,7 +879,7 @@ class GameApp(object):
             result_list.extend(season_10_units_record)
 
         # 통산 100단위 기록
-        total_100_units_record = self.curr_hitter.get_total_hitter_100_units_data(game_id)
+        total_100_units_record = self.curr_hitter.get_total_hitter_100_units_data(game_id, how_state)
         if total_100_units_record:
             result_list.extend(total_100_units_record)
 
