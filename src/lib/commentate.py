@@ -451,23 +451,34 @@ class Commentate(object):
                 li_dict = data_dict.copy()
                 li_dict['HITNAME'] = live_dict['hitname']
                 li_dict['LEAGUE'] = 'SEASON'
+                li_dict['DIFF_SCORE'] = score_detail[0]
+                if tb == 'T':
+                    li_dict['TEAM_NAME'] = self.TEAM_KOR[away_team]
+                else:
+                    li_dict['TEAM_NAME'] = self.TEAM_KOR[home_team]
+                if base_detail == '123B':
+                    li_dict['RUNNER'] = '만루'
+                elif base_detail == '0B':
+                    pass
+                else:
+                    li_dict['RUNNER'] = '-'.join(base_detail[:-1])
 
+                state_split = ''
                 if base_detail == '0B' and score_detail[1] == 'W':
-                    state_split = ''
+                    state_split = 'LI_NO_W'
                 elif base_detail in ['2B', '3B', '23B', '13B', '123B'] and score_detail == '1L':
-                    state_split = ''
+                    state_split = 'LI_ON_B_1L'
                 elif base_detail in ['2B', '3B', '23B', '13B', '123B'] and score_detail[1] == 'L':
-                    state_split = ''
+                    state_split = 'LI_ON_B_L'
                 elif base_detail in ['2B', '3B', '23B', '13B', '123B']:
-                    state_split = ''
+                    state_split = 'LI_ON_B'
                 elif base_detail not in ['2B', '3B', '23B', '13B', '123B'] and score_detail == '1L':
-                    state_split = ''
+                    state_split = 'LI_NO_B_1L'
                 elif base_detail not in ['2B', '3B', '23B', '13B', '123B'] and score_detail == '0D':
-                    state_split = ''
+                    state_split = 'LI_NO_B_D'
                 li_dict['STATE_SPLIT'] = state_split
                 if state_split:
                     result_list.append(li_dict)
-
         # endregion LI 관련
 
         # region WPA 변화량에 따른 승리 확률
