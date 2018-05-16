@@ -380,7 +380,7 @@ class GameApp(object):
         :return:
         """
         while self.game_thread == 1:
-            if self.score_table.is_ready():
+            if self.score_table.get_size() > 0:#self.score_table.is_ready():
                 parameter_list = []
                 event_group = ''
                 event = ''
@@ -420,6 +420,7 @@ class GameApp(object):
                         msg = self.msg_maker.get_hitter_split_message_v2(event, parameter_list)
                     elif event == self.COMMON_EVENT:
                         msg = self.msg_maker.get_common_message(event, parameter_list)
+
                     if msg:
                         if event == self.PITCHER_EVENT or event == self.PITCHER_STARTING or event == self.PITCHER_ON_MOUND:
                             subject = self.curr_pitcher.player_code
@@ -457,6 +458,7 @@ class GameApp(object):
                 self.result_printer.info("#### {}".format(message_dict['message'].rstrip('\n')))
                 print(message_dict['message'].rstrip('\n'))
                 if message_dict['log_kind'] == self.HITTER_STARTING:
+                    self.logger.warn("log_kind: %s, subject: %s" % (message_dict['log_kind'], message_dict['subject']))
                     self.msg_teller.remove_items(message_dict['log_kind'], message_dict['subject'])
             time.sleep(config.SLEEP_TIME/2)
     # endregion
@@ -763,14 +765,14 @@ class GameApp(object):
                 new_data_dict["DATA_GROUP"] = subject + "_" + new_data_dict['STATE_SPLIT']
             return new_data_list
         elif subject == self.HITTER_STARTING or (subject == self.HITTER_EVENT and config.VERSION_LEVEL == 0): #
-            new_data_list = []
-            for data_dict in data_list:
-                if data_dict['LEAGUE'] == self.SEASON or data_dict['LEAGUE'] == 'TODAY':
-                    new_data_list.append(data_dict)
+            # new_data_list = []
+            # for data_dict in data_list:
+            #     if data_dict['LEAGUE'] == self.SEASON or data_dict['LEAGUE'] == 'TODAY':
+            #         new_data_list.append(data_dict)
             # add Today group code
-            for data_dict in new_data_list:
+            for data_dict in data_list:
                 data_dict["DATA_GROUP"] = subject  + "_" + data_dict['STATE_SPLIT']
-            return new_data_list
+            return data_list
         else:
             # add Common  group code
             for data_dict in data_list:
@@ -1125,7 +1127,7 @@ class GameApp(object):
         :param data:  query data parameters
         :return:
         """
-        for key, value_dict in data.items():
-            self.set_score(key, value_dict)
+        for key, value_list in data.items():
+            self.set_score(key, value_list)
     # endregion
     # endregion

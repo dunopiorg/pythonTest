@@ -525,7 +525,7 @@ class Hitter(Player):
             if state == 'RUN':
                 set_nine_dict['LEFT'] = "한 점"
             elif state == 'RBI':
-                set_nine_dict['LEFT'] = "한 타점"
+                set_nine_dict['LEFT'] = "1타점"
             else:
                 set_nine_dict['LEFT'] = "한 개"
             set_nine_dict['STATE'] = state
@@ -568,7 +568,7 @@ class Hitter(Player):
             if state == 'RUN':
                 set_nine_dict['LEFT'] = "한 점"
             elif state == 'RBI':
-                set_nine_dict['LEFT'] = "한 타점"
+                set_nine_dict['LEFT'] = "1타점"
             else:
                 set_nine_dict['LEFT'] = "한 개"
             set_nine_dict['STATE'] = state
@@ -696,7 +696,7 @@ class Hitter(Player):
         data_dict = {'HITTER': self.player_code, 'HITNAME': self.player_info['NAME'], 'OPPONENT': 'ALL',
                      'LEAGUE': 'SEASON', 'PITCHER': 'NA', 'PITNAME': 'NA', 'PITTEAM': self.TEAM_KOR_DICT[pitcher_team],
                      'RANK': 1}
-        how_dict = {'HIT': ['H1', 'H2', 'H3', 'HR', 'HI', 'HB'], 'HR': ['HR'], 'H2': ['H2'], 'H3': ['H3']}
+        how_dict = {'HIT': ['H1', 'HI', 'HB'], 'HR': ['HR'], 'H2': ['H2'], 'H3': ['H3']}
 
         result_list = []
 
@@ -1368,7 +1368,7 @@ class Pitcher(Player):
                     if state == 'HOLD' or state == 'KK':
                         set_ranker_dict['STATE_KOR'] = "{0} {1}개".format(self.KOREAN_STATE_DICT[state], str(pitcher_record))
                     else:
-                        set_ranker_dict['STATE_KOR'] = "{0} {1}".format(str(pitcher_record), self.KOREAN_STATE_DICT[state])
+                        set_ranker_dict['STATE_KOR'] = "{0}{1}".format(str(pitcher_record), self.KOREAN_STATE_DICT[state])
                     set_ranker_dict['STATE'] = state
                     set_ranker_dict['STATE_SPLIT'] = 'RANKER_TOTAL'
                     result_list.append(set_ranker_dict)
@@ -1411,7 +1411,10 @@ class Pitcher(Player):
                     set_rank_left_dict = data_dict.copy()
                     set_rank_left_dict['TOTAL_RESULT'] = pitcher_record
                     set_rank_left_dict['RECORD_RESULT'] = state_record_count
-                    set_rank_left_dict['LEFT_RESULT'] = state_record_count - pitcher_record
+                    if state == 'GAMENUM':
+                        set_rank_left_dict['LEFT_RESULT'] = "{0}경기만 더 출장".format(state_record_count - pitcher_record)
+                    else:
+                        set_rank_left_dict['LEFT_RESULT'] = "{0}개만 추가".format(state_record_count - pitcher_record)
                     set_rank_left_dict['RANK'] = state_rank + 1
                     if state == 'GAMENUM':
                         set_rank_left_dict['STATE_KOR'] = "경기 {0}".format(self.KOREAN_STATE_DICT[state])

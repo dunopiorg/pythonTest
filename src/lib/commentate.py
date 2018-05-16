@@ -165,8 +165,6 @@ class Commentate(object):
 
     def get_current_game_info(self, live_dict):
         result_list = []
-        data_dict = {'OPPONENT': 'NA', 'LEAGUE': 'NA', 'PITCHER': 'NA', 'PITNAME': 'NA',
-                     'GYEAR': 'NA', 'PITTEAM': 'NA', 'STATE': 'CURRENT_INFO'}
         game_id = live_dict['game_id']
         score_detail = live_dict['score_detail']
         score_simple = live_dict['score']
@@ -188,6 +186,8 @@ class Commentate(object):
         curr_li_rt = record.Record().get_li_rate(year, inning, tb, out_count, base_detail, score_detail)[0]['VALUE']
         if self.max_li < curr_li_rt:
             self.max_li = curr_li_rt
+        data_dict = {'OPPONENT': 'NA', 'LEAGUE': 'NA', 'PITCHER': 'NA', 'PITNAME': 'NA',
+                     'GYEAR': 'NA', 'PITTEAM': 'NA', 'STATE': 'CURRENT_INFO'}
 
         # region Detail Version
         if config.VERSION_LEVEL > 0:
@@ -399,20 +399,19 @@ class Commentate(object):
                 inning_start_dict['WHAT'] = '반격' if score_simple[1] == 'L' else '공격'
                 result_list.append(inning_start_dict)
             # endregion
+            # region 공수 교체시
+            if bat_order == 0 and seq_no > 0 and curr_li_rt > 1:
+                if score_detail[1] == 'L':
+                    when_loss = data_dict.copy()
+                    when_loss['LEAGUE'] = 'SEASON'
+                    if hit_team in self.english_team:
+                        when_loss['TEAM'] = '{team}가'.format(team=self.TEAM_KOR[hit_team])
+                    else:
+                        when_loss['TEAM'] = '{team:이}'.format(team=Noun(self.TEAM_KOR[hit_team]))
+                    when_loss['STATE_SPLIT'] = 'WHEN_LOSS'
+                    result_list.append(when_loss)
+            # endregion
         # endregion Detail Version
-
-        # region 공수 교체시
-        if bat_order == 0 and seq_no > 0 and curr_li_rt > 1:
-            if score_detail[1] == 'L':
-                when_loss = data_dict.copy()
-                when_loss['LEAGUE'] = 'SEASON'
-                if hit_team in self.english_team:
-                    when_loss['TEAM'] = '{team}가'.format(team=self.TEAM_KOR[hit_team])
-                else:
-                    when_loss['TEAM'] = '{team:이}'.format(team=Noun(self.TEAM_KOR[hit_team]))
-                when_loss['STATE_SPLIT'] = 'WHEN_LOSS'
-                result_list.append(when_loss)
-        # endregion
 
         # region 연속 같은 볼
         if ball_type == 'H':
@@ -432,7 +431,7 @@ class Commentate(object):
                 result_list.append(ball_stuff_dict)
         # endregion
 
-        # region Max LI 등판시
+        # region LI 관련
         if inning > 5 and text_style == 8:
             if self.max_li == curr_li_rt:
                 if self.max_li < 3:
@@ -448,7 +447,28 @@ class Commentate(object):
                 max_li['LEAGUE'] = 'SEASON'
                 max_li['STATE_SPLIT'] = state_split
                 result_list.append(max_li)
-        # endregion Max LI 등판시
+            elif curr_li_rt > 1:
+                li_dict = data_dict.copy()
+                li_dict['HITNAME'] = live_dict['hitname']
+                li_dict['LEAGUE'] = 'SEASON'
+
+                if base_detail == '0B' and score_detail[1] == 'W':
+                    state_split = ''
+                elif base_detail in ['2B', '3B', '23B', '13B', '123B'] and score_detail == '1L':
+                    state_split = ''
+                elif base_detail in ['2B', '3B', '23B', '13B', '123B'] and score_detail[1] == 'L':
+                    state_split = ''
+                elif base_detail in ['2B', '3B', '23B', '13B', '123B']:
+                    state_split = ''
+                elif base_detail not in ['2B', '3B', '23B', '13B', '123B'] and score_detail == '1L':
+                    state_split = ''
+                elif base_detail not in ['2B', '3B', '23B', '13B', '123B'] and score_detail == '0D':
+                    state_split = ''
+                li_dict['STATE_SPLIT'] = state_split
+                if state_split:
+                    result_list.append(li_dict)
+
+        # endregion LI 관련
 
         # region WPA 변화량에 따른 승리 확률
         if inning > 3 and how in self.WPA_HOW_KOR:
@@ -462,7 +482,7 @@ class Commentate(object):
                     if (tb == 'T' and wpa_rt < 0 and after_we_rt < 0.5) or (tb == 'B' and wpa_rt > 0 and after_we_rt > 0.5):
                         home_after_we_rt = round(after_we_rt * 100)
                         away_after_we_rt = round((1 - after_we_rt) * 100)
-                        wpa_rt = round(wpa_rt * 100)
+                        wpa_rt = abs(round(wpa_rt * 100))
 
                         wpa_rate = data_dict.copy()
                         wpa_rate['LEAGUE'] = 'SEASON'

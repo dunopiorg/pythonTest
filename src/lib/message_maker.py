@@ -567,7 +567,8 @@ class MessageMaker(object):
             query_string = "group_id == '%s' and state_split == '%s' and version_level == %s" % (group_id, state_split, config.VERSION_LEVEL)
 
             if not self.df_template.query(query_string).empty:
-                template = self.df_template.query(query_string).template.values[0]
+                temp_list = self.df_template.query(query_string).template.values[0].split('#')
+                template = random.choice(temp_list)
             else:
                 continue
 
@@ -735,27 +736,53 @@ class MessageMaker(object):
             state_split = param[2]
             param_dict = param[4]
             text = ''
-            template_dict = MessageUnit.get_template_dict(group_id, 1)
+            # template_dict = MessageUnit.get_template_dict(group_id, 1)
 
-            if state_split in template_dict:
-                template = template_dict[state_split]
+            query_string = "group_id == '%s' and state_split == '%s' and version_level == %s" % (group_id, state_split, config.VERSION_LEVEL)
+
+            if not self.df_template.query(query_string).empty:
+                temp_list = self.df_template.query(query_string).template.values[0].split('#')
+                template = random.choice(temp_list)
 
                 if state_split == "GAMEINFO":
                     hteam = MessageMaker.get_post(self.TEAM_KOR[param_dict['HTEAM']], '와/과')
                     vteam = self.TEAM_KOR[param_dict['VTEAM']]
                     text = template.format(stadium=param_dict['STADIUM'], hteam=hteam, vteam=vteam,
-                                           chajun=param_dict['CHAJUN'], umpc=param_dict['UMPC'], ump1=param_dict['UMP1'],
+                                           chajun=param_dict['CHAJUN'], umpc=param_dict['UMPC'],
+                                           ump1=param_dict['UMP1'],
                                            temp=param_dict['TEMP'],
-                                           ump2=param_dict['UMP2'], ump3=param_dict['UMP3'], mois=param_dict['MOIS'])
+                                           ump2=param_dict['UMP2'], ump3=param_dict['UMP3'],
+                                           mois=param_dict['MOIS'])
                 else:
                     try:
                         # text = template.format(**param_dict)
                         text = l10n.Template(template).format(**param_dict)
                     except Exception as ex:
                         print(ex)
-
                 if text:
                     sentence.append(text)
+            else:
+                continue
+            # if state_split in template_dict:
+            #     template = template_dict[state_split]
+            #
+            #     if state_split == "GAMEINFO":
+            #         hteam = MessageMaker.get_post(self.TEAM_KOR[param_dict['HTEAM']], '와/과')
+            #         vteam = self.TEAM_KOR[param_dict['VTEAM']]
+            #         text = template.format(stadium=param_dict['STADIUM'], hteam=hteam, vteam=vteam,
+            #                                chajun=param_dict['CHAJUN'], umpc=param_dict['UMPC'], ump1=param_dict['UMP1'],
+            #                                temp=param_dict['TEMP'],
+            #                                ump2=param_dict['UMP2'], ump3=param_dict['UMP3'], mois=param_dict['MOIS'])
+            #     else:
+            #
+            #         try:
+            #             # text = template.format(**param_dict)
+            #             text = l10n.Template(template).format(**param_dict)
+            #         except Exception as ex:
+            #             print(ex)
+            #
+            #     if text:
+            #         sentence.append(text)
         return '\n'.join(sentence)
 
     def get_sentence(self, group_id, sentence_dict):
