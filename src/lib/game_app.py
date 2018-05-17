@@ -204,27 +204,27 @@ class GameApp(object):
         # region [기록] 투수 등판 또는 교체시 투수 등록 및 투수의 기록을 가져온다.
         if pitcher:
             is_statring = self.game_status.is_starting_pitcher(live_dict['tb'], pitcher)
-        if is_statring and pitcher not in self.pitcher_mound_list:  # 선발등판
-            self.pitcher_mound_list.append(pitcher)
-            self.curr_pitcher = player.Pitcher(pitcher)
-            if config.VERSION_LEVEL > 0:
-                pitcher_starting = self.get_pitcher_record_data(pitcher, live_dict['hitteam'])
-            else:
-                pitcher_starting = self.get_pitcher_record_data_v0(pitcher, live_dict['hitteam'])
-            if pitcher_starting:
-                result_pitcher.update({self.PITCHER_STARTING: pitcher_starting})
-        elif pitcher != self.curr_pitcher.player_code and pitcher not in self.pitcher_mound_list and text_style == 2:
-            self.pitcher_mound_list.append(pitcher)
-            self.prev_pitcher = self.curr_pitcher
-            self.curr_pitcher = player.Pitcher(pitcher)
-            if config.VERSION_LEVEL > 0:
-                pitcher_list = self.get_pitcher_record_data(pitcher, live_dict['hitteam'], batter)
-                if pitcher_list:
-                    result_pitcher.update({self.PITCHER_ON_MOUND: pitcher_list})
-            else:
-                pitcher_list = self.get_pitcher_record_data_v0(pitcher, live_dict['hitteam'])
-                if pitcher_list:
-                    result_pitcher.update({self.PITCHER_STARTING: pitcher_list})
+            if is_statring and pitcher not in self.pitcher_mound_list:  # 선발등판
+                self.pitcher_mound_list.append(pitcher)
+                self.curr_pitcher = player.Pitcher(pitcher)
+                if config.VERSION_LEVEL > 0:
+                    pitcher_starting = self.get_pitcher_record_data(pitcher, live_dict['hitteam'])
+                else:
+                    pitcher_starting = self.get_pitcher_record_data_v0(pitcher, live_dict['hitteam'])
+                if pitcher_starting:
+                    result_pitcher.update({self.PITCHER_STARTING: pitcher_starting})
+            elif pitcher != self.curr_pitcher.player_code and pitcher not in self.pitcher_mound_list and text_style == 2:
+                self.pitcher_mound_list.append(pitcher)
+                self.prev_pitcher = self.curr_pitcher
+                self.curr_pitcher = player.Pitcher(pitcher)
+                if config.VERSION_LEVEL > 0:
+                    pitcher_list = self.get_pitcher_record_data(pitcher, live_dict['hitteam'], batter)
+                    if pitcher_list:
+                        result_pitcher.update({self.PITCHER_ON_MOUND: pitcher_list})
+                else:
+                    pitcher_list = self.get_pitcher_record_data_v0(pitcher, live_dict['hitteam'])
+                    if pitcher_list:
+                        result_pitcher.update({self.PITCHER_STARTING: pitcher_list})
         # endregion [기록] 투수 등판 또는 교체시 투수 등록 및 투수의 기록을 가져온다.
 
         # region [기록] 타자 등판 또는 교체시 타자 등록

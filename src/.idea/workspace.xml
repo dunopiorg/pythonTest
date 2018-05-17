@@ -7,10 +7,11 @@
   <component name="ChangeListManager">
     <list default="true" id="78a3ffa2-cc51-441d-8d58-d4b8fdbaebbb" name="Default" comment="SKB 샘플 준비 수정 버전">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/commentate.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/commentate.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/game_app.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/game_app.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/log/20170609SSHH0.md" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/log/20170914SKOB0.md" beforeDir="false" afterPath="$PROJECT_DIR$/log/20170914SKOB0.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/log/test_log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/log/test_log.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -24,16 +25,17 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="450">
-      <file leaf-file-name="game_app.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="game_app.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/lib/game_app.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="836">
-              <caret line="414" column="29" lean-forward="true" selection-start-line="414" selection-start-column="29" selection-end-line="414" selection-end-column="29" />
+            <state relative-caret-position="89">
+              <caret line="204" selection-start-line="204" selection-end-line="204" />
               <folding>
                 <element signature="e#0#29#0" expanded="true" />
+                <element signature="e#5109#5212#1" />
                 <element signature="e#6604#6627#0" />
                 <element signature="e#7180#7203#0" />
-                <element signature="e#7999#8047#0" />
+                <element signature="e#9498#9530#0" />
                 <element signature="e#10126#10149#0" />
                 <element signature="e#11302#11325#0" />
                 <element signature="e#11869#11883#0" />
@@ -49,47 +51,38 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="main.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/main.py">
+      <file leaf-file-name="message_log.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/lib/message_log.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="506">
-              <caret line="29" column="24" selection-start-line="29" selection-start-column="24" selection-end-line="29" selection-end-column="24" />
+            <state relative-caret-position="221">
+              <caret line="66" column="8" selection-start-line="66" selection-start-column="8" selection-end-line="66" selection-end-column="8" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="score_table.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/lib/score_table.py">
+      <file leaf-file-name="query_log.xml" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/query_xml/query_log.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="132">
-              <caret line="6" column="21" lean-forward="true" selection-start-line="6" selection-start-column="21" selection-end-line="6" selection-end-column="21" />
+            <state relative-caret-position="348">
+              <caret line="19" column="15" selection-start-line="19" selection-start-column="15" selection-end-line="19" selection-end-column="15" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="substantive.py" pinned="false" current-in-tab="false">
-        <entry file="file://C:/Python35/Lib/site-packages/korean/morphology/substantive.py">
+      <file leaf-file-name="query_pitcher.xml" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/query_xml/query_pitcher.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="321">
-              <caret line="37" column="34" selection-start-line="37" selection-start-column="34" selection-end-line="37" selection-end-column="34" />
+            <state relative-caret-position="127">
+              <caret line="76" column="51" lean-forward="true" selection-start-line="76" selection-start-column="51" selection-end-line="76" selection-end-column="51" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="particle.py" pinned="false" current-in-tab="false">
-        <entry file="file://C:/Python35/Lib/site-packages/korean/morphology/particle.py">
+      <file leaf-file-name="game_status.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/lib/game_status.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="22">
-              <caret line="25" column="8" selection-start-line="25" selection-start-column="8" selection-end-line="25" selection-end-column="8" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="hangul.py" pinned="false" current-in-tab="false">
-        <entry file="file://C:/Python35/Lib/site-packages/korean/hangul.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-625">
-              <caret line="49" column="4" selection-start-line="49" selection-start-column="4" selection-end-line="49" selection-end-column="4" />
+            <state relative-caret-position="198">
+              <caret line="44" column="8" selection-start-line="44" selection-start-column="8" selection-end-line="44" selection-end-column="8" />
             </state>
           </provider>
         </entry>
@@ -97,8 +90,8 @@
       <file leaf-file-name="player.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lib/player.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-940">
-              <caret line="352" column="8" selection-start-line="352" selection-start-column="8" selection-end-line="352" selection-end-column="8" />
+            <state relative-caret-position="265">
+              <caret line="1355" column="73" lean-forward="true" selection-start-line="1355" selection-start-column="73" selection-end-line="1355" selection-end-column="73" />
               <folding>
                 <element signature="e#0#22#0" expanded="true" />
                 <element signature="e#254#320#0" />
@@ -119,28 +112,26 @@
                 <element signature="e#5188#5335#1" />
                 <element signature="e#5589#5903#0" />
                 <element signature="e#5589#5734#1" />
+                <element signature="e#46929#48032#0" />
+                <element signature="e#48106#48258#0" />
+                <element signature="e#48344#48507#0" />
+                <element signature="e#48598#48766#0" />
+                <element signature="e#48834#49026#0" />
+                <element signature="e#51104#51288#0" />
+                <element signature="e#51351#53042#0" />
+                <element signature="e#53115#54219#0" />
+                <element signature="e#54288#55407#0" />
+                <element signature="e#55473#56849#0" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="commentate.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/lib/commentate.py">
+      <file leaf-file-name="query_common.xml" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/query_xml/query_common.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="422">
-              <caret line="480" column="20" selection-start-line="480" selection-start-column="20" selection-end-line="480" selection-end-column="20" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="message_maker.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/lib/message_maker.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="183">
-              <caret line="1006" column="21" selection-start-line="1006" selection-start-column="21" selection-end-line="1006" selection-end-column="21" />
-              <folding>
-                <element signature="e#0#21#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="140">
+              <caret line="130" column="16" selection-start-line="130" selection-start-column="16" selection-end-line="130" selection-end-column="16" />
             </state>
           </provider>
         </entry>
@@ -148,8 +139,114 @@
       <file leaf-file-name="config.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/config.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="158">
-              <caret line="34" column="29" lean-forward="true" selection-start-line="34" selection-start-column="29" selection-end-line="34" selection-end-column="29" />
+            <state relative-caret-position="224">
+              <caret line="37" column="30" selection-start-line="37" selection-start-column="13" selection-end-line="37" selection-end-column="30" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="main.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/main.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="154">
+              <caret line="11" selection-start-line="11" selection-end-line="11" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="record.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/lib/record.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="309">
+              <caret line="453" column="90" selection-start-line="453" selection-start-column="58" selection-end-line="453" selection-end-column="90" />
+              <folding>
+                <element signature="e#464#641#0" />
+                <element signature="e#743#1107#0" />
+                <element signature="e#1169#1526#0" />
+                <element signature="e#2063#2471#0" />
+                <element signature="e#3070#3114#0" />
+                <element signature="e#3202#3319#1" />
+                <element signature="e#3705#3765#0" />
+                <element signature="e#3878#4645#0" />
+                <element signature="e#3878#4025#1" />
+                <element signature="e#4541#4601#0" />
+                <element signature="e#4754#5571#0" />
+                <element signature="e#4754#4933#1" />
+                <element signature="e#5467#5527#0" />
+                <element signature="e#5677#6488#0" />
+                <element signature="e#5677#5853#1" />
+                <element signature="e#6384#6444#0" />
+                <element signature="e#6591#8368#0" />
+                <element signature="e#6591#6767#1" />
+                <element signature="e#7227#8186#1" />
+                <element signature="e#8264#8324#0" />
+                <element signature="e#8469#9270#0" />
+                <element signature="e#8469#8640#1" />
+                <element signature="e#9166#9226#0" />
+                <element signature="e#9362#10006#0" />
+                <element signature="e#9362#9443#1" />
+                <element signature="e#10082#10689#0" />
+                <element signature="e#10082#10171#1" />
+                <element signature="e#10762#11314#0" />
+                <element signature="e#10762#10839#1" />
+                <element signature="e#11210#11270#0" />
+                <element signature="e#11902#12301#0" />
+                <element signature="e#12390#12788#0" />
+                <element signature="e#12810#12830#0" />
+                <element signature="e#12908#13360#0" />
+                <element signature="e#13252#13338#0" />
+                <element signature="e#13429#13845#0" />
+                <element signature="e#13763#13823#0" />
+                <element signature="e#13964#14334#0" />
+                <element signature="e#14428#15084#0" />
+                <element signature="e#14428#14509#1" />
+                <element signature="e#15181#15693#0" />
+                <element signature="e#15181#15262#1" />
+                <element signature="e#16192#16551#0" />
+                <element signature="e#16637#17042#0" />
+                <element signature="e#17117#17492#0" />
+                <element signature="e#17582#19957#0" />
+                <element signature="e#17582#17702#1" />
+                <element signature="e#17907#19765#0" />
+                <element signature="e#19874#19934#0" />
+                <element signature="e#20049#20794#0" />
+                <element signature="e#20049#20171#1" />
+                <element signature="e#20690#20750#0" />
+                <element signature="e#20903#21664#0" />
+                <element signature="e#21560#21620#0" />
+                <element signature="e#21773#21903#1" />
+                <element signature="e#22440#22500#0" />
+                <element signature="e#22630#24052#0" />
+                <element signature="e#24151#24761#0" />
+                <element signature="e#24151#24259#1" />
+                <element signature="e#24657#24717#0" />
+                <element signature="e#24836#25392#0" />
+                <element signature="e#24836#24914#1" />
+                <element signature="e#25288#25348#0" />
+                <element signature="e#25466#26028#0" />
+                <element signature="e#25466#25551#1" />
+                <element signature="e#25924#25984#0" />
+                <element signature="e#26070#26090#0" />
+                <element signature="e#26241#26721#0" />
+                <element signature="e#26638#26698#0" />
+                <element signature="e#26790#27314#0" />
+                <element signature="e#26790#26864#1" />
+                <element signature="e#27231#27291#0" />
+                <element signature="e#27747#27807#0" />
+                <element signature="e#28307#28367#0" />
+                <element signature="e#28460#28902#0" />
+                <element signature="e#28819#28879#0" />
+                <element signature="e#28993#29667#0" />
+                <element signature="e#28993#29164#1" />
+                <element signature="e#29584#29644#0" />
+                <element signature="e#29733#30171#0" />
+                <element signature="e#30088#30148#0" />
+                <element signature="e#30245#30691#0" />
+                <element signature="e#30608#30668#0" />
+                <element signature="e#31340#31400#0" />
+                <element signature="e#31860#31920#0" />
+                <element signature="e#32550#33017#0" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -165,19 +262,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>개째</find>
-      <find>SEASON_ONE_LEFT</find>
-      <find>get_li_rate</find>
-      <find>self.max_li</find>
-      <find>how_state</find>
-      <find>state</find>
-      <find>NGAME_CONTINUE</find>
-      <find>n_season_dict</find>
-      <find>NSEASON_CONTINUE</find>
-      <find>get_starting_line_up</find>
-      <find>self.pitcher_mound_list</find>
-      <find>text_style</find>
-      <find>get_total_hitter_one_left_data</find>
       <find>get_hitter_season_realtime_record</find>
       <find>WPA_RATE</find>
       <find>RANKER_TOTAL_LEFT</find>
@@ -195,6 +279,19 @@
       <find>TEAM_NAME</find>
       <find>팀이름</find>
       <find>is_han</find>
+      <find>record</find>
+      <find>query_common</find>
+      <find>get_live_text</find>
+      <find>&amp;lt;</find>
+      <find>self.gamecontapp_serno</find>
+      <find>seq_no</find>
+      <find>self.game_status</find>
+      <find>get_count</find>
+      <find>get_starting_msg_count</find>
+      <find>get_player_starting_times</find>
+      <find>get_pitcher_vs_hitter_record</find>
+      <find>AS W,</find>
+      <find>get_total_pitchers_detail_record</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -232,10 +329,7 @@
         <option value="$PROJECT_DIR$/configuration.py" />
         <option value="$PROJECT_DIR$/query_xml/query_history.xml" />
         <option value="$PROJECT_DIR$/lib/test.log" />
-        <option value="$PROJECT_DIR$/query_xml/query_log.xml" />
         <option value="$PROJECT_DIR$/futures_db_copy.py" />
-        <option value="$PROJECT_DIR$/lib/game_status.py" />
-        <option value="$PROJECT_DIR$/lib/message_log.py" />
         <option value="$PROJECT_DIR$/query_xml/query_message.xml" />
         <option value="$PROJECT_DIR$/query_xml/query_pitcher.xml" />
         <option value="$PROJECT_DIR$/query_xml/query_hitter.xml" />
@@ -243,16 +337,19 @@
         <option value="$PROJECT_DIR$/gsheet.py" />
         <option value="$PROJECT_DIR$/lib/connect_gsheet.py" />
         <option value="$PROJECT_DIR$/lib/message_teller.py" />
-        <option value="$PROJECT_DIR$/lib/record.py" />
-        <option value="$PROJECT_DIR$/query_xml/query_common.xml" />
-        <option value="$PROJECT_DIR$/main.py" />
         <option value="C:/Python35/Lib/site-packages/korean/morphology/particle.py" />
-        <option value="$PROJECT_DIR$/lib/player.py" />
-        <option value="$PROJECT_DIR$/lib/score_table.py" />
-        <option value="$PROJECT_DIR$/lib/game_app.py" />
         <option value="$PROJECT_DIR$/lib/message_maker.py" />
         <option value="$PROJECT_DIR$/config.py" />
         <option value="$PROJECT_DIR$/lib/commentate.py" />
+        <option value="$PROJECT_DIR$/lib/score_table.py" />
+        <option value="$PROJECT_DIR$/lib/game_status.py" />
+        <option value="$PROJECT_DIR$/query_xml/query_log.xml" />
+        <option value="$PROJECT_DIR$/lib/message_log.py" />
+        <option value="$PROJECT_DIR$/lib/record.py" />
+        <option value="$PROJECT_DIR$/query_xml/query_common.xml" />
+        <option value="$PROJECT_DIR$/lib/player.py" />
+        <option value="$PROJECT_DIR$/main.py" />
+        <option value="$PROJECT_DIR$/lib/game_app.py" />
       </list>
     </option>
   </component>
@@ -631,7 +728,21 @@
       <option name="project" value="LOCAL" />
       <updated>1526460930823</updated>
     </task>
-    <option name="localTasksCounter" value="27" />
+    <task id="LOCAL-00027" summary="LI 수정 버전">
+      <created>1526521118978</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1526521118978</updated>
+    </task>
+    <task id="LOCAL-00028" summary="SKB 샘플 준비 수정 버전">
+      <created>1526532106873</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1526532106873</updated>
+    </task>
+    <option name="localTasksCounter" value="29" />
     <servers />
   </component>
   <component name="TodoView">
@@ -645,18 +756,17 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1856" height="1096" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" weight="0.16314678" />
       <window_info anchor="bottom" id="TODO" order="7" sideWeight="0.49690142" weight="0.23561947" />
       <window_info anchor="bottom" id="Event Log" order="6" sideWeight="0.37064415" side_tool="true" weight="0.3119469" />
-      <window_info anchor="bottom" id="Find" order="1" sideWeight="0.5810364" weight="0.65597343" />
+      <window_info anchor="bottom" id="Find" order="1" sideWeight="0.5810364" weight="0.21017699" />
       <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4977778" weight="0.29359823" />
       <window_info anchor="bottom" id="Version Control" order="10" sideWeight="0.6440866" weight="0.32781458" />
-      <window_info active="true" anchor="bottom" id="Python Console" order="11" visible="true" weight="0.29867256" />
-      <window_info id="Structure" order="1" side_tool="true" weight="0.15417106" />
+      <window_info anchor="bottom" id="Python Console" order="11" weight="0.20243363" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.15380375" />
       <window_info anchor="bottom" id="Terminal" order="9" weight="0.32807016" />
-      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.62935585" weight="0.24889381" />
+      <window_info active="true" anchor="bottom" id="Debug" order="3" sideWeight="0.62935585" visible="true" weight="0.4181416" />
       <window_info id="Favorites" order="2" side_tool="true" weight="0.11742007" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
@@ -718,9 +828,10 @@
     <MESSAGE value="google sheet 에서 문장 template 가져오도록 수정" />
     <MESSAGE value="WPA 변화량 수정" />
     <MESSAGE value="SKB 샘플 준비 버전" />
-    <MESSAGE value="SKB 샘플 준비 수정 버전" />
     <MESSAGE value="LI 추가" />
-    <option name="LAST_COMMIT_MESSAGE" value="LI 추가" />
+    <MESSAGE value="LI 수정 버전" />
+    <MESSAGE value="SKB 샘플 준비 수정 버전" />
+    <option name="LAST_COMMIT_MESSAGE" value="SKB 샘플 준비 수정 버전" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -737,28 +848,28 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/lib/game_app.py</url>
-          <line>434</line>
-          <option name="timeStamp" value="1624" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/lib/game_app.py</url>
-          <line>720</line>
+          <line>722</line>
           <option name="timeStamp" value="1625" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/lib/game_app.py</url>
-          <line>662</line>
+          <line>664</line>
           <option name="timeStamp" value="1626" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/lib/game_app.py</url>
-          <line>615</line>
+          <line>617</line>
           <option name="timeStamp" value="1627" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/lib/game_app.py</url>
           <line>254</line>
           <option name="timeStamp" value="1633" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/lib/game_app.py</url>
+          <line>204</line>
+          <option name="timeStamp" value="1661" />
         </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
@@ -771,7 +882,7 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="1653" />
+      <option name="time" value="1662" />
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
@@ -905,13 +1016,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/query_xml/query_log.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="44">
-          <caret line="2" column="25" selection-start-line="2" selection-start-column="25" selection-end-line="2" selection-end-column="25" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://C:/Python35/Lib/site-packages/pymysql/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1716">
@@ -972,13 +1076,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="166">
           <caret line="2909" selection-start-line="2909" selection-end-line="2909" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/query_xml/query_pitcher.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2574">
-          <caret line="117" column="8" lean-forward="true" selection-start-line="117" selection-start-column="8" selection-end-line="131" selection-end-column="22" />
         </state>
       </provider>
     </entry>
@@ -1114,20 +1211,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/query_xml/query_common.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="22">
-          <caret line="99" column="52" selection-start-line="99" selection-start-column="52" selection-end-line="99" selection-end-column="52" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/lib/game_status.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="209">
-          <caret line="43" column="8" selection-start-line="43" selection-start-column="8" selection-end-line="43" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://C:/Python35/Lib/site-packages/korean/l10n/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="308">
@@ -1138,10 +1221,132 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/query_xml/query_hitter.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5764">
+          <caret line="262" column="22" selection-start-line="262" selection-start-column="22" selection-end-line="262" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/message_teller.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="924">
+          <caret line="42" column="26" lean-forward="true" selection-start-line="42" selection-start-column="26" selection-end-line="42" selection-end-column="26" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/message_maker.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="183">
+          <caret line="1006" column="21" selection-start-line="1006" selection-start-column="21" selection-end-line="1006" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Python35/Lib/site-packages/korean/hangul.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-625">
+          <caret line="49" column="4" selection-start-line="49" selection-start-column="4" selection-end-line="49" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Python35/Lib/site-packages/korean/morphology/particle.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="22">
+          <caret line="25" column="8" selection-start-line="25" selection-start-column="8" selection-end-line="25" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Python35/Lib/site-packages/korean/morphology/substantive.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="321">
+          <caret line="37" column="34" selection-start-line="37" selection-start-column="34" selection-end-line="37" selection-end-column="34" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/commentate.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="334">
+          <caret line="464" lean-forward="true" selection-start-line="464" selection-end-line="464" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/score_table.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="57" column="12" lean-forward="true" selection-start-line="57" selection-start-column="12" selection-end-line="57" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/message_log.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="221">
+          <caret line="66" column="8" selection-start-line="66" selection-start-column="8" selection-end-line="66" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/query_xml/query_common.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="140">
+          <caret line="130" column="16" selection-start-line="130" selection-start-column="16" selection-end-line="130" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/game_status.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="198">
+          <caret line="44" column="8" selection-start-line="44" selection-start-column="8" selection-end-line="44" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/query_xml/query_log.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="348">
+          <caret line="19" column="15" selection-start-line="19" selection-start-column="15" selection-end-line="19" selection-end-column="15" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/player.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="265">
+          <caret line="1355" column="73" lean-forward="true" selection-start-line="1355" selection-start-column="73" selection-end-line="1355" selection-end-column="73" />
+          <folding>
+            <element signature="e#0#22#0" expanded="true" />
+            <element signature="e#254#320#0" />
+            <element signature="e#694#763#0" />
+            <element signature="e#810#852#0" />
+            <element signature="e#894#990#0" />
+            <element signature="e#1033#1167#0" />
+            <element signature="e#1653#1741#1" />
+            <element signature="e#1762#1942#0" />
+            <element signature="e#2167#2278#0" />
+            <element signature="e#3489#3566#0" />
+            <element signature="e#4100#4274#0" />
+            <element signature="e#4365#4700#0" />
+            <element signature="e#4365#4523#1" />
+            <element signature="e#4788#5103#0" />
+            <element signature="e#4788#4929#1" />
+            <element signature="e#5188#5506#0" />
+            <element signature="e#5188#5335#1" />
+            <element signature="e#5589#5903#0" />
+            <element signature="e#5589#5734#1" />
+            <element signature="e#46929#48032#0" />
+            <element signature="e#48106#48258#0" />
+            <element signature="e#48344#48507#0" />
+            <element signature="e#48598#48766#0" />
+            <element signature="e#48834#49026#0" />
+            <element signature="e#51104#51288#0" />
+            <element signature="e#51351#53042#0" />
+            <element signature="e#53115#54219#0" />
+            <element signature="e#54288#55407#0" />
+            <element signature="e#55473#56849#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/lib/record.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="990">
-          <caret line="82" column="90" selection-start-line="82" selection-start-column="57" selection-end-line="82" selection-end-column="90" />
+        <state relative-caret-position="309">
+          <caret line="453" column="90" selection-start-line="453" selection-start-column="58" selection-end-line="453" selection-end-column="90" />
           <folding>
             <element signature="e#464#641#0" />
             <element signature="e#743#1107#0" />
@@ -1173,7 +1378,6 @@
             <element signature="e#10762#11314#0" />
             <element signature="e#10762#10839#1" />
             <element signature="e#11210#11270#0" />
-            <element signature="e#11407#11812#0" />
             <element signature="e#11902#12301#0" />
             <element signature="e#12390#12788#0" />
             <element signature="e#12810#12830#0" />
@@ -1181,13 +1385,11 @@
             <element signature="e#13252#13338#0" />
             <element signature="e#13429#13845#0" />
             <element signature="e#13763#13823#0" />
-            <element signature="e#13867#13895#0" />
             <element signature="e#13964#14334#0" />
             <element signature="e#14428#15084#0" />
             <element signature="e#14428#14509#1" />
             <element signature="e#15181#15693#0" />
             <element signature="e#15181#15262#1" />
-            <element signature="e#15763#16129#0" />
             <element signature="e#16192#16551#0" />
             <element signature="e#16637#17042#0" />
             <element signature="e#17117#17492#0" />
@@ -1200,7 +1402,6 @@
             <element signature="e#20690#20750#0" />
             <element signature="e#20903#21664#0" />
             <element signature="e#21560#21620#0" />
-            <element signature="e#21773#22544#0" />
             <element signature="e#21773#21903#1" />
             <element signature="e#22440#22500#0" />
             <element signature="e#22630#24052#0" />
@@ -1220,7 +1421,6 @@
             <element signature="e#26790#26864#1" />
             <element signature="e#27231#27291#0" />
             <element signature="e#27747#27807#0" />
-            <element signature="e#27924#28390#0" />
             <element signature="e#28307#28367#0" />
             <element signature="e#28460#28902#0" />
             <element signature="e#28819#28879#0" />
@@ -1238,95 +1438,37 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/query_xml/query_hitter.xml">
+    <entry file="file://$PROJECT_DIR$/query_xml/query_pitcher.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="5764">
-          <caret line="262" column="22" selection-start-line="262" selection-start-column="22" selection-end-line="262" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/lib/message_teller.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="924">
-          <caret line="42" column="26" lean-forward="true" selection-start-line="42" selection-start-column="26" selection-end-line="42" selection-end-column="26" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/lib/message_log.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-2">
-          <caret line="18" column="8" selection-start-line="18" selection-start-column="8" selection-end-line="18" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/lib/player.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-940">
-          <caret line="352" column="8" selection-start-line="352" selection-start-column="8" selection-end-line="352" selection-end-column="8" />
-          <folding>
-            <element signature="e#0#22#0" expanded="true" />
-            <element signature="e#254#320#0" />
-            <element signature="e#694#763#0" />
-            <element signature="e#810#852#0" />
-            <element signature="e#894#990#0" />
-            <element signature="e#1033#1167#0" />
-            <element signature="e#1653#1741#1" />
-            <element signature="e#1762#1942#0" />
-            <element signature="e#2167#2278#0" />
-            <element signature="e#3489#3566#0" />
-            <element signature="e#4100#4274#0" />
-            <element signature="e#4365#4700#0" />
-            <element signature="e#4365#4523#1" />
-            <element signature="e#4788#5103#0" />
-            <element signature="e#4788#4929#1" />
-            <element signature="e#5188#5506#0" />
-            <element signature="e#5188#5335#1" />
-            <element signature="e#5589#5903#0" />
-            <element signature="e#5589#5734#1" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="506">
-          <caret line="29" column="24" selection-start-line="29" selection-start-column="24" selection-end-line="29" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/lib/score_table.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="132">
-          <caret line="6" column="21" lean-forward="true" selection-start-line="6" selection-start-column="21" selection-end-line="6" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/lib/message_maker.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="183">
-          <caret line="1006" column="21" selection-start-line="1006" selection-start-column="21" selection-end-line="1006" selection-end-column="21" />
-          <folding>
-            <element signature="e#0#21#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="127">
+          <caret line="76" column="51" lean-forward="true" selection-start-line="76" selection-start-column="51" selection-end-line="76" selection-end-column="51" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/config.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="158">
-          <caret line="34" column="29" lean-forward="true" selection-start-line="34" selection-start-column="29" selection-end-line="34" selection-end-column="29" />
+        <state relative-caret-position="224">
+          <caret line="37" column="30" selection-start-line="37" selection-start-column="13" selection-end-line="37" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="154">
+          <caret line="11" selection-start-line="11" selection-end-line="11" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/game_app.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="836">
-          <caret line="414" column="29" lean-forward="true" selection-start-line="414" selection-start-column="29" selection-end-line="414" selection-end-column="29" />
+        <state relative-caret-position="89">
+          <caret line="204" selection-start-line="204" selection-end-line="204" />
           <folding>
             <element signature="e#0#29#0" expanded="true" />
+            <element signature="e#5109#5212#1" />
             <element signature="e#6604#6627#0" />
             <element signature="e#7180#7203#0" />
-            <element signature="e#7999#8047#0" />
+            <element signature="e#9498#9530#0" />
             <element signature="e#10126#10149#0" />
             <element signature="e#11302#11325#0" />
             <element signature="e#11869#11883#0" />
@@ -1338,34 +1480,6 @@
             <element signature="e#31285#32761#0" />
             <element signature="e#32857#33731#0" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://C:/Python35/Lib/site-packages/korean/hangul.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-625">
-          <caret line="49" column="4" selection-start-line="49" selection-start-column="4" selection-end-line="49" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://C:/Python35/Lib/site-packages/korean/morphology/particle.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="22">
-          <caret line="25" column="8" selection-start-line="25" selection-start-column="8" selection-end-line="25" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://C:/Python35/Lib/site-packages/korean/morphology/substantive.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="321">
-          <caret line="37" column="34" selection-start-line="37" selection-start-column="34" selection-end-line="37" selection-end-column="34" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/lib/commentate.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="422">
-          <caret line="480" column="20" selection-start-line="480" selection-start-column="20" selection-end-line="480" selection-end-column="20" />
         </state>
       </provider>
     </entry>
