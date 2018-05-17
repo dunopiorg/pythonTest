@@ -555,6 +555,7 @@ class GameApp(object):
         league_score = 0
         rate_score = 0
         state_pa_val = 0
+        split_score_val = 0
 
         if event_name == self.HITTER_EVENT or event_name == self.HITTER_STARTING_SPLIT or event_name == self.HITTER_STARTING:
             score_dict = self.hitter_catg_score
@@ -591,7 +592,12 @@ class GameApp(object):
             else:
                 state_split_val = 0.1
 
-        result = round(rate_score + rank_score + ((state_val + state_split_val) * league_score), 3)
+            query_string = "group_id == '%s' and state_split == '%s'" % (event_name, state_split)
+            template_table = self.msg_maker.df_template.query(query_string)
+            if not template_table.empty:
+                split_score_val = template_table.split_score.values[0]
+
+        result = round(rate_score + rank_score + ((state_val + state_split_val + split_score_val) * league_score), 3)
 
         return result
 
