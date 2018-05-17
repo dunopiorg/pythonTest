@@ -7,11 +7,7 @@
   <component name="ChangeListManager">
     <list default="true" id="78a3ffa2-cc51-441d-8d58-d4b8fdbaebbb" name="Default" comment="SKB 샘플 준비 수정 버전">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/commentate.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/commentate.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/game_app.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/game_app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/message_maker.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/message_maker.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/player.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/player.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/log/20170609SSHH0.md" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/log/20170914SKOB0.md" beforeDir="false" afterPath="$PROJECT_DIR$/log/20170914SKOB0.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/log/test_log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/log/test_log.txt" afterDir="false" />
@@ -31,8 +27,8 @@
       <file leaf-file-name="game_app.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lib/game_app.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="396">
-              <caret line="421" selection-start-line="421" selection-end-line="421" />
+            <state relative-caret-position="836">
+              <caret line="414" column="29" lean-forward="true" selection-start-line="414" selection-start-column="29" selection-end-line="414" selection-end-column="29" />
               <folding>
                 <element signature="e#0#29#0" expanded="true" />
                 <element signature="e#6604#6627#0" />
@@ -71,20 +67,29 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="message_log.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/lib/message_log.py">
+      <file leaf-file-name="substantive.py" pinned="false" current-in-tab="false">
+        <entry file="file://C:/Python35/Lib/site-packages/korean/morphology/substantive.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-2">
-              <caret line="18" column="8" selection-start-line="18" selection-start-column="8" selection-end-line="18" selection-end-column="8" />
+            <state relative-caret-position="321">
+              <caret line="37" column="34" selection-start-line="37" selection-start-column="34" selection-end-line="37" selection-end-column="34" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="message_teller.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/lib/message_teller.py">
+      <file leaf-file-name="particle.py" pinned="false" current-in-tab="false">
+        <entry file="file://C:/Python35/Lib/site-packages/korean/morphology/particle.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="924">
-              <caret line="42" column="26" lean-forward="true" selection-start-line="42" selection-start-column="26" selection-end-line="42" selection-end-column="26" />
+            <state relative-caret-position="22">
+              <caret line="25" column="8" selection-start-line="25" selection-start-column="8" selection-end-line="25" selection-end-column="8" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="hangul.py" pinned="false" current-in-tab="false">
+        <entry file="file://C:/Python35/Lib/site-packages/korean/hangul.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-625">
+              <caret line="49" column="4" selection-start-line="49" selection-start-column="4" selection-end-line="49" selection-end-column="4" />
             </state>
           </provider>
         </entry>
@@ -119,14 +124,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="commentate.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="commentate.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/lib/commentate.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="216">
-              <caret line="422" column="50" selection-start-line="422" selection-start-column="50" selection-end-line="422" selection-end-column="50" />
-              <folding>
-                <element signature="e#8385#8408#0" />
-              </folding>
+            <state relative-caret-position="422">
+              <caret line="480" column="20" selection-start-line="480" selection-start-column="20" selection-end-line="480" selection-end-column="20" />
             </state>
           </provider>
         </entry>
@@ -143,20 +145,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="config.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="config.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/config.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="158">
               <caret line="34" column="29" lean-forward="true" selection-start-line="34" selection-start-column="29" selection-end-line="34" selection-end-column="29" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="query_hitter.xml" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/query_xml/query_hitter.xml">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="5764">
-              <caret line="262" column="22" selection-start-line="262" selection-start-column="22" selection-end-line="262" selection-end-column="22" />
             </state>
           </provider>
         </entry>
@@ -172,9 +165,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>insert</find>
-      <find>get_max_li_rate</find>
-      <find>get_record_matrix_mix</find>
       <find>개째</find>
       <find>SEASON_ONE_LEFT</find>
       <find>get_li_rate</find>
@@ -192,7 +182,6 @@
       <find>WPA_RATE</find>
       <find>RANKER_TOTAL_LEFT</find>
       <find>한 타점</find>
-      <find>wpa</find>
       <find>RANKER_TOTAL</find>
       <find>RANKER_SEASON</find>
       <find>VS_TEAM</find>
@@ -202,6 +191,10 @@
       <find>'HIT_EVENT'</find>
       <find>result_today</find>
       <find>def get_msg</find>
+      <find>wpa</find>
+      <find>TEAM_NAME</find>
+      <find>팀이름</find>
+      <find>is_han</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -255,18 +248,18 @@
         <option value="$PROJECT_DIR$/main.py" />
         <option value="C:/Python35/Lib/site-packages/korean/morphology/particle.py" />
         <option value="$PROJECT_DIR$/lib/player.py" />
-        <option value="$PROJECT_DIR$/lib/commentate.py" />
         <option value="$PROJECT_DIR$/lib/score_table.py" />
         <option value="$PROJECT_DIR$/lib/game_app.py" />
         <option value="$PROJECT_DIR$/lib/message_maker.py" />
         <option value="$PROJECT_DIR$/config.py" />
+        <option value="$PROJECT_DIR$/lib/commentate.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-1928" />
+    <option name="x" value="-8" />
     <option name="y" value="-8" />
-    <option name="width" value="1856" />
+    <option name="width" value="1936" />
     <option name="height" value="1096" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
@@ -624,7 +617,21 @@
       <option name="project" value="LOCAL" />
       <updated>1526364573615</updated>
     </task>
-    <option name="localTasksCounter" value="25" />
+    <task id="LOCAL-00025" summary="SKB 샘플 준비 수정 버전">
+      <created>1526459210702</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1526459210702</updated>
+    </task>
+    <task id="LOCAL-00026" summary="LI 추가">
+      <created>1526460930823</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1526460930823</updated>
+    </task>
+    <option name="localTasksCounter" value="27" />
     <servers />
   </component>
   <component name="TodoView">
@@ -637,7 +644,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-1928" y="-8" width="1936" height="1096" extended-state="6" />
+    <frame x="-8" y="-8" width="1856" height="1096" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" weight="0.16314678" />
@@ -646,10 +653,10 @@
       <window_info anchor="bottom" id="Find" order="1" sideWeight="0.5810364" weight="0.65597343" />
       <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4977778" weight="0.29359823" />
       <window_info anchor="bottom" id="Version Control" order="10" sideWeight="0.6440866" weight="0.32781458" />
-      <window_info anchor="bottom" id="Python Console" order="11" weight="0.29867256" />
+      <window_info active="true" anchor="bottom" id="Python Console" order="11" visible="true" weight="0.29867256" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.15417106" />
       <window_info anchor="bottom" id="Terminal" order="9" weight="0.32807016" />
-      <window_info active="true" anchor="bottom" id="Debug" order="3" sideWeight="0.62935585" visible="true" weight="0.335177" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.62935585" weight="0.24889381" />
       <window_info id="Favorites" order="2" side_tool="true" weight="0.11742007" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
@@ -712,7 +719,8 @@
     <MESSAGE value="WPA 변화량 수정" />
     <MESSAGE value="SKB 샘플 준비 버전" />
     <MESSAGE value="SKB 샘플 준비 수정 버전" />
-    <option name="LAST_COMMIT_MESSAGE" value="SKB 샘플 준비 수정 버전" />
+    <MESSAGE value="LI 추가" />
+    <option name="LAST_COMMIT_MESSAGE" value="LI 추가" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1130,27 +1138,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://C:/Python35/Lib/site-packages/korean/hangul.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1078">
-          <caret line="49" column="4" selection-start-line="49" selection-start-column="4" selection-end-line="49" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://C:/Python35/Lib/site-packages/korean/morphology/substantive.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="748">
-          <caret line="37" column="38" selection-start-line="37" selection-start-column="38" selection-end-line="37" selection-end-column="38" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://C:/Python35/Lib/site-packages/korean/morphology/particle.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1958">
-          <caret line="92" column="40" selection-start-line="92" selection-start-column="40" selection-end-line="92" selection-end-column="40" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/lib/record.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="990">
@@ -1258,16 +1245,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/commentate.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="216">
-          <caret line="422" column="50" selection-start-line="422" selection-start-column="50" selection-end-line="422" selection-end-column="50" />
-          <folding>
-            <element signature="e#8385#8408#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/lib/message_teller.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="924">
@@ -1324,10 +1301,27 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/lib/message_maker.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="183">
+          <caret line="1006" column="21" selection-start-line="1006" selection-start-column="21" selection-end-line="1006" selection-end-column="21" />
+          <folding>
+            <element signature="e#0#21#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/config.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="158">
+          <caret line="34" column="29" lean-forward="true" selection-start-line="34" selection-start-column="29" selection-end-line="34" selection-end-column="29" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/lib/game_app.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="396">
-          <caret line="421" selection-start-line="421" selection-end-line="421" />
+        <state relative-caret-position="836">
+          <caret line="414" column="29" lean-forward="true" selection-start-line="414" selection-start-column="29" selection-end-line="414" selection-end-column="29" />
           <folding>
             <element signature="e#0#29#0" expanded="true" />
             <element signature="e#6604#6627#0" />
@@ -1347,20 +1341,31 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/message_maker.py">
+    <entry file="file://C:/Python35/Lib/site-packages/korean/hangul.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="183">
-          <caret line="1006" column="21" selection-start-line="1006" selection-start-column="21" selection-end-line="1006" selection-end-column="21" />
-          <folding>
-            <element signature="e#0#21#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="-625">
+          <caret line="49" column="4" selection-start-line="49" selection-start-column="4" selection-end-line="49" selection-end-column="4" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/config.py">
+    <entry file="file://C:/Python35/Lib/site-packages/korean/morphology/particle.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="158">
-          <caret line="34" column="29" lean-forward="true" selection-start-line="34" selection-start-column="29" selection-end-line="34" selection-end-column="29" />
+        <state relative-caret-position="22">
+          <caret line="25" column="8" selection-start-line="25" selection-start-column="8" selection-end-line="25" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Python35/Lib/site-packages/korean/morphology/substantive.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="321">
+          <caret line="37" column="34" selection-start-line="37" selection-start-column="34" selection-end-line="37" selection-end-column="34" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/commentate.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="422">
+          <caret line="480" column="20" selection-start-line="480" selection-start-column="20" selection-end-line="480" selection-end-column="20" />
         </state>
       </provider>
     </entry>

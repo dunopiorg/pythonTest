@@ -470,12 +470,15 @@ class Commentate(object):
                     state_split = 'LI_ON_B_1L'
                 elif base_detail in ['2B', '3B', '23B', '13B', '123B'] and score_detail[1] == 'L':
                     state_split = 'LI_ON_B_L'
+                elif base_detail in ['2B', '3B', '23B', '13B', '123B'] and score_detail == '0D':
+                    state_split = 'LI_ON_B_D'
                 elif base_detail in ['2B', '3B', '23B', '13B', '123B']:
                     state_split = 'LI_ON_B'
                 elif base_detail not in ['2B', '3B', '23B', '13B', '123B'] and score_detail == '1L':
                     state_split = 'LI_NO_B_1L'
                 elif base_detail not in ['2B', '3B', '23B', '13B', '123B'] and score_detail == '0D':
                     state_split = 'LI_NO_B_D'
+
                 li_dict['STATE_SPLIT'] = state_split
                 if state_split:
                     result_list.append(li_dict)
