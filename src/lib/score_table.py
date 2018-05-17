@@ -78,4 +78,5 @@ class ScoreTable(object):
                     parameter_list.append(relative_row)
                     self.set(i, None)
 
+        self.clear_none()
         return event, event_group, parameter_list

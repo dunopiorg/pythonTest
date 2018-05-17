@@ -1637,7 +1637,8 @@ class Pitcher(Player):
     # endregion Pitcher 기록
 
 if __name__ == "__main__":
-    hitter = Hitter(78224)
-    pitcher = Pitcher(60263)
-    result_how = hitter.get_season_hitter_event_10_units('20170912OBNC0')
-    print(result_how)
+    # hitter = Hitter(78224)
+    # pitcher = Pitcher(60263)
+    # result_how = pitcher.('20170912OBNC0')
+    # print(result_how)
+    pass

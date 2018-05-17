@@ -213,7 +213,7 @@ class GameApp(object):
                 pitcher_starting = self.get_pitcher_record_data_v0(pitcher, live_dict['hitteam'])
             if pitcher_starting:
                 result_pitcher.update({self.PITCHER_STARTING: pitcher_starting})
-        elif pitcher and pitcher not in self.pitcher_mound_list and text_style == 2:
+        elif pitcher != self.curr_pitcher.player_code and pitcher not in self.pitcher_mound_list and text_style == 2:
             self.pitcher_mound_list.append(pitcher)
             self.prev_pitcher = self.curr_pitcher
             self.curr_pitcher = player.Pitcher(pitcher)
@@ -433,8 +433,6 @@ class GameApp(object):
                         self.put_message_table(msg_dict)
                     else:
                         print(msg)
-
-                self.score_table.clear_none()
     # endregion
 
     # region Message Table Queue Functions
@@ -446,9 +444,15 @@ class GameApp(object):
             if msg_dict['log_kind'] == self.COMMON_EVENT:
                 self.msg_teller.put_rear(msg_dict)  # Queue의 마지막에 넣는다.
             else:
-                msg_count = self.msg_history.get_count(msg_dict)[0]
-                if int(msg_count['count']) == 0:
-                    self.msg_teller.put_rear(msg_dict)  #Queue의 마지막에 넣는다.
+                msg_count = int(self.msg_history.get_count(msg_dict)[0]['count'])
+                if msg_count == 0:
+                    if msg_dict['log_kind'] == self.HITTER_STARTING:
+                        starting_counter = int(self.recorder.get_player_starting_times(self.game_status.game_key, msg_dict['subject'], self.game_status.current_seq_no + 1)[0]['starting_count'])
+                        log_staring_counter = int(self.msg_history.get_starting_msg_count(msg_dict)[0]['count'])
+                        if starting_counter > log_staring_counter:
+                            self.msg_teller.put_rear(msg_dict)  # Queue의 마지막에 넣는다.
+                    else:
+                        self.msg_teller.put_rear(msg_dict)  #Queue의 마지막에 넣는다.
 
     def message_printer_thread(self):
         while self.game_thread == 1:
@@ -457,10 +461,8 @@ class GameApp(object):
                 self.msg_history.insert_log(message_dict)
                 self.result_printer.info("#### {}".format(message_dict['message'].rstrip('\n')))
                 print(message_dict['message'].rstrip('\n'))
-                if message_dict['log_kind'] == self.HITTER_STARTING:
-                    self.logger.warn("log_kind: %s, subject: %s" % (message_dict['log_kind'], message_dict['subject']))
-                    self.msg_teller.remove_items(message_dict['log_kind'], message_dict['subject'])
-            time.sleep(config.SLEEP_TIME/2)
+                # if message_dict['log_kind'] == self.HITTER_STARTING:
+                #     self.msg_teller.remove_items(message_dict['log_kind'], message_dict['subject'])
     # endregion
 
     # region 기능 관련 Functions

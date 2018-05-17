@@ -9,6 +9,7 @@ class GameStatus(object):
         self.game_key = game_key
         self.game_score = None
         self.gamecontapp_serno = 0
+        self.current_seq_no = 0
         self.last_how_seq_no = 0
         self.tscore = 0
         self.bscore = 0
@@ -110,7 +111,7 @@ class GameStatus(object):
         ball_type = live_data['ball_type']
         home_score = live_data['H_Run']
         away_score = live_data['A_Run']
-        seq_no = live_data['seqNO']
+        self.current_seq_no = live_data['seqNO']
         how = live_data['HOW']
         inning = live_data['inning']
         year = live_data['GYEAR']
@@ -130,7 +131,7 @@ class GameStatus(object):
                        'full_count': full_count, 'base_detail': base_detail, 'score_detail': score_detail,
                        'batorder': bat_order, 'ballcount': ball_count, 'textStyle': text_style,
                        'pitname': pitname, 'hitname': hitname, 'home_score': home_score,
-                       'away_score': away_score, 'tb': tb, 'seq_no': seq_no, 'how': how,
+                       'away_score': away_score, 'tb': tb, 'seq_no': self.current_seq_no, 'how': how,
                        'inning': inning, 'ball_type': ball_type, 'gyear':year}
         return result_dict
 

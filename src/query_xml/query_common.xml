@@ -127,4 +127,13 @@
         WHERE A.gameID = '{0}'
         ORDER BY seqNo
     </query>
+
+	 <query id="get_player_starting_times">
+        SELECT count(seqNO) as starting_count
+		FROM baseball.ie_livetext_score_mix
+		WHERE gameID = '{gameID}'
+		AND batter = '{batter}'
+		AND seqNO &lt; '{seqNO}'
+		AND textStyle = 8
+    </query>
 </data>

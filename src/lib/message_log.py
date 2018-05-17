@@ -63,6 +63,24 @@ class MsgLog(object):
 
         return result
 
+    @classmethod
+    def get_starting_msg_count(cls, msg_info):
+        conn = pymysql.connect(host=cls.HOST, port=cls.PORT, user=cls.USER,
+                               password=cls.PASSWORD, db=cls.DB, charset='utf8mb4')
+
+        log_kind = msg_info['log_kind']
+        subject = msg_info['subject']
+        game_id = msg_info['game_id']
+
+        query_format = cls.ql.get_query("query_log", "get_starting_msg_count")
+        query = query_format.format(game_id=game_id, log_kind=log_kind, subject=subject)
+
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query)
+
+        result = cursor.fetchall()
+
+        return result
 
 #if __name__ == "__main__":
     # logger = logging.getLogger('myloger')

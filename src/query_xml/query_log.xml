@@ -16,4 +16,12 @@
 		AND subject = '{subject}'
 		AND inning = '{inning}'
     </query>
+
+	<query id="get_starting_msg_count">
+		SELECT count(row_key) AS count
+		FROM message_log
+		WHERE game_id = '{game_id}'
+		AND log_kind = '{log_kind}'
+		AND subject = '{subject}'
+    </query>
 </data>
