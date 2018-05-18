@@ -1359,7 +1359,7 @@ class Pitcher(Player):
             for state in state_list:
                 df_pitchers_detail = df_total_pitchers_detail.sort_values(by=state, ascending=False).reset_index()
                 pitcher_rank = df_pitchers_detail[df_pitchers_detail['PCODE'] == str(self.player_code)].index[0] + 1
-                pitcher_record = df_pitchers_detail.iloc[pitcher_rank - 1][state].astype(int)
+                pitcher_record = int(df_pitchers_detail.iloc[pitcher_rank - 1][state])
 
                 if pitcher_rank <= state_ranker_dict[state]:
                     set_ranker_dict = data_dict.copy()
@@ -1388,7 +1388,7 @@ class Pitcher(Player):
             for state_record_count in reversed(state_records_list):
                 df_pitchers = df_total_pitchers.sort_values(by=state, ascending=False).reset_index()
                 pitcher_rank = df_pitchers[df_pitchers['PCODE'] == str(self.player_code)].index[0] + 1
-                pitcher_record = df_pitchers.iloc[pitcher_rank - 1][state].astype(int)
+                pitcher_record = int(df_pitchers.iloc[pitcher_rank - 1][state])
 
                 if pitcher_record == state_record_count:
                     set_rank_left_dict = data_dict.copy()
@@ -1497,7 +1497,7 @@ class Pitcher(Player):
                         df_total_pitchers = self.recorder.get_total_pitchers_df()
                         df_pitchers = df_total_pitchers.sort_values(by=state_col, ascending=False).reset_index()
                         pitcher_rank = df_pitchers[df_pitchers['PCODE'] == str(self.player_code)].index[0] + 1
-                        pitcher_record = df_pitchers.iloc[pitcher_rank - 1][state_col].astype(int)
+                        pitcher_record = int(df_pitchers.iloc[pitcher_rank - 1][state_col])
 
                         set_cg_sho_dict = data_dict.copy()
                         set_cg_sho_dict['NGAME'] = state_counter
@@ -1511,7 +1511,7 @@ class Pitcher(Player):
                     df_pitcher_total = self.recorder.get_pitcher_season_realtime_record(game_id)
                     df_pitcher = df_pitcher_total.sort_values(by=state_col, ascending=False).reset_index()
                     pitcher_rank = df_pitcher[df_pitcher['PCODE'] == str(self.player_code)].index[0] + 1
-                    pitcher_record = df_pitcher.iloc[pitcher_rank - 1][state_col].astype(int)
+                    pitcher_record = int(df_pitcher.iloc[pitcher_rank - 1][state_col])
 
                     set_n_game_dict = data_dict.copy()
                     set_n_game_dict['NGAME'] = state_counter
@@ -1637,6 +1637,8 @@ class Pitcher(Player):
     # endregion Pitcher 기록
 
 if __name__ == "__main__":
+    recorder = record.Record()
+    df_pitcher_total = recorder.get_pitcher_season_realtime_record('20170912OBNC0')
     # hitter = Hitter(78224)
     # pitcher = Pitcher(60263)
     # result_how = pitcher.('20170912OBNC0')
