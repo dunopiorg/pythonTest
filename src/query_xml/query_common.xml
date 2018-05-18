@@ -98,9 +98,12 @@
 	<query id="get_record_matrix_mix">
 		SELECT ROUND(BEFORE_WE_RT, 3) AS BEFORE_WE_RT
 						, ROUND(AFTER_WE_RT, 3) AS AFTER_WE_RT
+						, BEFORE_SCORE_GAP_CN
+						, AFTER_SCORE_GAP_CN
 						, ROUND(WPA_RT, 3) AS WPA_RT
 						, ROUND(LI_RT, 3) AS LI_RT
 						, ROUND(RE_RT, 3) AS RE_RT
+						, BAT_P_ID
 		FROM baseball.record_matrix_mix
 		WHERE GAMEID = '{0}'
 		AND GYEAR = '{1}'
