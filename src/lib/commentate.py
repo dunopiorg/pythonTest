@@ -475,6 +475,8 @@ class Commentate(object):
                     state_split = 'LI_RUN_B_1L'
                 elif base_detail in ['23B', '123B'] and score_detail[1] == 'L':
                     state_split = 'LI_RUN_B_L'
+                elif base_detail in ['23B', '123B'] and score_detail == '0D':
+                    state_split = 'LI_RUN_B_D'
                 elif base_detail in ['23B', '123B']:
                     state_split = 'LI_RUN_B'
                 elif base_detail in ['2B', '3B', '13B'] and score_detail == '1L':

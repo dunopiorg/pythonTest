@@ -42,8 +42,8 @@
       <file leaf-file-name="commentate.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/lib/commentate.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="423">
-              <caret line="482" column="31" selection-start-line="482" selection-start-column="20" selection-end-line="482" selection-end-column="31" />
+            <state relative-caret-position="401">
+              <caret line="478" column="45" selection-start-line="478" selection-start-column="45" selection-end-line="478" selection-end-column="45" />
               <folding>
                 <element signature="e#13834#13859#0" />
               </folding>
@@ -751,7 +751,14 @@
       <option name="project" value="LOCAL" />
       <updated>1526633539207</updated>
     </task>
-    <option name="localTasksCounter" value="33" />
+    <task id="LOCAL-00033" summary="SKB 샘플 준비 수정 버전">
+      <created>1526878469316</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1526878469316</updated>
+    </task>
+    <option name="localTasksCounter" value="34" />
     <servers />
   </component>
   <component name="TodoView">
@@ -840,11 +847,11 @@
     <MESSAGE value="SKB 샘플 준비 버전" />
     <MESSAGE value="LI 추가" />
     <MESSAGE value="LI 수정 버전" />
-    <MESSAGE value="SKB 샘플 준비 수정 버전" />
     <MESSAGE value="Split 점수추가" />
     <MESSAGE value="에러 수정" />
     <MESSAGE value="WPA 추가 버전" />
-    <option name="LAST_COMMIT_MESSAGE" value="WPA 추가 버전" />
+    <MESSAGE value="SKB 샘플 준비 수정 버전" />
+    <option name="LAST_COMMIT_MESSAGE" value="SKB 샘플 준비 수정 버전" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -885,7 +892,7 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="1678" />
+      <option name="time" value="1679" />
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
@@ -1469,8 +1476,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/commentate.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="423">
-          <caret line="482" column="31" selection-start-line="482" selection-start-column="20" selection-end-line="482" selection-end-column="31" />
+        <state relative-caret-position="401">
+          <caret line="478" column="45" selection-start-line="478" selection-start-column="45" selection-end-line="478" selection-end-column="45" />
           <folding>
             <element signature="e#13834#13859#0" />
           </folding>
