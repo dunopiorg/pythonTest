@@ -448,36 +448,39 @@ class Commentate(object):
                 max_li['STATE_SPLIT'] = state_split
                 result_list.append(max_li)
             elif curr_li_rt > 1:
+                if out_count == 0:
+                    out = '무'
+                else:
+                    out = out_count
                 li_dict = data_dict.copy()
                 li_dict['HITNAME'] = live_dict['hitname']
                 li_dict['LEAGUE'] = 'SEASON'
                 li_dict['DIFF_SCORE'] = score_detail[0]
+                li_dict['OUTCOUNT'] = out
                 if tb == 'T':
                     li_dict['TEAM_NAME'] = self.TEAM_KOR[away_team]
                 else:
                     li_dict['TEAM_NAME'] = self.TEAM_KOR[home_team]
                 if base_detail == '123B':
-                    li_dict['RUNNER'] = '만루'
+                    li_dict['RUNNER'] = '만루에'
                 elif base_detail == '0B':
-                    pass
+                    li_dict['RUNNER'] = '없이'
                 else:
-                    li_dict['RUNNER'] = '-'.join(base_detail[:-1])
+                    li_dict['RUNNER'] = ', '.join(base_detail[:-1]) + '루에'
 
                 state_split = ''
                 if base_detail == '0B' and score_detail[1] == 'W':
                     state_split = 'LI_NO_W'
-                elif base_detail in ['2B', '3B', '23B', '13B', '123B'] and score_detail == '1L':
+                elif base_detail in ['23B', '123B'] and score_detail == '1L':
+                    state_split = 'LI_RUN_B_1L'
+                elif base_detail in ['23B', '123B'] and score_detail[1] == 'L':
+                    state_split = 'LI_RUN_B_L'
+                elif base_detail in ['23B', '123B']:
+                    state_split = 'LI_RUN_B'
+                elif base_detail in ['2B', '3B', '13B'] and score_detail == '1L':
                     state_split = 'LI_ON_B_1L'
-                elif base_detail in ['2B', '3B', '23B', '13B', '123B'] and score_detail[1] == 'L':
-                    state_split = 'LI_ON_B_L'
-                elif base_detail in ['2B', '3B', '23B', '13B', '123B'] and score_detail == '0D':
+                elif base_detail in ['2B', '3B', '13B'] and score_detail == '0D':
                     state_split = 'LI_ON_B_D'
-                elif base_detail in ['2B', '3B', '23B', '13B', '123B']:
-                    state_split = 'LI_ON_B'
-                elif base_detail not in ['2B', '3B', '23B', '13B', '123B'] and score_detail == '1L':
-                    state_split = 'LI_NO_B_1L'
-                elif base_detail not in ['2B', '3B', '23B', '13B', '123B'] and score_detail == '0D':
-                    state_split = 'LI_NO_B_D'
 
                 li_dict['STATE_SPLIT'] = state_split
                 if state_split:
