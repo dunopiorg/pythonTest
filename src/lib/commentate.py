@@ -524,12 +524,12 @@ class Commentate(object):
                     else:
                         wpa_rate['TEAM_WE_RT'] = home_after_we_rt
 
-                    if (tb == 'T' and wpa_rt < 0 and after_we_rt < 0.5) or (tb == 'B' and wpa_rt > 0 and after_we_rt > 0.5):
-                        wpa_rate['STATE_SPLIT'] = 'WPA_RATE'
+                    if (tb == 'T' and after_score_gap < 0 < before_score_gap) or (tb == 'B' and before_score_gap < 0 < after_score_gap):
+                        wpa_rate['STATE_SPLIT'] = 'WPA_RATE_TURNED'
                     elif (tb == 'T' and before_score_gap > 0 and after_score_gap == 0) or (tb == 'B' and before_score_gap < 0 and after_score_gap == 0):
                         wpa_rate['STATE_SPLIT'] = 'WPA_RATE_DRAW'
-                    elif (tb == 'T' and after_score_gap < 0 < before_score_gap) or (tb == 'B' and before_score_gap < 0 < after_score_gap ):
-                        wpa_rate['STATE_SPLIT'] = 'WPA_RATE_TURNED'
+                    elif (tb == 'T' and wpa_rt < 0 and after_we_rt < 0.5) or (tb == 'B' and wpa_rt > 0 and after_we_rt > 0.5):
+                        wpa_rate['STATE_SPLIT'] = 'WPA_RATE'
 
                     if wpa_rate['STATE_SPLIT']:
                         result_list.append(wpa_rate)
