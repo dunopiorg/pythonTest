@@ -504,7 +504,7 @@ class Commentate(object):
                 if abs(wpa_rt) > 0.1:
                     home_after_we_rt = round(after_we_rt * 100)
                     away_after_we_rt = round((1 - after_we_rt) * 100)
-                    wpa_rt = abs(round(wpa_rt * 100))
+                    wpa_rt_p = abs(round(wpa_rt * 100))
                     wpa_rate = data_dict.copy()
                     wpa_rate['LEAGUE'] = 'SEASON'
                     wpa_rate['STATE_SPLIT'] = ''
@@ -514,7 +514,7 @@ class Commentate(object):
                     else:
                         wpa_rate['TEAM'] = self.TEAM_KOR[home_team]
                     wpa_rate['HITNAME'] = hitter_info['NAME']
-                    wpa_rate['WPA_RT'] = wpa_rt
+                    wpa_rate['WPA_RT'] = wpa_rt_p
                     wpa_rate['HOME_TEAM'] = self.TEAM_KOR[home_team]
                     wpa_rate['AWAY_TEAM'] = self.TEAM_KOR[away_team]
                     wpa_rate['HOME_WE_RT'] = home_after_we_rt
