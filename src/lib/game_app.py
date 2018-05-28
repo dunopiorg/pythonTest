@@ -884,7 +884,6 @@ class GameApp(object):
         return result_list
 
     def get_hitter_how_event_data(self, live_dict, hitter, how_state):
-        hitter = live_dict['hitter']
         hitter_name = live_dict['hitname']
         pitcher = live_dict['pitcher']
         pit_team = live_dict['pitteam']
