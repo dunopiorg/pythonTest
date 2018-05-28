@@ -171,6 +171,9 @@ class Hitter(Player):
         N게임, 타석, 시즌 연속 기록 데이터를 생성한다.
         :return:
         """
+        if state == 'RUN':
+            return None
+
         # HIT 안타, HR 홈런, H2 2루타, H3 3루타, RBI 타점 OB 출루, SB 도루
         state_dict = {'HIT': ['H1', 'HI', 'HB'], 'HR': ['HR'], 'H2': ['H2'], 'H3': ['H3'],
                       'RBI': ['E', 'R', 'H'], 'OB': ['H1', 'H2', 'H3', 'HR', 'HI', 'HB', 'BB'], 'SB': ['SB']}
@@ -616,7 +619,7 @@ class Hitter(Player):
     def get_total_hitter_100_units_data(self, game_key, how):
         data_dict = {'HITTER': self.player_code, 'HITNAME': self.player_info['NAME'], 'OPPONENT': 'ALL',
                      'LEAGUE': 'SEASON', 'PITCHER': 'NA', 'PITNAME': 'NA', 'PITTEAM': 'NA', 'RANK': 1}
-        state_dict = {'HIT': 300, 'H2': 100, 'H3': 100, 'RUN': 30, 'RBI': 100, 'HR': 100}
+        state_dict = {'HIT': 300, 'H2': 100, 'H3': 100, 'RUN': 30, 'RBI': 100, 'HR': 100, 'SB': 200}
         if how in ['H1', 'H2', 'H3', 'HR', 'HI', 'HB']:
             state_list = [how, 'RUN', 'RBI']
         else:

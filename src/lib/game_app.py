@@ -39,6 +39,7 @@ class GameApp(object):
         self.prev_pitcher = None
         self.prev_hitter = None
         self.curr_hitter = None
+        self.curr_runner = None
         self.curr_pitcher = None
         self.hitter_catg_score = {}
         self.pitcher_catg_score = {}
@@ -160,6 +161,7 @@ class GameApp(object):
         live_state_sc = live_text_dict['STATE_SC']
         how = live_text_dict['HOW']
         batter = live_text_dict['batter']
+        runner = live_text_dict['runner']
         bat_order = live_text_dict['batorder']
         game_id = live_text_dict['gameID']
         seq_num = live_text_dict['seqNO']
@@ -278,9 +280,9 @@ class GameApp(object):
             first_ball_result = self.commentator.get_first_ball_info(self.curr_hitter.player_code, ball_type)
             if first_ball_result:
                 self.set_score(self.COMMON_EVENT, first_ball_result)
-        # endregion
+        # endregion 초구 정보
 
-        # region [기록] Hitter How Event 발생
+        # region [기록:HITTER] Hitter How Event 발생
         if text_style == 13 or text_style == 23:
             how_event = None
             hitter_record = None
@@ -319,20 +321,28 @@ class GameApp(object):
                 how_state = how
 
             if how_state:
-                hitter_event_record = self.get_hitter_how_event_data(live_dict, how_state)
+                hitter_event_record = self.get_hitter_how_event_data(live_dict, self.curr_hitter, how_state)
                 if hitter_event_record:
                     result_hit_event.update({self.HITTER_EVENT: hitter_event_record})
+        # endregion [기록:HITTER] Hitter How Event 발생
 
-        if how in self.PA_LIST:
-            self.curr_hitter.update_hitter_pa_record(live_dict)  # update PA count
-
-        # 도루 발생
+        # region [기록:HITTER]도루 발생, 득점 발생
         if how == 'SB':
+            self.curr_runner = player.Hitter(runner)
             # 20홈런 20도루
-            club_2020_record = self.curr_hitter.get_season_hitter_20_20_record(game_id, hitter)
+            club_2020_record = self.curr_hitter.get_season_hitter_20_20_record(game_id, self.curr_runner.player_code)
             if club_2020_record:
-                result_today.update({self.HITTER_EVENT: today_record})
-        # endregion [기록] Hitter How Event 발생
+                result_today.update({self.HITTER_EVENT: club_2020_record})
+            hitter_event_record = self.get_hitter_how_event_data(live_dict, self.curr_runner, how)
+            if hitter_event_record:
+                result_hit_event.update({self.HITTER_EVENT: hitter_event_record})
+        elif '홈인' in text:
+            self.curr_runner = player.Hitter(runner)
+            how = 'RUN'
+            hitter_event_record = self.get_hitter_how_event_data(live_dict, self.curr_runner, how)
+            if hitter_event_record:
+                result_hit_event.update({self.HITTER_EVENT: hitter_event_record})
+        # endregion [기록:HITTER]도루 발생, 득점 발생
 
         # region [기록] Pitcher How Event
         if how:
@@ -873,7 +883,7 @@ class GameApp(object):
 
         return result_list
 
-    def get_hitter_how_event_data(self, live_dict, how_state):
+    def get_hitter_how_event_data(self, live_dict, hitter, how_state):
         hitter = live_dict['hitter']
         hitter_name = live_dict['hitname']
         pitcher = live_dict['pitcher']
@@ -884,37 +894,37 @@ class GameApp(object):
         result_list = []
 
         # 시즌 10단위 기록
-        season_10_units_record = self.curr_hitter.get_season_hitter_event_10_units(game_id, how_state)
+        season_10_units_record = hitter.get_season_hitter_event_10_units(game_id, how_state)
         if season_10_units_record:
             result_list.extend(season_10_units_record)
 
         # 통산 100단위 기록
-        total_100_units_record = self.curr_hitter.get_total_hitter_100_units_data(game_id, how_state)
+        total_100_units_record = hitter.get_total_hitter_100_units_data(game_id, how_state)
         if total_100_units_record:
             result_list.extend(total_100_units_record)
 
         # 통산 100단위 하나 남은 기록
-        total_one_left_record = self.curr_hitter.get_total_hitter_one_left_data(how_state)
+        total_one_left_record = hitter.get_total_hitter_one_left_data(how_state)
         if total_one_left_record:
             result_list.extend(total_one_left_record)
 
         # 시즌 10단위 하나 남은 기록
-        season_one_left_record = self.curr_hitter.get_season_hitter_one_left_data(how_state)
+        season_one_left_record = hitter.get_season_hitter_one_left_data(how_state)
         if season_one_left_record:
             result_list.extend(season_one_left_record)
 
         # 연속기록
-        n_continue_record = self.curr_hitter.get_hitter_n_continue_data(game_id, how_state)
+        n_continue_record = hitter.get_hitter_n_continue_data(game_id, how_state)
         if n_continue_record:
             result_list.extend(n_continue_record)
 
         # hitter vs pitteam 기록
-        hitter_vs_team_record = self.curr_hitter.get_hitter_vs_team_how_event_data(pit_team, how_state)
+        hitter_vs_team_record = hitter.get_hitter_vs_team_how_event_data(pit_team, how_state)
         if hitter_vs_team_record:
             result_list.extend(hitter_vs_team_record)
 
         # 선점 기록
-        season_first_record = self.curr_hitter.get_hitter_season_first_data(game_id, how_state)
+        season_first_record = hitter.get_hitter_season_first_data(game_id, how_state)
         if season_first_record:
             result_list.extend(season_first_record)
 
@@ -1095,8 +1105,7 @@ class GameApp(object):
                 result_list.extend(pitcher_game_number)
 
             # 시즌기록 순위권
-            pitcher_season_ranker_record = self.curr_pitcher.get_season_pitcher_ranker_data(
-                self.game_status.game_key)
+            pitcher_season_ranker_record = self.curr_pitcher.get_season_pitcher_ranker_data(self.game_status.game_key)
             if pitcher_season_ranker_record:
                 result_list.extend(pitcher_season_ranker_record)
 
