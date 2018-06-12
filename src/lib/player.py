@@ -44,7 +44,7 @@ class Hitter(Player):
             self.hit_type = self.player_info['HITTYPE'][2:]
 
         self.df_hitter_all_season = record.Record().get_hitter_total_df(player_code)
-        self.KOREAN_DICT = {'H1': '1루타', 'H2': '2루타', 'H3': '3루타', 'HR': '홈런', 'RUN': '득점', 'RBI': '타점', 'HRA': '타율', 'HIT': '안타', 'OB': '출장'}
+        self.KOREAN_DICT = {'H1': '1루타', 'H2': '2루타', 'H3': '3루타', 'HR': '홈런', 'RUN': '득점', 'RBI': '타점', 'HRA': '타율', 'HIT': '안타', 'OB': '출장', 'SB': '도루'}
 
     # region Return Hitter 경기기록
     def get_hitter_today_data(self, game_id):
@@ -582,7 +582,7 @@ class Hitter(Player):
     def get_season_hitter_event_10_units(self, game_key, how):
         data_dict = {'HITTER': self.player_code, 'HITNAME': self.player_info['NAME'], 'OPPONENT': 'ALL',
                      'LEAGUE': 'SEASON', 'PITCHER': 'NA', 'PITNAME': 'NA', 'PITTEAM': 'NA', 'RANK': 1}
-        state_dict = {'HIT': 50, 'H2': 10, 'H3': 10, 'HR': 10, 'RUN': 30, 'RBI': 30}
+        state_dict = {'HIT': 50, 'H2': 10, 'H3': 10, 'HR': 10, 'RUN': 30, 'RBI': 30, 'SB': 20}
         if how in ['H1', 'H2', 'H3', 'HR', 'HI', 'HB']:
             state_list = [how, 'RUN', 'RBI']
         else:
@@ -732,7 +732,7 @@ class Hitter(Player):
         data_dict = {'HITTER': self.player_code, 'HITNAME': self.player_info['NAME'], 'OPPONENT': 'ALL',
                      'LEAGUE': 'SEASON', 'PITCHER': 'NA', 'PITNAME': 'NA', 'PITTEAM': 'NA', 'RANK': 1}
         state_list = ['PCODE', 'HIT', 'H2', 'H3', 'RBI', 'RUN', 'HR', 'SB']
-        state_count_dict = {'HIT': [100, 150, 200], 'H2': [10, 20, 30], 'H3': [10, 20, 30], 'RBI': [100], 'RUN': [100], 'HR': [10, 20, 30, 40, 50]}
+        state_count_dict = {'HIT': [100, 150, 200], 'H2': [10, 20, 30], 'H3': [10, 20, 30], 'RBI': [100], 'RUN': [100], 'HR': [10, 20, 30, 40, 50], 'SB': [20, 30, 40]}
         result_list = []
 
         if how not in state_count_dict:
