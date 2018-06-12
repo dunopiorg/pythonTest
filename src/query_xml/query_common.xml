@@ -9,6 +9,13 @@
 		AND pitcher = '{4}' 
 		LIMIT 1
     </query>
+
+	<query id="get_pitzone_df">
+		SELECT inn, tb, ilsun, batstartorder, batorder, ballcount, ball, stuff, zonex, zoney, speed, x, y, batter, pitcher, seqno
+		FROM kbo_pitzone
+		WHERE gmkey = '{0}'
+		AND gyear = '{1}'
+    </query>
 	
 	<query id="get_gameinfo_data">
 		SELECT Stadium, Vteam, Hteam, Umpc, Ump1, Ump2, Ump3, Mois, Weath, Wind, Crowd, Chajun, Temp 
@@ -90,12 +97,12 @@
 	
 	<query id="get_max_li_rate">
 		SELECT ROUND(MAX(LI_RT), 3) AS VALUE
-		FROM baseball.record_matrix_mix
+		FROM baseball.ie_record_matrix_mix
 		WHERE gameid = '{0}'
 		AND seqno &lt; '{1}'
 	</query>
 	
-	<query id="get_record_matrix_mix">
+	<query id="get_record_matrix_mix_by_seq">
 		SELECT ROUND(BEFORE_WE_RT, 3) AS BEFORE_WE_RT
 						, ROUND(AFTER_WE_RT, 3) AS AFTER_WE_RT
 						, BEFORE_SCORE_GAP_CN
@@ -104,10 +111,29 @@
 						, ROUND(LI_RT, 3) AS LI_RT
 						, ROUND(RE_RT, 3) AS RE_RT
 						, BAT_P_ID
-		FROM baseball.record_matrix_mix
+		FROM baseball.ie_record_matrix_mix
 		WHERE GAMEID = '{0}'
 		AND GYEAR = '{1}'
 		AND SEQNO = '{2}'
+    </query>
+
+	<query id="get_record_matrix_mix">
+		SELECT SEQNO, INN_NO, TB_SC, BEFORE_OUT_CN, BEFORE_AWAY_SCORE_CN, BEFORE_HOME_SCORE_CN, BEFORE_SCORE_GAP_CN, BEFORE_RUNNER_SC
+						, AFTER_OUT_CN, AFTER_AWAY_SCORE_CN, AFTER_HOME_SCORE_CN, AFTER_SCORE_GAP_CN, AFTER_RUNNER_SC
+						, BAT_P_ID, PIT_P_ID, RUN_P_ID, HOW_ID, LIVETEXT_IF, BEFORE_WE_RT, AFTER_WE_RT, WPA_RT, LI_RT
+						, ROUND((select li_rt from matrix_detail where season_id = A.gyear and inn_no = A.inn_no and tb_sc = A.tb_sc and out_cn = A.AFTER_OUT_CN
+											and runner_sc = A.AFTER_RUNNER_SC and score_gap_cn = A.AFTER_SCORE_GAP_CN), 5) as AFTER_LI_RT
+						, RE_RT
+		FROM baseball.ie_record_matrix_mix A
+		WHERE GAMEID = '{0}'
+		AND GYEAR = '{1}'
+    </query>
+
+	<query id="get_ie_inningrecord">
+		SELECT inning, tb, run, hit, err, bb, lob, hr, hp
+		FROM ie_inningrecord
+		WHERE gameid = '{0}'
+		AND gyear = '{1}'
     </query>
 	
 	<query id="get_team_kor_names">

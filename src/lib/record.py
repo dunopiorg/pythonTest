@@ -733,6 +733,18 @@ class Record(object):
         return result
 
     @classmethod
+    def get_pitzone_df(cls, game_key, gyear):
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_common", "get_pitzone_df")
+        query = query_format.format(game_key, gyear)
+
+        df = pd.read_sql(query, conn)
+        conn.close()
+        return df
+
+    @classmethod
     def get_gameinfo_data(cls, game_key):
         """
         게임 환경 정보
@@ -877,12 +889,40 @@ class Record(object):
         return result
 
     @classmethod
-    def get_record_matrix_mix(cls, game_id, year, seq_no):
+    def get_record_matrix_mix_by_seq(cls, game_id, year, seq_no):
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_common", "get_record_matrix_mix_by_seq")
+        query = query_format.format(game_id, year, seq_no)
+
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
+
+        return result
+
+    @classmethod
+    def get_record_matrix_mix(cls, game_id, year):
         conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
                                password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
 
         query_format = cls.ql.get_query("query_common", "get_record_matrix_mix")
-        query = query_format.format(game_id, year, seq_no)
+        query = query_format.format(game_id, year)
+
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
+
+        return result
+
+    @classmethod
+    def get_ie_inningrecord(cls, game_id, year):
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_common", "get_ie_inningrecord")
+        query = query_format.format(game_id, year)
 
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             cursor.execute(query)

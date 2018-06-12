@@ -385,7 +385,6 @@ class Hitter(Player):
             set_hra_dict['STATE_SPLIT'] = "VS_TEAM_HRA_%s" % pos_neg
             set_hra_dict['PA'] = pa_count
             result_list.append(set_hra_dict)
-
         elif how == 'HR':
             season_hr = self.df_hitter_all_season['HR'][0]
 
@@ -445,7 +444,7 @@ class Hitter(Player):
             result_list.append(set_cyclinghit_dict)
         elif hit_count == 2:
             hit_left_name_list = df_hit.columns[(df_hit == 0).iloc[0]].tolist()
-            hit_name_list = df_hit.columns[(df_hit == 1).iloc[0]].tolist()
+            hit_name_list = df_hit.columns[(df_hit > 0).iloc[0]].tolist()
 
             if 'H3' in hit_name_list:
                 set_cyclinghit_dict = data_dict.copy()
@@ -631,9 +630,11 @@ class Hitter(Player):
         if df_hitter_total.empty:
             return None
         else:
-            df_hitter_total = df_hitter_total.astype(int)
+            df_hitter_total = df_hitter_total[df_hitter_total['PCODE'] == self.player_code]
 
+        df_hitter_total = df_hitter_total.astype(int)
         df_state = df_hitter_total[state_list]
+        df_state = df_state.sort_values(by=state_list, ascending=False)
         nine_record_dict = df_state[df_state % 100 == 0].dropna(axis=1).to_dict('records')[0]
 
         for state, state_value in nine_record_dict.items():

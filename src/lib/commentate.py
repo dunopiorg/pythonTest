@@ -1,6 +1,6 @@
 from lib import record
 from korean import Noun
-from lib import game_status
+import math
 import config
 
 
@@ -16,7 +16,7 @@ class Commentate(object):
                               , "7": "LF", "8": "CF", "9": "RF", "D": "DH"}
         self.WPA_HOW_KOR = {'BB': '볼넷', 'BN': '번트', 'H1': '1루타', 'H2': '2루타', 'H3': '3루타',
                         'HB': '번트안타', 'HI': '내야안타', 'HP': '사구', 'HR': '홈런', 'IB': '고의4구', 'KP': '포일',
-                        'KW': '폭투', 'SF': '희생플라이', 'SH': '희생번트', 'B2': '보크', 'PB': '패스트볼',
+                        'KW': '폭투', 'SF': '희생플라이', 'SH': '희생번트', 'B2': '보크', 'PB': '패스트볼', 'GR': '땅볼',
                         'P2': '포일', 'SB': '도루', 'SD': '더블스틸', 'ST': '트리플스틸', 'WP': '폭투', 'W2': '폭투'}
 
         self.continue_ball_stuff = {}
@@ -74,7 +74,7 @@ class Commentate(object):
         else:
             return None
 
-    def get_ball_style_data(self, game_key, bat_order, ball_count, pitcher, hitter, hit_type, pitname):
+    def get_pts_ball_data(self, game_key, bat_order, ball_count, pitcher, hitter, hit_type, pitname):
         result_list = []
         data_dict = {'SUBJECT': 'PITCHER', 'OPPONENT': 'NA', 'LEAGUE': 'NA', 'PITNAME': 'NA',
                        'GYEAR': 'NA', 'PITTEAM': 'NA', 'STATE': 'BALLINFO',
@@ -82,28 +82,29 @@ class Commentate(object):
 
         data_list = record.Record().get_pitzone_info(game_key, bat_order, ball_count, hitter, pitcher)
 
-        if data_list:
-            pitch_data = data_list[0]
-            ball_style_dict = data_dict.copy()
-            ball_dict = data_dict.copy()
+        if not data_list:
+            return None
 
-            if pitch_data['stuff'] in self.BALL_STUFF:
-                pitch_type = self.BALL_STUFF[pitch_data['stuff']]
-                if pitch_data['stuff'] in self.continue_ball_stuff:
-                    self.continue_ball_stuff[pitch_data['stuff']] += 1
-                else:
-                    self.continue_ball_stuff.clear()
-                    self.continue_ball_stuff[pitch_data['stuff']] = 1
+        pitch_data = data_list[0]
+
+        if pitch_data['stuff'] in self.BALL_STUFF:
+            pitch_type = self.BALL_STUFF[pitch_data['stuff']]
+            if pitch_data['stuff'] in self.continue_ball_stuff:
+                self.continue_ball_stuff[pitch_data['stuff']] += 1
             else:
-                pitch_type = ''
+                self.continue_ball_stuff.clear()
+                self.continue_ball_stuff[pitch_data['stuff']] = 1
+        else:
+            pitch_type = ''
 
-            area_x = pitch_data['x']
-            area_y = pitch_data['y']
-            zone_x = pitch_data['zonex']
-            zone_y = pitch_data['zoney']
-            ball_type = pitch_data['ball']
-            comment = ''
+        area_x = pitch_data['x']
+        area_y = pitch_data['y']
+        zone_x = pitch_data['zonex']
+        zone_y = pitch_data['zoney']
+        ball_type = pitch_data['ball']
+        comment = ''
 
+        if config.VERSION_LEVEL > 0:
             if ball_type == 'B':  # 볼 판정
                 if hit_type == '우타':
                     if zone_x < 2:
@@ -144,6 +145,7 @@ class Commentate(object):
                 if zone_y < 6:
                     comment = '낮은 공이였는데 휘둘렀어요. '
 
+            ball_style_dict = data_dict.copy()
             ball_style_dict['PITNAME'] = pitcher
             ball_style_dict['COMMENT'] = comment
             ball_style_dict['HITTER'] = hitter
@@ -153,15 +155,109 @@ class Commentate(object):
             result_list.append(ball_style_dict)
 
             if ball_type == 'B':
+                ball_dict = data_dict.copy()
                 ball_dict['PITNAME'] = pitname
                 ball_dict['COMMENT'] = comment
                 ball_dict['STUFF'] = pitch_type
                 ball_dict['STATE_SPLIT'] = 'BALLINFO_BALL'
                 result_list.append(ball_dict)
-
-            return result_list
         else:
-            return None
+            if ball_type == 'T':
+                up_down = ''
+                right_left = ''
+
+                if area_y < 64:
+                    y_distance = 64 - area_y
+                elif area_y > 224:
+                    y_distance = area_y - 224
+                else:
+                    y_distance = 0
+
+                if area_x < 51:
+                    x_distance = 51 - area_x
+                elif area_x > 176:
+                    x_distance = area_x - 176
+                else:
+                    x_distance = 0
+
+                distance = math.sqrt(y_distance**2 + x_distance**2)
+
+                if distance <= 10:
+                    distance_kor = "걸친"
+                elif distance <= 20:
+                    distance_kor = "많이 빠진"
+                else:
+                    distance_kor = "굉장히 많이 빠진"
+
+                # 상단
+                if 51 < area_x < 176 and area_y < 64:
+                    up_down = '위'
+                # 하단
+                elif 51 < area_x < 176 and area_y > 224:
+                    up_down = '아래'
+
+                # 오른쪽으로 많이 빠진 공
+                if area_x > 176:
+                    if hit_type == '우타':
+                        right_left = '몸쪽'
+                    else:
+                        right_left = '바깥쪽'
+                # 왼쪽으로 많이 빠진 공
+                elif area_x < 51:
+                    if hit_type == '우타':
+                        right_left = '바깥쪽'
+                    else:
+                        right_left = '몸쪽'
+
+                if right_left + up_down:
+                    ball_area_dict = data_dict.copy()
+                    ball_area_dict['PITNAME'] = pitcher
+                    ball_area_dict['STUFF'] = pitch_type
+                    ball_area_dict['SPEED'] = pitch_data['speed']
+                    ball_area_dict['DISTANCE'] = distance_kor
+                    if right_left and up_down:
+                        ball_area_dict['AREA'] = "{} {}".format(right_left, up_down)
+                    elif right_left:
+                        ball_area_dict['AREA'] = right_left
+                    elif up_down:
+                        ball_area_dict['AREA'] = up_down
+
+                    ball_area_dict['STATE_SPLIT'] = 'BALL_AREA'
+                    result_list.append(ball_area_dict)
+            elif ball_type == 'B':
+                if 51 < area_x < 176 and 64 < area_y < 224:
+                    up_down = ''
+                    right_left = ''
+
+                    if 1 < zone_y < 4:
+                        up_down = '위'
+                    elif 4 < zone_y < 7:
+                        up_down = '아래'
+
+                    if 1 < zone_x < 4:
+                        if hit_type == '우타':
+                            right_left = '바깥쪽'
+                        else:
+                            right_left = '몸쪽'
+                    elif 4 < zone_x < 7:
+                        if hit_type == '우타':
+                            right_left = '몸쪽'
+                        else:
+                            right_left = '바깥쪽'
+
+                    ball_dict = data_dict.copy()
+                    ball_dict['PITNAME'] = pitcher
+                    ball_dict['STUFF'] = pitch_type
+                    ball_dict['SPEED'] = pitch_data['speed']
+                    if right_left and up_down:
+                        ball_dict['AREA'] = "{} {}".format(right_left, up_down)
+                    elif right_left:
+                        ball_dict['AREA'] = right_left
+                    elif up_down:
+                        ball_dict['AREA'] = up_down
+                    ball_dict['STATE_SPLIT'] = 'BALL_AREA_BALL'
+                    result_list.append(ball_dict)
+        return result_list
 
     def get_current_game_info(self, live_dict):
         result_list = []
@@ -296,11 +392,7 @@ class Commentate(object):
                 current_game['score'] = score
 
                 result_list.append(current_game)
-            # endregion
-
-            # region 홈인 후 다음 타자 등판 상황
-
-            # endregion 홈인 후 다음 타자 등판 상황
+            # endregion 등판시 주루상황, 점수상황, 아웃상황
 
             # region 선수 정보
             if text_style == 8:
@@ -343,7 +435,7 @@ class Commentate(object):
                         print("캐스터: 투볼")
                     elif ball_counting == 3:
                         print("캐스터: 쓰리볼")
-            # endregion
+            # endregion Ball Count 설명
 
             # region Full count
             if full_count[0] == 2 and full_count[1] == 3 and text_style == 1:
@@ -351,7 +443,7 @@ class Commentate(object):
                 full_count_dict['LEAGUE'] = 'SEASON'
                 full_count_dict['STATE_SPLIT'] = 'FULL_COUNT'
                 result_list.append(full_count_dict)
-            # endregion
+            # endregion Full count
 
             # region 연속 볼, 연속 파울 설정
             if ball_type == 'B' and text_style == 1:
@@ -378,7 +470,7 @@ class Commentate(object):
                 continue_ball_dict['type'] = '파울'
                 continue_ball_dict['count'] = self.continue_ball_count_f
                 result_list.append(continue_ball_dict)
-            # endregion
+            # endregion 연속 볼, 연속 파울 설정
 
             # region 사구일 경우
             if how == 'HP':
@@ -386,7 +478,7 @@ class Commentate(object):
                 how_hp['LEAGUE'] = 'SEASON'
                 how_hp['STATE_SPLIT'] = 'HOW_HP'
                 result_list.append(how_hp)
-            # endregion
+            # endregion 사구일 경우
 
             # region 매 이닝 시작시 어디 공격 점수는 몇점
             if bat_order == 0:
@@ -398,7 +490,8 @@ class Commentate(object):
                 inning_start_dict['TEAM'] = self.TEAM_KOR[hit_team]
                 inning_start_dict['WHAT'] = '반격' if score_simple[1] == 'L' else '공격'
                 result_list.append(inning_start_dict)
-            # endregion
+            # endregion 매 이닝 시작시 어디 공격 점수는 몇점
+
             # region 공수 교체시
             if bat_order == 0 and seq_no > 0 and curr_li_rt > 1:
                 if score_detail[1] == 'L':
@@ -410,26 +503,26 @@ class Commentate(object):
                         when_loss['TEAM'] = '{team:이}'.format(team=Noun(self.TEAM_KOR[hit_team]))
                     when_loss['STATE_SPLIT'] = 'WHEN_LOSS'
                     result_list.append(when_loss)
-            # endregion
-        # endregion Detail Version
+            # endregion 공수 교체시
 
-        # region 연속 같은 볼
-        if ball_type == 'H':
-            self.continue_ball_stuff.clear()
-        else:
-            ball_stuff_value_list = list(self.continue_ball_stuff.values())
-            ball_stuff_key_list = list(self.continue_ball_stuff.keys())
-            if ball_stuff_value_list and ball_stuff_value_list[0] > 2:
-                ball_stuff_dict = data_dict.copy()
-                ball_stuff_dict['LEAGUE'] = 'SEASON'
-                if ball_stuff_value_list[0] > 4:
-                    ball_stuff_dict['STATE_SPLIT'] = 'BALL_STUFF_COUNT_MANY'
-                else:
-                    ball_stuff_dict['STATE_SPLIT'] = 'BALL_STUFF_COUNT'
-                ball_stuff_dict['count'] = ball_stuff_value_list[0]
-                ball_stuff_dict['ball_type'] = self.BALL_STUFF[ball_stuff_key_list[0]]
-                result_list.append(ball_stuff_dict)
-        # endregion
+            # region 연속 같은 볼
+            if ball_type == 'H':
+                self.continue_ball_stuff.clear()
+            else:
+                ball_stuff_value_list = list(self.continue_ball_stuff.values())
+                ball_stuff_key_list = list(self.continue_ball_stuff.keys())
+                if ball_stuff_value_list and ball_stuff_value_list[0] > 2:
+                    ball_stuff_dict = data_dict.copy()
+                    ball_stuff_dict['LEAGUE'] = 'SEASON'
+                    if ball_stuff_value_list[0] > 4:
+                        ball_stuff_dict['STATE_SPLIT'] = 'BALL_STUFF_COUNT_MANY'
+                    else:
+                        ball_stuff_dict['STATE_SPLIT'] = 'BALL_STUFF_COUNT'
+                    ball_stuff_dict['count'] = ball_stuff_value_list[0]
+                    ball_stuff_dict['ball_type'] = self.BALL_STUFF[ball_stuff_key_list[0]]
+                    result_list.append(ball_stuff_dict)
+            # endregion 연속 같은 볼
+        # endregion Detail Version
 
         # region LI 관련
         if inning > 5 and text_style == 8:
@@ -491,7 +584,7 @@ class Commentate(object):
 
         # region WPA 변화량에 따른 승리 확률
         if inning > 3 and how in self.WPA_HOW_KOR:
-            record_matrix = record.Record().get_record_matrix_mix(game_id, year, seq_no)
+            record_matrix = record.Record().get_record_matrix_mix_by_seq(game_id, year, seq_no)
             if record_matrix:
                 after_we_rt = record_matrix[0]['AFTER_WE_RT']
                 before_we_rt = record_matrix[0]['BEFORE_WE_RT']
@@ -573,3 +666,147 @@ class Commentate(object):
             result_list.append(team)
 
         return result_list
+
+    def get_end_inn_info(self, live_dict):
+        data_dict = {'LEAGUE': 'SEASON', 'PITCHER': 'NA', 'PITNAME': 'NA',
+                     'GYEAR': 'NA', 'PITTEAM': 'NA', 'STATE': 'END_INNING'}
+        result_list = []
+        game_id = live_dict['game_id']
+        score_detail = live_dict['score_detail']
+        score_simple = live_dict['score']
+        seq_no = live_dict['seq_no']
+        base_detail = live_dict['base_detail']
+        out_count = live_dict['out_count']
+        bat_order = live_dict['batorder']
+        ball_count = live_dict['ballcount']
+        full_count = live_dict['full_count']
+        how = live_dict['how']
+        inning = live_dict['inning']
+        tb = live_dict['tb']
+        hit_team = live_dict['hitteam']
+        year = live_dict['gyear']
+        home_team = game_id[10:12]
+        away_team = game_id[8:10]
+
+        df_record_matrix = record.Record().get_record_matrix_mix(game_id, year)
+        df_inning_record_matrix = record.Record().get_ie_inningrecord(game_id, year)
+
+        if df_record_matrix.empty or df_inning_record_matrix.empty:
+            return None
+
+        if int(inning) > 1and tb == 'T':
+            prev_inning = inning - 1
+        else:
+            prev_inning = inning
+
+        df_inning = df_inning_record_matrix[(df_inning_record_matrix['tb'] == tb) & (df_inning_record_matrix['inning'] == prev_inning)]
+        df_pa_record = df_record_matrix[(df_record_matrix['TB_SC'] == tb) & (df_record_matrix['INN_NO'] == prev_inning)]
+
+        # region 타자 시점
+        if df_inning['run'].values[0] == 0:
+            # 무득점 : LI가 가장 높았을 때 & 득점권 상황 but 점수를 못 냄
+            df_max_li = df_pa_record[df_pa_record['AFTER_LI_RT'] == df_pa_record['AFTER_LI_RT'].max()]
+            runner_sc = str(df_max_li['AFTER_RUNNER_SC'].values[0])
+            if '2' in runner_sc or '3' in runner_sc:
+                before_out_cn = df_max_li['BEFORE_OUT_CN'].values[0]
+                before_runner_sc = str(df_max_li['BEFORE_RUNNER_SC'].values[0])
+                hitter_code = df_max_li['BAT_P_ID'].values[0]
+                how_kor = self.WPA_HOW_KOR[df_max_li['HOW_ID'].values[0]]
+                hitter_name = record.Record().get_player_info(hitter_code)[0]['NAME']
+                no_score_dict = data_dict.copy()
+                if before_out_cn == 0:
+                    no_score_dict['BEFORE_OUT_CN'] = "무"
+                else:
+                    no_score_dict['BEFORE_OUT_CN'] = before_out_cn
+                if before_runner_sc == '123':
+                    no_score_dict['BEFORE_RUNNER_SC'] = "만루"
+                elif before_runner_sc == '0':
+                    no_score_dict['BEFORE_RUNNER_SC'] = ""
+                else:
+                    no_score_dict['BEFORE_RUNNER_SC'] = "{0}루".format(','.join(before_runner_sc))
+
+                if runner_sc == '123':
+                    no_score_dict['AFTER_RUNNER_SC'] = "만루"
+                elif runner_sc == '0':
+                    no_score_dict['AFTER_RUNNER_SC'] = ""
+                else:
+                    no_score_dict['AFTER_RUNNER_SC'] = "{0}루".format(','.join(runner_sc))
+                no_score_dict['HOW_KOR'] = how_kor
+                no_score_dict['HITNAME'] = hitter_name
+                no_score_dict['STATE_SPLIT'] = 'NO_RUN_SCORE_BASE'
+                result_list.append(no_score_dict)
+        else:
+            # 득점 : 시간 순서대로 득점(적시타, 홈런)상황
+            for idx, row in df_pa_record.iterrows():
+                before_score_gap = row['BEFORE_SCORE_GAP_CN']
+                after_score_gap = row['AFTER_SCORE_GAP_CN']
+                before_out_cn = row['BEFORE_OUT_CN']
+                before_runner_sc = row['BEFORE_OUT_CN']
+                how_kor = self.WPA_HOW_KOR[row['HOW_ID']]
+                hitter_name = record.Record().get_player_info(row['BAT_P_ID'])[0]['NAME']
+                score_dict = data_dict.copy()
+
+                if 'T' == row['TB_SC']:
+                    score_cn = before_score_gap - after_score_gap
+                else:
+                    score_cn = after_score_gap - before_score_gap
+
+                if before_out_cn == 0:
+                    score_dict['BEFORE_OUT_CN'] = "무"
+                else:
+                    score_dict['BEFORE_OUT_CN'] = before_out_cn
+                if before_runner_sc == '123':
+                    score_dict['BEFORE_RUNNER_SC'] = "만루"
+                elif before_runner_sc == '0':
+                    score_dict['BEFORE_RUNNER_SC'] = ""
+                else:
+                    score_dict['BEFORE_RUNNER_SC'] = "{0}루".format(','.join(before_runner_sc))
+                score_dict['HOW_KOR'] = how_kor
+                score_dict['SCORE_CN'] = score_cn
+                score_dict['HITNAME'] = hitter_name
+
+                if before_score_gap == 0 and after_score_gap != 0:
+                    score_dict['STATE_SPLIT'] = 'FIRST_GET_SCORE'
+                elif before_score_gap != after_score_gap and row['HOW_ID'] != 'HR':
+                    score_dict['STATE_SPLIT'] = 'GET_RBI_HIT'
+                elif before_score_gap != after_score_gap and row['HOW_ID'] == 'HR':
+                    score_dict['STATE_SPLIT'] = 'GET_HR_HIT'
+
+                if 'STATE_SPLIT' in score_dict:
+                    result_list.append(score_dict)
+        # endregion 타자 시점
+
+        # region 투수 시점
+        if df_inning['run'].values[0] == 0:
+            # 무실점 방어성공
+            df_pitzone = record.Record().get_pitzone_df(game_id, year)
+            df_pitzone = df_pitzone[(df_pitzone['tb'] == tb) & (df_pitzone['inning'] == prev_inning)]
+
+            pitcher_count = df_pitzone.groupby(['PIT_P_ID']).count().shape[0]
+            pitcher_name = record.Record().get_player_info(df_pitzone.iloc[0]['PIT_P_ID'])[0]['NAME']
+            inning_ball_count = df_pitzone.shape[0]
+
+            no_run_dict = data_dict.copy()
+            no_run_dict['PITNAME'] = pitcher_name
+            no_run_dict['BALL_COUNT'] = inning_ball_count
+            # 투수 혼자 던진 공이 9개 이하 일 경우
+            if pitcher_count == 1 and inning_ball_count <= 9:
+                ball_count_dict = data_dict.copy()
+                ball_count_dict['PITNAME'] = pitcher_name
+                ball_count_dict['BALL_COUNT'] = inning_ball_count
+                ball_count_dict['STATE_SPLIT'] = 'BALL_COUNT_UNDER_9'
+                result_list.append(ball_count_dict)
+
+            # 실점 위기
+            if '3' in str(df_inning['AFTER_RUNNER_SC']):
+                ball_count_dict = data_dict.copy()
+                ball_count_dict['PITNAME'] = pitcher_name
+                ball_count_dict['BALL_COUNT'] = inning_ball_count
+                ball_count_dict['STATE_SPLIT'] = 'BALL_COUNT_UNDER_9'
+                result_list.append(ball_count_dict)
+
+            result_list.append(no_run_dict)
+        else:
+            # 실점
+            pass
+        # endregion 투수 시점
