@@ -19,7 +19,7 @@ if __name__ == "__main__":
     if args.gamekey:
         game_id = args.gamekey
     else:
-        game_id = '20170909NCHH0'  # 20170609SSHH0  20170912OBNC0 20170914SKOB0 20170926HHLT0 20170909SSHT0
+        game_id = '20170909SSHT0'  # 20170609SSHH0  20170912OBNC0 20170914SKOB0 20170926HHLT0 20170909NCHH0 20170923SSHH0
     sleep_second = config.SLEEP_TIME
     gm_app = game_app.GameApp(game_id)
 
@@ -31,10 +31,12 @@ if __name__ == "__main__":
     # Test Start ------------------------------------
     game_live_list = gm_app.test_live_data(game_id)
     for game_live_dict in game_live_list:
-        result = gm_app.get_what_info(game_live_dict)
-
-        if result:
-            gm_app.make_sentence(result)
+        try:
+            result = gm_app.get_what_info(game_live_dict)
+            if result:
+                    gm_app.make_sentence(result)
+        except Exception as ex:
+            print(ex)
         time.sleep(sleep_second)
     
     gm_app.game_thread = 0
