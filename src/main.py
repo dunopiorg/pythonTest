@@ -8,7 +8,13 @@ from lib import game_app
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--gamekey", help="game key")
+    parser.add_argument("--clear", help="game key")
     args = parser.parse_args()
+
+    if args.clear:
+        game_app.GameApp().clear_message_log()
+        exit()
+
     if args.gamekey:
         game_id = args.gamekey
     else:

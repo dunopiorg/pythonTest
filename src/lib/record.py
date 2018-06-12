@@ -1002,6 +1002,21 @@ class Record(object):
         conn.close()
         return df
 
+    @classmethod
+    def set_clear_message_log(cls):
+        conn = pymysql.connect(host=cls._HOST, port=cls._PORT, user=cls._USER,
+                               password=cls._PASSWORD, db=cls._DB, charset='utf8mb4')
+
+        query_format = cls.ql.get_query("query_common", "set_clear_message_log")
+        query = query_format.format()
+
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
+
+        conn.close()
+        return result
+
 
 if __name__ == "__main__":
     record = Record()

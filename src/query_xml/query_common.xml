@@ -165,4 +165,8 @@
 		AND seqNO &lt; '{seqNO}'
 		AND textStyle = 8
     </query>
+
+	<query id="set_clear_message_log">
+        DELETE FROM baseball.message_log
+    </query>
 </data>
