@@ -1146,7 +1146,3 @@ class GameApp(object):
             self.set_score(key, value_list)
     # endregion
     # endregion
-
-    @classmethod
-    def clear_message_log(cls):
-        print(record.Record().set_clear_message_log())

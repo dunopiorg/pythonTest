@@ -2,6 +2,7 @@ import time
 import threading
 import config
 import argparse
+from lib import record
 from lib import game_app
 
 # Program Start
@@ -12,7 +13,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.clear:
-        game_app.GameApp().clear_message_log()
+        record.Record().set_clear_message_log()
         exit()
 
     if args.gamekey:
