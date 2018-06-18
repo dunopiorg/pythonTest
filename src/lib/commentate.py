@@ -102,6 +102,7 @@ class Commentate(object):
         zone_x = pitch_data['zonex']
         zone_y = pitch_data['zoney']
         ball_type = pitch_data['ball']
+
         comment = ''
 
         if config.VERSION_LEVEL > 0:
@@ -215,6 +216,7 @@ class Commentate(object):
                     ball_area_dict['STUFF'] = pitch_type
                     ball_area_dict['SPEED'] = pitch_data['speed']
                     ball_area_dict['DISTANCE'] = distance_kor
+                    ball_area_dict['BALL_COUNT'] = ball_count
                     if right_left and up_down:
                         ball_area_dict['AREA'] = "{} {}".format(right_left, up_down)
                     elif right_left:
@@ -249,6 +251,7 @@ class Commentate(object):
                     ball_dict['PITNAME'] = pitcher
                     ball_dict['STUFF'] = pitch_type
                     ball_dict['SPEED'] = pitch_data['speed']
+                    ball_dict['BALL_COUNT'] = ball_count
                     if right_left and up_down:
                         ball_dict['AREA'] = "{} {}".format(right_left, up_down)
                     elif right_left:

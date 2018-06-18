@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <data>
     <query id="get_pitzone_info">
-		SELECT ball, stuff, speed, zonex, zoney, x, y from baseball.kbo_pitzone
+		SELECT ballcount, ball, stuff, speed, zonex, zoney, x, y from baseball.kbo_pitzone
 		WHERE gmkey = '{0}' 
 		AND batorder = '{1}' 
 		AND ballcount = '{2}' 
