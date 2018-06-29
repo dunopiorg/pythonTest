@@ -2,22 +2,17 @@ from lib import record
 from korean import Noun
 import math
 import config
+import kor_dic
 
 
 class Commentate(object):
 
     def __init__(self):
-        self.BALL_STUFF = {'FAST': '패스트볼', 'CUTT': '커터', 'SLID': '슬라이더', 'CURV': '커브',
-                       'CHUP': '체인지업', 'SPLI': '스플리터', 'SINK': '싱커볼', 'TWOS': '투심패스트볼',
-                       'FORK': '포크볼', 'KNUC': '너클볼'}
+        self.BALL_STUFF = kor_dic.ball_stuff_dict
         self.TEAM_KOR = record.Record().get_team_korean_names()
         self.english_team = ['SK', 'NC', 'LG', 'KT']
-        self.POSITION_WORD = {"1": "P", "2": "C", "3": "1B", "4": "2B", "5": "3B", "6": "SS"
-                              , "7": "LF", "8": "CF", "9": "RF", "D": "DH"}
-        self.WPA_HOW_KOR = {'BB': '볼넷', 'BN': '번트', 'H1': '1루타', 'H2': '2루타', 'H3': '3루타',
-                        'HB': '번트안타', 'HI': '내야안타', 'HP': '사구', 'HR': '홈런', 'IB': '고의4구', 'KP': '포일',
-                        'KW': '폭투', 'SF': '희생플라이', 'SH': '희생번트', 'B2': '보크', 'PB': '패스트볼', 'GR': '땅볼',
-                        'P2': '포일', 'SB': '도루', 'SD': '더블스틸', 'ST': '트리플스틸', 'WP': '폭투', 'W2': '폭투'}
+        self.POSITION_WORD = kor_dic.position_dict
+        self.WPA_HOW_KOR = kor_dic.how_kor_dict
 
         self.continue_ball_stuff = {}
         self.continue_ball_count_b = 0
